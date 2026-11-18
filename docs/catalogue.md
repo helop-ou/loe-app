@@ -61,6 +61,22 @@ instead. Hits are grouped into works (the same title by the same authors), a
 title typed exactly comes first, and among the rest a book published in many
 editions ranks a little higher.
 
+A book's page asks `Catalogue.details(for:)` for the rest of what it shows:
+
+- **Editions**: every edition with the work's title and lead author.
+- **The original**, for a translation: the work whose title is the edition's
+  original title, by the same lead author.
+- **Translations**, for an original: the works whose original title is this
+  title, by the same lead author. This is how „Keisri hull“ finds *The czar's
+  madman*, and the reverse.
+- **By the same author**: other works by the lead author in the same language,
+  so an Estonian page lists Estonian books and a translation lists others in
+  its language.
+
+The page links each edition's ESTER record (the 001 number without its final
+check digit, so `b10500820` is `record=b1050082`) and searches Rahva Raamat and
+Apollo for the title and author.
+
 ### Download and updates
 
 The app finds the current catalogue through

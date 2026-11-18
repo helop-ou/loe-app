@@ -39,7 +39,8 @@ Loe/
   Features/
     Shelves/
     ReadNext/
-    Search/
+    Search/                    Search, and the catalogue download
+    Book/                      A book's own page
   Shared/
     Catalogue/                 The offline catalogue: SQLite access, search, works
     UI/                        Brand type, colour and components used across features
