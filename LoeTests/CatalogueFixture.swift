@@ -16,10 +16,10 @@ enum CatalogueFixture {
         .appending(path: "tools/catalogue/manifest.json")
 
     static let standardBooks = """
-        (1, 'b1', 'Tõde ja õigus', 'A. H. Tammsaare', 1926, 1, 0, NULL),
-        (2, 'b2', 'Tõde ja õigus', 'A. H. Tammsaare', 2019, 1, 0, NULL),
-        (3, 'b3', 'Pärsia kirjad', 'Montesquieu', 1966, 1, 0, 'Lettres persanes'),
-        (4, 'b4', 'Õigus ja tõde', 'Rohke Debelakk', 2010, 0, 0, NULL)
+        (1, 'b1', 'Tõde ja õigus', 'A. H. Tammsaare', 1926, 1, 0, NULL, 'est', NULL),
+        (2, 'b2', 'Tõde ja õigus', 'A. H. Tammsaare', 2019, 1, 0, NULL, 'est', NULL),
+        (3, 'b3', 'Pärsia kirjad', 'Montesquieu', 1966, 1, 0, 'Lettres persanes', 'est', 'fre'),
+        (4, 'b4', 'Õigus ja tõde', 'Rohke Debelakk', 2010, 0, 0, NULL, 'est', NULL)
         """
 
     static func make(
@@ -32,7 +32,8 @@ enum CatalogueFixture {
         defer { sqlite3_close(db) }
         let sql = try String(contentsOf: schema, encoding: .utf8) + """
             INSERT INTO meta VALUES ('schema_version', '\(version)');
-            INSERT INTO edition (id, erb_id, title, authors, year, fiction, electronic, original_title) VALUES \(books);
+            INSERT INTO edition (id, erb_id, title, authors, year, fiction, electronic, original_title, language, original_language)
+              VALUES \(books);
             INSERT INTO isbn SELECT '9789949633289', id, 'köites' FROM edition WHERE erb_id = 'b3';
             INSERT INTO edition_search (rowid, title, authors, series, original_title)
               SELECT id, title, authors, series, original_title FROM edition;

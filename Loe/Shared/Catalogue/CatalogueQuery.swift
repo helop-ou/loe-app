@@ -13,6 +13,16 @@ nonisolated enum CatalogueQuery {
         return quoted.dropLast().joined(separator: " ") + (words.count > 1 ? " " : "") + quoted.last! + "*"
     }
 
+    /// An FTS5 expression matching these words as a phrase in one column. Nil when
+    /// there are no words.
+    static func phrase(_ text: String, in column: String) -> String? {
+        let words = text
+            .components(separatedBy: CharacterSet.alphanumerics.inverted)
+            .filter { !$0.isEmpty }
+        guard !words.isEmpty else { return nil }
+        return "\(column) : \"\(words.joined(separator: " "))\""
+    }
+
     /// The ISBN-13 a reader typed or scanned, in any punctuation, or nil.
     static func isbn13(_ text: String) -> String? {
         let characters = text.uppercased().filter { $0.isNumber || $0 == "X" }

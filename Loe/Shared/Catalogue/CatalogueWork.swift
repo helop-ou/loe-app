@@ -8,6 +8,16 @@ nonisolated struct CatalogueWork: Identifiable, Hashable, Sendable {
 
     var title: String { editions[0].title }
     var authors: String? { editions[0].authors }
+    var language: String? { editions[0].language }
+
+    static func key(for edition: CatalogueEdition) -> String {
+        CatalogueQuery.folded(edition.title) + "|" + CatalogueQuery.folded(edition.authors ?? "")
+    }
+
+    /// Groups editions into works, the most often published first.
+    static func grouped(_ editions: [CatalogueEdition]) -> [CatalogueWork] {
+        ranked(editions.map { ($0, 0) }, query: "")
+    }
     var firstYear: Int? { editions.compactMap(\.year).min() }
     var latestYear: Int? { editions.compactMap(\.year).max() }
 
@@ -19,7 +29,7 @@ nonisolated struct CatalogueWork: Identifiable, Hashable, Sendable {
         var order: [String] = []
         var groups: [String: [(edition: CatalogueEdition, score: Double)]] = [:]
         for hit in hits {
-            let key = CatalogueQuery.folded(hit.edition.title) + "|" + CatalogueQuery.folded(hit.edition.authors ?? "")
+            let key = key(for: hit.edition)
             if groups[key] == nil { order.append(key) }
             groups[key, default: []].append(hit)
         }
