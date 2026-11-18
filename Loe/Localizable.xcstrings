@@ -1,6 +1,56 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "%lld editions": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld edition"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld editions"
+                }
+              }
+            }
+          }
+        },
+        "et": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld väljaanne"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld väljaannet"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Check the spelling, or try the author's name.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kontrolli kirjapilti või proovi autori nime."
+          }
+        }
+      }
+    },
     "Find a book": {
       "localizations": {
         "et": {
@@ -17,6 +67,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Otsi raamatut ja lisa see riiulisse."
+          }
+        }
+      }
+    },
+    "It may be from a newer version of Loe.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See võib olla Loe uuemast versioonist."
+          }
+        }
+      }
+    },
+    "Loe keeps every Estonian book on your phone, so search works offline.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loe hoiab kõiki eesti raamatuid sinu telefonis, nii et otsing töötab ka võrguühenduseta."
+          }
+        }
+      }
+    },
+    "No books found": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Raamatuid ei leitud"
           }
         }
       }
@@ -77,6 +157,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Riiulid"
+          }
+        }
+      }
+    },
+    "The catalogue can't be read": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kataloogi ei saa lugeda"
+          }
+        }
+      }
+    },
+    "The catalogue isn't here yet": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kataloogi pole veel siin"
           }
         }
       }
