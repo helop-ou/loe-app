@@ -1,0 +1,105 @@
+import Foundation
+import SwiftData
+
+/// A book on one of the reader's shelves. It keeps its own title and authors, so
+/// the shelves read the same with or without the catalogue, and through catalogue
+/// updates. Every property is optional or has a default, as CloudKit sync requires.
+@Model
+final class ShelvedBook {
+    /// `CatalogueWork.id` of the book, which finds every edition of it.
+    var workKey: String = ""
+    /// The edition the reader shelved.
+    var erbID: String = ""
+    var title: String = ""
+    var authors: String?
+    /// Stored by name so queries can filter on it. Read `shelf` instead.
+    var shelfName: String = Shelf.wantToRead.rawValue
+    /// One to five stars, or none.
+    var rating: Int?
+    var currentPage: Int?
+    var pageCount: Int?
+    var addedAt: Date = Date.now
+    var startedAt: Date?
+    var finishedAt: Date?
+    var updatedAt: Date = Date.now
+
+    init(edition: CatalogueEdition, workKey: String, shelf: Shelf, now: Date = .now) {
+        self.workKey = workKey
+        erbID = edition.erbID
+        title = edition.title
+        authors = edition.authors
+        pageCount = edition.pages
+        addedAt = now
+        updatedAt = now
+        move(to: shelf, now: now)
+    }
+
+    var shelf: Shelf {
+        Shelf(rawValue: shelfName) ?? .wantToRead
+    }
+
+    /// Starting a book records when, once. Finishing one records when and puts the
+    /// bookmark on the last page.
+    func move(to shelf: Shelf, now: Date = .now) {
+        shelfName = shelf.rawValue
+        switch shelf {
+        case .reading:
+            startedAt = startedAt ?? now
+        case .read:
+            finishedAt = now
+            if let pageCount { currentPage = pageCount }
+        case .wantToRead, .setAside, .didNotFinish:
+            break
+        }
+        updatedAt = now
+    }
+
+    func rate(_ stars: Int?, now: Date = .now) {
+        rating = stars.map { min(max($0, 1), 5) }
+        updatedAt = now
+    }
+
+    func setPage(_ page: Int, of pages: Int?, now: Date = .now) {
+        pageCount = pages.flatMap { $0 > 0 ? $0 : nil }
+        currentPage = min(max(page, 0), pageCount ?? .max)
+        updatedAt = now
+    }
+
+    /// How far through the book the reader is, when both numbers are known.
+    var progress: Double? {
+        guard let currentPage, let pageCount, pageCount > 0 else { return nil }
+        return Double(currentPage) / Double(pageCount)
+    }
+
+    /// Enough of the book to open its page. The page finds the rest in the catalogue.
+    var work: CatalogueWork {
+        CatalogueWork(id: workKey, editions: [CatalogueEdition(id: 0, erbID: erbID, title: title, authors: authors, pages: pageCount)])
+    }
+}
+
+extension ShelvedBook {
+    /// Puts a book on a shelf, or moves it there if it is already on one. A book is
+    /// on one shelf at a time, whichever edition the reader came from.
+    @discardableResult
+    static func shelve(
+        _ work: CatalogueWork,
+        edition: CatalogueEdition,
+        on shelf: Shelf,
+        in context: ModelContext,
+        now: Date = .now
+    ) throws -> ShelvedBook {
+        if let existing = try find(work.id, in: context) {
+            existing.move(to: shelf, now: now)
+            return existing
+        }
+        let book = ShelvedBook(edition: edition, workKey: work.id, shelf: shelf, now: now)
+        context.insert(book)
+        return book
+    }
+
+    static func find(_ workKey: String, in context: ModelContext) throws -> ShelvedBook? {
+        var descriptor = FetchDescriptor<ShelvedBook>(predicate: #Predicate { $0.workKey == workKey })
+        descriptor.fetchLimit = 1
+        return try context.fetch(descriptor).first
+    }
+}
