@@ -41,16 +41,19 @@ Loe/
     ReadNext/
     Search/
   Shared/
+    Catalogue/                 The offline catalogue: SQLite access, search, works
     UI/                        Brand type, colour and components used across features
   Resources/                   Fonts and licence texts
   Assets.xcassets/             Brand colours (from loe-app-branding)
   Loe.icon                     App icon (Icon Composer)
   Localizable.xcstrings        English source, Estonian translation
 LoeTests/                      Unit tests, grouped by subject
+LoeUITests/                    Journeys through the real app
+tools/catalogue/               Builds the catalogue file (Python, standard library only)
 ```
 
 Add `Shared/Models` or `Shared/Persistence` when a second feature needs the
-same contract, and a `LoeUITests` target with the first journey.
+same contract.
 
 - Do not create empty folders to match the diagram. Keep small features flat.
 - Feature-owned models and helpers stay beside their feature. Move code to

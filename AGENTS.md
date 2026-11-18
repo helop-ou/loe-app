@@ -32,6 +32,12 @@ guide is right and this file needs fixing.
   xcodebuild test -scheme Loe -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -collect-test-diagnostics never
   ```
 
+  The scheme also runs `LoeUITests`, the journeys through the real app. A
+  journey that needs the catalogue skips on a simulator without one, and
+  [Catalogue](docs/catalogue.md#trying-it-in-the-simulator) says how to add
+  it. The catalogue build has its own tests:
+  `python3 -I -m unittest discover -s tools/catalogue`.
+
   Without `-collect-test-diagnostics never`, a failing run hangs about ten
   minutes collecting simulator diagnostics. Run builds one after the other,
   never in parallel: they share a DerivedData build database, and a concurrent

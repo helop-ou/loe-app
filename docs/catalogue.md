@@ -45,6 +45,39 @@ skipped the rest. Run the tests with
 The November 2026 build kept 312,349 editions. It is 123 MB, or 31 MB as xz,
 which the app can unpack with Apple's Compression framework.
 
+## In the app
+
+The app opens the file read-only from
+`Application Support/Catalogue/catalogue.sqlite`. `CatalogueStore` says whether it
+is there, and `Catalogue`, an actor, runs every query off the main thread. A
+file whose `schema_version` differs from `Catalogue.schemaVersion` is refused,
+so bump both together. `CatalogueTests` builds its fixture from
+`schema.sql` itself, so a schema change the app does not follow fails the unit
+suite.
+
+Search matches every word the reader typed, the last one as a prefix while
+it is being typed. A string that reads as a valid ISBN is looked up by number
+instead. Hits are grouped into works (the same title by the same authors), a
+title typed exactly comes first, and among the rest a book published in many
+editions ranks a little higher.
+
+The app cannot download the catalogue yet.
+
+### Trying it in the simulator
+
+Copy a built catalogue into the installed app's container, then run the
+search journey, which skips on a simulator without one:
+
+```sh
+container="$(xcrun simctl get_app_container <udid> ee.helop.loe data)"
+mkdir -p "$container/Library/Application Support/Catalogue"
+cp /tmp/erb/catalogue.sqlite "$container/Library/Application Support/Catalogue/"
+xcodebuild test -scheme Loe -destination 'platform=iOS Simulator,id=<udid>' \
+  -only-testing:LoeUITests -collect-test-diagnostics never \
+  -resultBundlePath /tmp/journey.xcresult
+xcrun xcresulttool export attachments --path /tmp/journey.xcresult --output-path /tmp/journey
+```
+
 ## What is kept
 
 Skipped: records that are not text (maps, music), doctoral theses (a 502
