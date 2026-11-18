@@ -45,6 +45,15 @@ nonisolated enum CatalogueQuery {
         return full.map(String.init).joined()
     }
 
+    /// The ISBN in a scanned barcode. Books carry an EAN-13 that starts 978 or 979.
+    /// Anything else on a back cover, such as a price code, gives nil.
+    static func isbn13(fromBarcode payload: String) -> String? {
+        guard payload.count == 13, payload.allSatisfy(\.isNumber),
+              payload.hasPrefix("978") || payload.hasPrefix("979")
+        else { return nil }
+        return isbn13(payload)
+    }
+
     /// Lowercased, without diacritics or punctuation, for comparing titles.
     static func folded(_ text: String) -> String {
         text.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
