@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 struct SearchView: View {
@@ -76,4 +77,5 @@ struct SearchView: View {
 #Preview {
     SearchView()
         .environment(CatalogueStore())
+        .modelContainer(for: ShelvedBook.self, inMemory: true)
 }

@@ -41,6 +41,46 @@
         }
       }
     },
+    "%lld of 5 stars": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld of 5 stars"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld of 5 stars"
+                }
+              }
+            }
+          }
+        },
+        "et": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld tärn viiest"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld tärni viiest"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld pages": {
       "localizations": {
         "en": {
@@ -81,6 +121,16 @@
         }
       }
     },
+    "Add to shelf": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lisa riiulisse"
+          }
+        }
+      }
+    },
     "Apollo": {
       "shouldTranslate": false
     },
@@ -99,7 +149,17 @@
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sama autorilt"
+            "value": "Samalt autorilt"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loobu"
           }
         }
       }
@@ -120,6 +180,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kontrolli ühendust ja proovi uuesti."
+          }
+        }
+      }
+    },
+    "Didn't finish": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jäi pooleli"
           }
         }
       }
@@ -217,6 +287,26 @@
         }
       }
     },
+    "Not rated": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hindamata"
+          }
+        }
+      }
+    },
+    "Not started": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pole veel alustanud"
+          }
+        }
+      }
+    },
     "Nothing to suggest yet": {
       "localizations": {
         "et": {
@@ -237,6 +327,26 @@
         }
       }
     },
+    "Page you're on": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lehekülg, kus oled"
+          }
+        }
+      }
+    },
+    "Pages in the book": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lehekülgi raamatus"
+          }
+        }
+      }
+    },
     "Rahva Raamat": {
       "shouldTranslate": false
     },
@@ -250,12 +360,62 @@
         }
       }
     },
+    "Rating": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hinne"
+          }
+        }
+      }
+    },
+    "Read": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loetud"
+          }
+        }
+      }
+    },
     "Read next": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Loe edasi"
+          }
+        }
+      }
+    },
+    "Reading": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loen praegu"
+          }
+        }
+      }
+    },
+    "Remove from shelves": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eemalda riiulilt"
+          }
+        }
+      }
+    },
+    "Save": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salvesta"
           }
         }
       }
@@ -286,6 +446,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vaata, kas raamatukogus on"
+          }
+        }
+      }
+    },
+    "Set aside": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kõrvale pandud"
+          }
+        }
+      }
+    },
+    "Shelf: %@": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Riiul: %@"
           }
         }
       }
@@ -400,6 +580,26 @@
         }
       }
     },
+    "Update page": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Muuda lehekülge"
+          }
+        }
+      }
+    },
+    "Want to read": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tahan lugeda"
+          }
+        }
+      }
+    },
     "Where to get it": {
       "localizations": {
         "et": {
@@ -426,6 +626,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Riiulid on tühjad"
+          }
+        }
+      }
+    },
+    "p. %lld": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "lk %lld"
+          }
+        }
+      }
+    },
+    "p. %lld of %lld": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "lk %1$lld / %2$lld"
           }
         }
       }
