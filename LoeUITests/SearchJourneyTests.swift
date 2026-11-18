@@ -21,6 +21,18 @@ final class SearchJourneyTests: XCTestCase {
     }
 
     @MainActor
+    func testFindsABookByISBNAndSaysWhenOneIsMissing() throws {
+        let app = try openSearch()
+        search("978-9949-633-28-9", in: app)
+        let field = app.searchFields.firstMatch
+        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 5))
+        field.buttons["Clear text"].tap()
+        field.typeText("0-306-40615-2")
+        XCTAssertTrue(app.staticTexts["No book with this ISBN"].waitForExistence(timeout: 5))
+        attachScreenshot("search-isbn-missing", of: app)
+    }
+
+    @MainActor
     func testOpensABookAndFollowsATranslation() throws {
         let app = try openSearch()
         search("keisri hull", in: app)
