@@ -9,10 +9,11 @@ struct RootView: View {
             Tab("Read next", systemImage: "sparkles") {
                 ReadNextView()
             }
-            Tab(role: .search) {
+            Tab("Search", systemImage: "magnifyingglass", role: .search) {
                 SearchView()
             }
         }
+        .tint(.loeAccent)
     }
 }
 
