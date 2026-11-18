@@ -1,0 +1,24 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "NSCameraUsageDescription": {
+      "comment": "Why Loe asks for the camera",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loe reads the barcode on the back of a book to find it in the catalogue."
+          }
+        },
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loe loeb raamatu tagakaanelt triipkoodi, et see kataloogist üles leida."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
