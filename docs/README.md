@@ -6,6 +6,7 @@ you are changing. The guides describe the code as it is today.
 | Guide | Use it for |
 | --- | --- |
 | [Coding standards](standards.md) | Project setup, folder structure, state and concurrency, review, pull requests and writing |
+| [Catalogue](catalogue.md) | The offline book catalogue: source, licence, rebuilding, and how each field is read |
 
 The brand (colours, type, voice, covers, the cover wash and Sinu toon) is
 documented in the [`loe-app-branding`](https://github.com/helop-ou/loe-app-branding)
