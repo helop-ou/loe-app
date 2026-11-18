@@ -20,6 +20,29 @@ final class SearchJourneyTests: XCTestCase {
         attachScreenshot("search-nothing", of: app)
     }
 
+    @MainActor
+    func testOpensABookAndFollowsATranslation() throws {
+        let app = try openSearch()
+        search("keisri hull", in: app)
+        let result = app.staticTexts["Keisri hull"].firstMatch
+        XCTAssertTrue(result.waitForExistence(timeout: 5))
+        result.tap()
+
+        XCTAssertTrue(app.staticTexts["Translations"].waitForExistence(timeout: 5))
+        attachScreenshot("book-top", of: app)
+        app.swipeUp()
+        XCTAssertTrue(app.staticTexts["Where to get it"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.links.matching(NSPredicate(format: "label CONTAINS 'ESTER'")).firstMatch.exists)
+        attachScreenshot("book-scrolled", of: app)
+        app.swipeDown()
+
+        let translation = app.buttons.matching(NSPredicate(format: "label CONTAINS[c] 'czar'")).firstMatch
+        XCTAssertTrue(translation.waitForExistence(timeout: 2))
+        translation.tap()
+        XCTAssertTrue(app.staticTexts["Translated from Estonian"].waitForExistence(timeout: 5))
+        attachScreenshot("book-translation", of: app)
+    }
+
     /// Needs a catalogue served from the Mac and none on the simulator yet. See
     /// docs/catalogue.md, "Trying it in the simulator".
     @MainActor
