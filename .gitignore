@@ -26,3 +26,6 @@ xcuserdata/
 .env
 .env.*
 *.xcconfig
+
+# Python
+__pycache__/
