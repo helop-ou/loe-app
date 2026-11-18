@@ -21,7 +21,8 @@ architecture framework.
 ## Project
 
 - A plain `Loe.xcodeproj`, hand-editable (`objectVersion` 77) with
-  filesystem-synchronized groups.
+  filesystem-synchronized groups, and a shared `Loe` scheme. iPhone only,
+  iOS 26 and Swift 6.
 - `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` and
   `SWIFT_APPROACHABLE_CONCURRENCY = YES`.
 - Bundle identifiers start at `ee.helop.loe`.
@@ -36,16 +37,20 @@ Code is organized by feature, with explicitly shared infrastructure:
 Loe/
   App/                         Entry, root composition, app navigation
   Features/
-    <Feature>/                 One folder per feature
+    Shelves/
+    ReadNext/
+    Search/
   Shared/
-    UI/                        Components used across features
-    Models/                    Shared value types
-    Persistence/               Storage
-  Resources/                   Bundled notices and other resources
-  Assets.xcassets/
-LoeTests/                      Unit and integration tests, grouped by subject
-LoeUITests/                    Journeys and shared test support
+    UI/                        Brand type, colour and components used across features
+  Resources/                   Fonts and licence texts
+  Assets.xcassets/             Brand colours (from loe-app-branding)
+  Loe.icon                     App icon (Icon Composer)
+  Localizable.xcstrings        English source, Estonian translation
+LoeTests/                      Unit tests, grouped by subject
 ```
+
+Add `Shared/Models` or `Shared/Persistence` when a second feature needs the
+same contract, and a `LoeUITests` target with the first journey.
 
 - Do not create empty folders to match the diagram. Keep small features flat.
 - Feature-owned models and helpers stay beside their feature. Move code to
@@ -68,6 +73,13 @@ LoeUITests/                    Journeys and shared test support
   component a few values, bindings and actions, not a whole session.
 - Native controls over hand-rolled ones. Controls, sheets and menus stay the
   system's.
+- Brand colours come from the generated asset symbols (`.loeInk`,
+  `.loeBackground` and so on), never hex literals. Headings use
+  `.loeHeading(_:)`. Every user-facing string is in `Localizable.xcstrings`
+  with its Estonian translation.
+- The brand files (`Assets.xcassets/Loe`, `Loe.icon`, the fonts, and the
+  tone values in `LoeTone.swift`) are generated in `loe-app-branding`. Change
+  them there and copy them over, so the two never drift.
 
 ## State, concurrency, and boundaries
 
