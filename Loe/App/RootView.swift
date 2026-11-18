@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 struct RootView: View {
@@ -20,4 +21,5 @@ struct RootView: View {
 #Preview {
     RootView()
         .environment(CatalogueStore())
+        .modelContainer(for: ShelvedBook.self, inMemory: true)
 }
