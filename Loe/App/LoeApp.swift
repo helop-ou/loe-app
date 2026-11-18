@@ -1,9 +1,11 @@
+import SwiftData
 import SwiftUI
 
 @main
 struct LoeApp: App {
     @AppStorage(LoeAppearance.storageKey) private var appearance = LoeAppearance.system
     @State private var catalogue = CatalogueStore()
+    private let library = LibraryStore.makeContainer()
 
     init() {
         NavigationTitles.applyNewsreader()
@@ -16,5 +18,6 @@ struct LoeApp: App {
                 .task { await catalogue.updateIfDue() }
                 .preferredColorScheme(appearance.colorScheme)
         }
+        .modelContainer(library)
     }
 }
