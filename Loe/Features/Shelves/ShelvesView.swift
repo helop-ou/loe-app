@@ -48,10 +48,11 @@ struct ShelvesView: View {
 
 private struct ReadingCard: View {
     let book: ShelvedBook
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
-            BlankCover(title: book.title, width: 92)
+            BookCover(title: book.title, photo: book.coverPhoto, width: 92)
             VStack(alignment: .leading, spacing: 4) {
                 Text(Shelf.reading.name)
                     .font(.footnote.weight(.semibold))
@@ -69,7 +70,10 @@ private struct ReadingCard: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.loeCard, in: .rect(cornerRadius: 20))
+        .background(
+            book.coverSample.flatMap { CoverWash.color($0, dark: colorScheme == .dark, surface: .card) } ?? .loeCard,
+            in: .rect(cornerRadius: 20)
+        )
         .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(.loeHairline))
         .accessibilityElement(children: .combine)
     }
@@ -99,7 +103,7 @@ private struct ShelfRail: View {
                 HStack(alignment: .top, spacing: 14) {
                     ForEach(books.prefix(20)) { book in
                         NavigationLink(value: book.work) {
-                            BlankCover(title: book.title, width: 96)
+                            BookCover(title: book.title, photo: book.coverPhoto, width: 96)
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel(Text(book.title))
@@ -132,7 +136,7 @@ struct ShelfListView: View {
                 ForEach(books) { book in
                     NavigationLink(value: book.work) {
                         VStack(alignment: .leading, spacing: 6) {
-                            BlankCover(title: book.title, width: 100)
+                            BookCover(title: book.title, photo: book.coverPhoto, width: 100)
                             Text(book.title)
                                 .font(.subheadline)
                                 .foregroundStyle(.loeInk)
