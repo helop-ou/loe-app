@@ -57,7 +57,10 @@ suite.
 
 Search matches every word the reader typed, the last one as a prefix while
 it is being typed. A string that reads as a valid ISBN is looked up by number
-instead. Hits are grouped into works (the same title by the same authors), a
+instead. On a phone, Search can also scan the barcode on a book's back cover
+with VisionKit. Only an EAN-13 that starts 978 or 979 and passes its check digit
+counts as an ISBN, so a price or shop code next to it is ignored. The simulator
+has no camera, so the scan button is not shown there. Hits are grouped into works (the same title by the same authors), a
 title typed exactly comes first, and among the rest a book published in many
 editions ranks a little higher.
 
