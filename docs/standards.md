@@ -43,6 +43,7 @@ Loe/
     Book/                      A book's own page
   Shared/
     Catalogue/                 The offline catalogue: SQLite access, search, works
+    Library/                   The reader's shelves, stored with SwiftData
     UI/                        Brand type, colour and components used across features
   Resources/                   Fonts and licence texts
   Assets.xcassets/             Brand colours (from loe-app-branding)
