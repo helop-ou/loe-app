@@ -38,6 +38,16 @@
                ReferencedContainer = "container:Loe.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "4C4F45000000000000000040"
+               BuildableName = "LoeUITests.xctest"
+               BlueprintName = "LoeUITests"
+               ReferencedContainer = "container:Loe.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
