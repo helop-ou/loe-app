@@ -24,9 +24,7 @@ guide is right and this file needs fixing.
 
 ## Session workflow
 
-- Build and test. The Xcode project does not exist yet. When it lands, the
-  scheme is `Loe` and these are the commands. Update them here if they
-  differ:
+- Build and test. `LoeTests` covers the app's logic with Swift Testing:
 
   ```
   xcodebuild -scheme Loe -destination 'generic/platform=iOS Simulator' build
@@ -62,7 +60,10 @@ guide is right and this file needs fixing.
 - Verify UI changes in the simulator before calling them done. Build, then
   `simctl install/launch`, then `simctl io <udid> screenshot`, and look at
   every screenshot. Check light and dark, Estonian and English, and a large
-  Dynamic Type size, not just the landing state. Tests answer whether it
+  Dynamic Type size, not just the landing state. iOS has no Estonian system
+  language, so launch with `-AppleLanguages "(et)"` to see Estonian, and
+  `simctl ui <udid> appearance dark` and `content_size` switch the theme and
+  text size. Tests answer whether it
   works, not whether it looks like someone meant it. When the simulator is
   out of reach, render the view to a PNG with `ImageRenderer` in a test and
   look at that.
