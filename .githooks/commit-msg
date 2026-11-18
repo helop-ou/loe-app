@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+#
+# Strips attribution trailers from the commit message.
+#
+# Loe commits carry no Co-Authored-By or tool attribution. Agents and
+# editors add them on their own, so this hook removes them. It covers `-m`,
+# `--amend`, squashes and editor commits; `--no-verify` skips it.
+#
+# Install:
+#
+#   git config core.hooksPath .githooks
+#
+set -euo pipefail
+
+message="${1:-}"
+[ -n "$message" ] && [ -f "$message" ] || exit 0
+
+# Matched case-insensitively at line start; leading whitespace allowed, as in git.
+patterns=(
+    'co-authored-by:'
+    'claude-session:'
+)
+
+before="$(cat "$message")"
+
+# A hook must never fail a commit: without python3, pass the message through.
+if ! command -v python3 >/dev/null 2>&1; then
+    echo "commit-msg: python3 not found, leaving the message alone" >&2
+    exit 0
+fi
+
+python3 - "$message" "${patterns[@]}" <<'PY'
+import re
+import sys
+
+path, patterns = sys.argv[1], sys.argv[2:]
+text = open(path, encoding="utf-8").read()
+
+# Leave comment lines alone: git strips them later, and its template text
+# mentions these names.
+trailer = re.compile(
+    r"^[ \t]*(?:%s)[^\n]*\n?" % "|".join(re.escape(p) for p in patterns),
+    re.IGNORECASE | re.MULTILINE,
+)
+kept = []
+for line in text.splitlines(keepends=True):
+    if line.lstrip().startswith("#") or not trailer.match(line):
+        kept.append(line)
+text = "".join(kept)
+
+# Collapse the blank lines a removed trailer block leaves behind.
+text = re.sub(r"\n{3,}", "\n\n", text)
+text = text.rstrip("\n")
+if text:
+    text += "\n"
+
+open(path, "w", encoding="utf-8").write(text)
+PY
+
+if [ "$before" != "$(cat "$message")" ]; then
+    echo "commit-msg: stripped attribution trailer(s)" >&2
+fi
