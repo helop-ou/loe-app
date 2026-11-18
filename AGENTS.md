@@ -21,6 +21,7 @@ guide is right and this file needs fixing.
 | Guide | Owns |
 | --- | --- |
 | [Coding standards](docs/standards.md) | Project setup, folder structure, Observation and `MainActor` rules, review and verification, pull requests, writing |
+| [Library](docs/library.md) | The reader's shelves: SwiftData, iCloud sync, the CloudKit rules for the model |
 | [Catalogue](docs/catalogue.md) | The offline catalogue: source, licence, rebuilding, field mapping |
 
 ## Session workflow
