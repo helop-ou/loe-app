@@ -277,6 +277,16 @@
         }
       }
     },
+    "No book with this ISBN": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Selle ISBN-iga raamatut pole"
+          }
+        }
+      }
+    },
     "No books found": {
       "localizations": {
         "et": {
@@ -343,6 +353,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Lehekülgi raamatus"
+          }
+        }
+      }
+    },
+    "Point the camera at the barcode on the back of the book.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suuna kaamera raamatu tagakaanel olevale triipkoodile."
           }
         }
       }
@@ -416,6 +436,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Salvesta"
+          }
+        }
+      }
+    },
+    "Scan a barcode": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skanni triipkood"
           }
         }
       }
@@ -496,6 +526,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kataloogi ei saa lugeda"
+          }
+        }
+      }
+    },
+    "The catalogue has the books published in Estonia. Try the title instead.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kataloogis on Eestis ilmunud raamatud. Proovi pealkirja järgi."
           }
         }
       }

@@ -6,6 +6,7 @@ struct SearchView: View {
     @State private var query = ""
     @State private var results: [CatalogueWork] = []
     @State private var resultsQuery = ""
+    @State private var scanning = false
 
     var body: some View {
         NavigationStack {
@@ -14,6 +15,14 @@ struct SearchView: View {
                 .navigationDestination(for: CatalogueWork.self) { BookView(work: $0) }
                 .searchable(text: $query, prompt: "Title, author or ISBN")
                 .task(id: query) { await search() }
+                .toolbar {
+                    if BarcodeScanner.isSupported, case .ready = catalogue.state {
+                        Button("Scan a barcode", systemImage: "barcode.viewfinder") { scanning = true }
+                    }
+                }
+                .sheet(isPresented: $scanning) {
+                    ScanSheet { query = $0 }
+                }
         }
     }
 
@@ -35,6 +44,12 @@ struct SearchView: View {
                     title: "Find a book",
                     systemImage: "magnifyingglass",
                     description: "Search by title, author or ISBN."
+                )
+            } else if results.isEmpty && resultsQuery == trimmed && CatalogueQuery.isbn13(trimmed) != nil {
+                EmptyState(
+                    title: "No book with this ISBN",
+                    systemImage: "barcode",
+                    description: "The catalogue has the books published in Estonia. Try the title instead."
                 )
             } else if results.isEmpty && resultsQuery == trimmed {
                 EmptyState(
