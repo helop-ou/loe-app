@@ -32,3 +32,24 @@ struct CatalogueQueryTests {
         #expect(CatalogueQuery.folded("Mees, kes teadis ussisõnu") == CatalogueQuery.folded("mees kes teadis ussisonu"))
     }
 }
+
+struct BarcodeTests {
+    @Test(arguments: [
+        ("9789949633289", "9789949633289"),
+        ("9785440013612", "9785440013612"),
+    ])
+    func aBookBarcodeGivesItsISBN(payload: String, isbn: String) {
+        #expect(CatalogueQuery.isbn13(fromBarcode: payload) == isbn)
+    }
+
+    @Test(arguments: [
+        "4740001000017",  // a valid barcode, but for groceries
+        "9789949633288",  // a book barcode misread by one digit
+        "978994963328",   // twelve digits
+        "97899496332890", // fourteen
+        "978-9949633289",
+    ])
+    func anythingElseIsIgnored(payload: String) {
+        #expect(CatalogueQuery.isbn13(fromBarcode: payload) == nil)
+    }
+}
