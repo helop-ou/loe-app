@@ -61,12 +61,48 @@ instead. Hits are grouped into works (the same title by the same authors), a
 title typed exactly comes first, and among the rest a book published in many
 editions ranks a little higher.
 
-The app cannot download the catalogue yet.
+### Download and updates
+
+The app finds the current catalogue through
+[`tools/catalogue/manifest.json`](../tools/catalogue/manifest.json), read from
+this repository's `main` branch on GitHub. Shipped apps read that exact path,
+so never move or rename it. The manifest names a GitHub release asset, its
+SHA-256, its size and its schema version.
+
+- The first download is the reader's choice, from Search, and may use mobile
+  data. `CatalogueDownloader` checks the SHA-256, unpacks the xz file, opens
+  the result, and only then puts it in place, so a failed download never costs
+  the reader the catalogue they had. The file is excluded from iCloud backup,
+  since it can be downloaded again.
+- Updates are checked at launch, at most once a week, and download only over
+  Wi-Fi, without asking. The catalogue in use stays until the new one is in
+  place.
+- A manifest whose `schema_version` the app does not know is ignored, and
+  nothing is downloaded. Apps that old keep their catalogue until they update.
+
+While the repository is private, the manifest and the release asset need a
+GitHub login, so the app gets a 404 and says the download didn't finish.
+
+### Publishing a new catalogue
+
+1. Rebuild it as above, then `xz -9 -k` it.
+2. Create a release for it and never change it afterwards. Replacing an asset
+   in place can leave a release broken:
+
+   ```sh
+   gh release create catalogue-2026-12 /tmp/erb/catalogue.sqlite.xz --latest=false \
+     --title "Catalogue 2026-12" --notes "…"
+   ```
+
+3. Update `manifest.json` with the new `version`, `url`, `sha256`
+   (`shasum -a 256`), `size` and `editions`, in a pull request. Apps pick it up
+   within a week of it reaching `main`. `CatalogueDownloadTests` checks that the
+   manifest is one this app can read.
 
 ### Trying it in the simulator
 
-Copy a built catalogue into the installed app's container, then run the
-search journey, which skips on a simulator without one:
+To see search, copy a built catalogue into the installed app's container,
+then run the search journeys, which skip on a simulator without one:
 
 ```sh
 container="$(xcrun simctl get_app_container <udid> ee.helop.loe data)"
@@ -76,6 +112,21 @@ xcodebuild test -scheme Loe -destination 'platform=iOS Simulator,id=<udid>' \
   -only-testing:LoeUITests -collect-test-diagnostics never \
   -resultBundlePath /tmp/journey.xcresult
 xcrun xcresulttool export attachments --path /tmp/journey.xcresult --output-path /tmp/journey
+```
+
+To try the download, serve the xz file and a manifest naming it from the Mac,
+remove the catalogue from the container, and pass the manifest to the
+download journey. Debug builds read a `-catalogueManifestURL` launch argument
+instead of the GitHub address, and plain HTTP to `127.0.0.1` works:
+
+```sh
+mkdir -p /tmp/serve && cp /tmp/erb/catalogue.sqlite.xz /tmp/serve/
+# write /tmp/serve/manifest.json with "url": "http://127.0.0.1:8765/catalogue.sqlite.xz"
+python3 -I -m http.server 8765 --bind 127.0.0.1 --directory /tmp/serve &
+rm "$container/Library/Application Support/Catalogue/catalogue.sqlite"
+TEST_RUNNER_LOE_CATALOGUE_MANIFEST=http://127.0.0.1:8765/manifest.json xcodebuild test \
+  -scheme Loe -destination 'platform=iOS Simulator,id=<udid>' \
+  -only-testing:LoeUITests/SearchJourneyTests/testDownloadsTheCatalogue -collect-test-diagnostics never
 ```
 
 ## What is kept
