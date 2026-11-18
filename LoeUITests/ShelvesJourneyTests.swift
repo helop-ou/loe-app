@@ -67,6 +67,42 @@ final class ShelvesJourneyTests: XCTestCase {
         attach("shelves-read", app)
     }
 
+    /// Needs a cover photo as the newest picture in the simulator's Photos, added
+    /// with `xcrun simctl addmedia <udid> cover.jpg`.
+    @MainActor
+    func testGivesABookACoverPhoto() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-inMemoryLibrary", "YES"]
+        app.launch()
+        app.tabBars.buttons["Search"].tap()
+        if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {
+            throw XCTSkip("No catalogue on this simulator")
+        }
+        let field = app.searchFields.firstMatch
+        field.tap()
+        field.typeText("keisri hull")
+        app.staticTexts["Keisri hull"].firstMatch.tap()
+        app.buttons["Add to shelf"].tap()
+        app.buttons["Reading"].tap()
+
+        let cover = app.buttons["Add a cover photo"]
+        XCTAssertTrue(cover.waitForExistence(timeout: 5))
+        cover.tap()
+        app.buttons["Choose a photo"].tap()
+        // The photo picker runs in its own process, so its photos are not in the
+        // app's tree. The newest photo is the first thumbnail, top left.
+        Thread.sleep(forTimeInterval: 3)
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.16, dy: 0.42)).tap()
+
+        XCTAssertTrue(app.buttons["Change the cover photo"].waitForExistence(timeout: 10))
+        attach("cover-book", app)
+        app.tabBars.buttons["Shelves"].tap()
+        app.tabBars.buttons["Shelves"].tap()
+        XCTAssertTrue(app.staticTexts["Keisri hull"].waitForExistence(timeout: 5))
+        attach("cover-shelves", app)
+    }
+
     @MainActor
     private func attach(_ name: String, _ app: XCUIApplication) {
         let attachment = XCTAttachment(screenshot: app.screenshot())
