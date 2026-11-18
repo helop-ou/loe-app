@@ -5,13 +5,11 @@ struct SearchView: View {
 
     var body: some View {
         NavigationStack {
-            ContentUnavailableView {
-                Label("Find a book", systemImage: "magnifyingglass")
-            } description: {
-                Text("Search by title, author or ISBN.")
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(.loeBackground)
+            EmptyState(
+                title: "Find a book",
+                systemImage: "magnifyingglass",
+                description: "Search by title, author or ISBN."
+            )
             .navigationTitle("Search")
             .searchable(text: $query, prompt: "Title, author or ISBN")
         }
