@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 /// A book's own page: its cover and title, how it relates to its original or its
@@ -6,7 +7,17 @@ struct BookView: View {
     let work: CatalogueWork
 
     @Environment(CatalogueStore.self) private var catalogue
+    @Environment(\.colorScheme) private var colorScheme
     @State private var details: Catalogue.Details?
+    @Query private var shelved: [ShelvedBook]
+
+    init(work: CatalogueWork) {
+        self.work = work
+        let key = work.id
+        _shelved = Query(filter: #Predicate<ShelvedBook> { $0.workKey == key })
+    }
+
+    private var book: ShelvedBook? { shelved.first }
 
     /// The work with every edition once they have loaded. A page opened from a shelf
     /// starts with only the edition that was shelved.
@@ -20,8 +31,8 @@ struct BookView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 32) {
-                BookHeader(work: shown, edition: newest)
-                ShelfControls(work: shown, edition: newest)
+                BookHeader(work: shown, edition: newest, book: book)
+                ShelfControls(work: shown, edition: newest, book: book)
                 if newest.originalTitle != nil {
                     OriginalCard(edition: newest, original: details?.original)
                 }
@@ -43,7 +54,15 @@ struct BookView: View {
             .padding(.horizontal, 20)
             .padding(.vertical, 12)
         }
-        .background(.loeBackground)
+        .background {
+            // A book's own page takes a soft wash of its cover's colour.
+            if let wash = book?.coverSample.flatMap({ CoverWash.color($0, dark: colorScheme == .dark, surface: .page) }) {
+                LinearGradient(colors: [wash, .loeBackground], startPoint: .top, endPoint: UnitPoint(x: 0.5, y: 0.55))
+                    .ignoresSafeArea()
+            } else {
+                Color.loeBackground.ignoresSafeArea()
+            }
+        }
         .navigationBarTitleDisplayMode(.inline)
         .task(id: work.id) {
             guard case .ready(let catalogue) = catalogue.state else { return }
@@ -55,10 +74,15 @@ struct BookView: View {
 private struct BookHeader: View {
     let work: CatalogueWork
     let edition: CatalogueEdition
+    let book: ShelvedBook?
 
     var body: some View {
         HStack(alignment: .top, spacing: 18) {
-            BlankCover(title: work.title, width: 140)
+            if let book {
+                CoverPhotoMenu(book: book, title: work.title, width: 140)
+            } else {
+                BookCover(title: work.title, width: 140)
+            }
             VStack(alignment: .leading, spacing: 6) {
                 Text(work.title)
                     .loeHeading(.bookTitle)
@@ -85,7 +109,7 @@ private struct BookHeader: View {
                 }
             }
         }
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)
     }
 
     static func years(_ work: CatalogueWork) -> String? {
