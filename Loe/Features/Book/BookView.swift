@@ -8,12 +8,20 @@ struct BookView: View {
     @Environment(CatalogueStore.self) private var catalogue
     @State private var details: Catalogue.Details?
 
-    private var newest: CatalogueEdition { details?.editions.first ?? work.editions[0] }
+    /// The work with every edition once they have loaded. A page opened from a shelf
+    /// starts with only the edition that was shelved.
+    private var shown: CatalogueWork {
+        guard let editions = details?.editions, !editions.isEmpty else { return work }
+        return CatalogueWork(id: work.id, editions: editions)
+    }
+
+    private var newest: CatalogueEdition { shown.editions[0] }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 32) {
-                BookHeader(work: work, edition: newest)
+                BookHeader(work: shown, edition: newest)
+                ShelfControls(work: shown, edition: newest)
                 if newest.originalTitle != nil {
                     OriginalCard(edition: newest, original: details?.original)
                 }
@@ -24,7 +32,7 @@ struct BookView: View {
                         }
                     }
                     EditionsSection(editions: details.editions)
-                    WhereToGetIt(work: work, edition: newest)
+                    WhereToGetIt(work: shown, edition: newest)
                     if !details.sameAuthor.isEmpty {
                         WorkRail(title: "By the same author", works: details.sameAuthor) { work in
                             work.firstYear.map(String.init)
