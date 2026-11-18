@@ -21,6 +21,7 @@ guide is right and this file needs fixing.
 | Guide | Owns |
 | --- | --- |
 | [Coding standards](docs/standards.md) | Project setup, folder structure, Observation and `MainActor` rules, review and verification, pull requests, writing |
+| [Catalogue](docs/catalogue.md) | The offline catalogue: source, licence, rebuilding, field mapping |
 
 ## Session workflow
 
