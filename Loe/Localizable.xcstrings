@@ -51,6 +51,36 @@
         }
       }
     },
+    "Check your connection and try again.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kontrolli ühendust ja proovi uuesti."
+          }
+        }
+      }
+    },
+    "Download the catalogue": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Laadi kataloog alla"
+          }
+        }
+      }
+    },
+    "Downloading the catalogue": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kataloog laaditakse alla"
+          }
+        }
+      }
+    },
     "Find a book": {
       "localizations": {
         "et": {
@@ -81,12 +111,12 @@
         }
       }
     },
-    "Loe keeps every Estonian book on your phone, so search works offline.": {
+    "Loe keeps every Estonian book on your phone, so search works offline. It's one download of about 30 MB.": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Loe hoiab kõiki eesti raamatuid sinu telefonis, nii et otsing töötab ka võrguühenduseta."
+            "value": "Loe hoiab kõiki eesti raamatuid sinu telefonis, nii et otsing töötab ka võrguühenduseta. Selleks tuleb üks kord alla laadida umbes 30 MB."
           }
         }
       }
@@ -181,12 +211,42 @@
         }
       }
     },
+    "The download didn't finish": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allalaadimine jäi pooleli"
+          }
+        }
+      }
+    },
     "Title, author or ISBN": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Pealkiri, autor või ISBN"
+          }
+        }
+      }
+    },
+    "Try again": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Proovi uuesti"
+          }
+        }
+      }
+    },
+    "You can keep using Loe while it downloads.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Võid Loe kasutamist samal ajal jätkata."
           }
         }
       }

@@ -20,11 +20,7 @@ struct SearchView: View {
         let trimmed = query.trimmingCharacters(in: .whitespaces)
         switch catalogue.state {
         case .missing:
-            EmptyState(
-                title: "The catalogue isn't here yet",
-                systemImage: "books.vertical",
-                description: "Loe keeps every Estonian book on your phone, so search works offline."
-            )
+            CatalogueDownloadView()
         case .unreadable:
             EmptyState(
                 title: "The catalogue can't be read",
