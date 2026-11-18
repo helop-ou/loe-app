@@ -22,6 +22,11 @@ final class ShelvedBook {
     var startedAt: Date?
     var finishedAt: Date?
     var updatedAt: Date = Date.now
+    /// The reader's own photo of the cover, small enough to sync.
+    @Attribute(.externalStorage) var coverPhoto: Data?
+    /// The cover's colour, read once when the photo was added. See `LoeTone.Sample`.
+    var coverHue: Double?
+    var coverSaturation: Double?
 
     init(edition: CatalogueEdition, workKey: String, shelf: Shelf, now: Date = .now) {
         self.workKey = workKey
@@ -63,6 +68,18 @@ final class ShelvedBook {
         pageCount = pages.flatMap { $0 > 0 ? $0 : nil }
         currentPage = min(max(page, 0), pageCount ?? .max)
         updatedAt = now
+    }
+
+    func setCover(_ cover: CoverPhoto?, now: Date = .now) {
+        coverPhoto = cover?.jpeg
+        coverHue = cover?.sample.hue
+        coverSaturation = cover?.sample.saturation
+        updatedAt = now
+    }
+
+    var coverSample: LoeTone.Sample? {
+        guard let coverHue, let coverSaturation else { return nil }
+        return LoeTone.Sample(hue: coverHue, saturation: coverSaturation, weight: Double(rating ?? 3))
     }
 
     /// How far through the book the reader is, when both numbers are known.
