@@ -70,6 +70,8 @@ class CleaningTests(unittest.TestCase):
         self.assertEqual(build.clean("1. kd."), "1. kd.")
         self.assertEqual(build.clean("romaan."), "romaan")
         self.assertEqual(build.clean("4."), "4")
+        self.assertEqual(build.clean("Repr."), "Repr.")
+        self.assertEqual(build.clean("2. uppl."), "2. uppl.")
 
     def test_puts_given_names_first(self):
         self.assertEqual(build.person("Tammsaare, A. H.,"), "A. H. Tammsaare")

@@ -100,6 +100,7 @@ TRAILING = re.compile(r"[\s/:;=,]+$")
 ABBREVIATIONS = {
     "kd", "tr", "nr", "jt", "jne", "vms", "jm", "lk", "ill", "toim", "koost", "parand", "täiend",
     "ed", "vol", "bd", "aufl", "eds", "hrsg", "inc", "ltd", "co", "jr", "sr", "dr", "prof", "st", "т", "изд",
+    "repr", "rev", "uppl", "opl", "wyd", "izd", "pain",
 }
 UNKNOWN_PUBLISHER = re.compile(r"(?i)^s\.\s?[nl]\.?$")
 
