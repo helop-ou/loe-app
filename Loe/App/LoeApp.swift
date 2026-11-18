@@ -13,6 +13,7 @@ struct LoeApp: App {
         WindowGroup {
             RootView()
                 .environment(catalogue)
+                .task { await catalogue.updateIfDue() }
                 .preferredColorScheme(appearance.colorScheme)
         }
     }
