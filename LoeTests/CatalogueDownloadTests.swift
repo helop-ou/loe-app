@@ -87,7 +87,7 @@ struct DownloadScene {
 }
 
 struct CatalogueDownloadTests {
-    private static let otherBooks = "(1, 'b9', 'Keisri hull', 'Jaan Kross', 1978, 1, 0, NULL)"
+    private static let otherBooks = "(1, 'b9', 'Keisri hull', 'Jaan Kross', 1978, 1, 0, NULL, 'est', NULL)"
 
     @Test func downloadsChecksAndOpensTheCatalogue() async throws {
         let scene = DownloadScene()
