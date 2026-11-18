@@ -41,6 +41,69 @@
         }
       }
     },
+    "%lld pages": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld page"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld pages"
+                }
+              }
+            }
+          }
+        },
+        "et": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld lk"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld lk"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Apollo": {
+      "shouldTranslate": false
+    },
+    "Bookshop": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Raamatupood"
+          }
+        }
+      }
+    },
+    "By the same author": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sama autorilt"
+          }
+        }
+      }
+    },
     "Check the spelling, or try the author's name.": {
       "localizations": {
         "et": {
@@ -81,6 +144,19 @@
         }
       }
     },
+    "ESTER": {
+      "shouldTranslate": false
+    },
+    "Editions": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Väljaanded"
+          }
+        }
+      }
+    },
     "Find a book": {
       "localizations": {
         "et": {
@@ -97,6 +173,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Otsi raamatut ja lisa see riiulisse."
+          }
+        }
+      }
+    },
+    "In %@": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ keeles"
           }
         }
       }
@@ -141,6 +227,19 @@
         }
       }
     },
+    "Opens in your browser.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avaneb brauseris."
+          }
+        }
+      }
+    },
+    "Rahva Raamat": {
+      "shouldTranslate": false
+    },
     "Rate a few books and Loe will suggest what to read next.": {
       "localizations": {
         "et": {
@@ -181,12 +280,32 @@
         }
       }
     },
+    "See if your library has it": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vaata, kas raamatukogus on"
+          }
+        }
+      }
+    },
     "Shelves": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Riiulid"
+          }
+        }
+      }
+    },
+    "Show all %lld editions": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Näita kõiki %lld väljaannet"
           }
         }
       }
@@ -231,12 +350,62 @@
         }
       }
     },
+    "Translated": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tõlge"
+          }
+        }
+      }
+    },
+    "Translated by %@": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tõlkinud %@"
+          }
+        }
+      }
+    },
+    "Translated from %@": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tõlgitud %@ keelest"
+          }
+        }
+      }
+    },
+    "Translations": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tõlked"
+          }
+        }
+      }
+    },
     "Try again": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Proovi uuesti"
+          }
+        }
+      }
+    },
+    "Where to get it": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kust saada"
           }
         }
       }
