@@ -1,0 +1,106 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "Find a book": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leia raamat"
+          }
+        }
+      }
+    },
+    "Find a book in Search and add it to a shelf.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otsi raamatut ja lisa see riiulisse."
+          }
+        }
+      }
+    },
+    "Nothing to suggest yet": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Veel pole midagi soovitada"
+          }
+        }
+      }
+    },
+    "Rate a few books and Loe will suggest what to read next.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hinda paari raamatut ja Loe soovitab, mida edasi lugeda."
+          }
+        }
+      }
+    },
+    "Read next": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loe edasi"
+          }
+        }
+      }
+    },
+    "Search": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otsi"
+          }
+        }
+      }
+    },
+    "Search by title, author or ISBN.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otsi pealkirja, autori või ISBN-i järgi."
+          }
+        }
+      }
+    },
+    "Shelves": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Riiulid"
+          }
+        }
+      }
+    },
+    "Title, author or ISBN": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pealkiri, autor või ISBN"
+          }
+        }
+      }
+    },
+    "Your shelves are empty": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Riiulid on tühjad"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
