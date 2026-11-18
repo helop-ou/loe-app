@@ -20,12 +20,43 @@ final class SearchJourneyTests: XCTestCase {
         attachScreenshot("search-nothing", of: app)
     }
 
+    /// Needs a catalogue served from the Mac and none on the simulator yet. See
+    /// docs/catalogue.md, "Trying it in the simulator".
     @MainActor
-    private func openSearch() throws -> XCUIApplication {
+    func testDownloadsTheCatalogue() throws {
+        guard let manifest = ProcessInfo.processInfo.environment["LOE_CATALOGUE_MANIFEST"] else {
+            throw XCTSkip("Set TEST_RUNNER_LOE_CATALOGUE_MANIFEST to a served manifest")
+        }
+        let app = launch(arguments: ["-catalogueManifestURL", manifest])
+        app.tabBars.buttons["Search"].tap()
+        let download = app.buttons["Download the catalogue"]
+        guard download.waitForExistence(timeout: 3) else {
+            throw XCTSkip("The catalogue is already on this simulator")
+        }
+        attachScreenshot("download-offer", of: app)
+        download.tap()
+        // From a server on the same Mac the download can finish before progress shows.
+        if app.staticTexts["Downloading the catalogue"].waitForExistence(timeout: 1) {
+            attachScreenshot("download-progress", of: app)
+        }
+        XCTAssertTrue(app.staticTexts["Find a book"].waitForExistence(timeout: 180))
+        search("keisri hull", in: app)
+        XCTAssertTrue(app.staticTexts["Keisri hull"].firstMatch.waitForExistence(timeout: 5))
+        attachScreenshot("download-done", of: app)
+    }
+
+    @MainActor
+    private func launch(arguments: [String] = []) -> XCUIApplication {
         continueAfterFailure = false
         let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE"]
+        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE"] + arguments
         app.launch()
+        return app
+    }
+
+    @MainActor
+    private func openSearch() throws -> XCUIApplication {
+        let app = launch()
         app.tabBars.buttons["Search"].tap()
         if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {
             attachScreenshot("search-no-catalogue", of: app)
