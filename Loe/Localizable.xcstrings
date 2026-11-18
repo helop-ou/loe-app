@@ -121,6 +121,16 @@
         }
       }
     },
+    "Add a cover photo": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lisa kaanepilt"
+          }
+        }
+      }
+    },
     "Add to shelf": {
       "localizations": {
         "et": {
@@ -164,6 +174,16 @@
         }
       }
     },
+    "Change the cover photo": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Muuda kaanepilti"
+          }
+        }
+      }
+    },
     "Check the spelling, or try the author's name.": {
       "localizations": {
         "et": {
@@ -180,6 +200,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kontrolli ühendust ja proovi uuesti."
+          }
+        }
+      }
+    },
+    "Choose a photo": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vali pilt"
           }
         }
       }
@@ -430,6 +460,16 @@
         }
       }
     },
+    "Remove photo": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eemalda pilt"
+          }
+        }
+      }
+    },
     "Save": {
       "localizations": {
         "et": {
@@ -516,6 +556,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Näita kõiki %lld väljaannet"
+          }
+        }
+      }
+    },
+    "Take a photo": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pildista"
           }
         }
       }

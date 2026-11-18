@@ -6,20 +6,13 @@ import SwiftUI
 struct ShelfControls: View {
     let work: CatalogueWork
     let edition: CatalogueEdition
+    let book: ShelvedBook?
 
     @Environment(\.modelContext) private var context
-    @Query private var matches: [ShelvedBook]
     @State private var editingPage = false
 
-    init(work: CatalogueWork, edition: CatalogueEdition) {
-        self.work = work
-        self.edition = edition
-        let key = work.id
-        _matches = Query(filter: #Predicate<ShelvedBook> { $0.workKey == key })
-    }
-
     var body: some View {
-        if let book = matches.first {
+        if let book {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 16) {
                     shelfMenu(current: book) {
