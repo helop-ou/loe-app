@@ -10,6 +10,7 @@ struct SearchView: View {
         NavigationStack {
             content
                 .navigationTitle("Search")
+                .navigationDestination(for: CatalogueWork.self) { BookView(work: $0) }
                 .searchable(text: $query, prompt: "Title, author or ISBN")
                 .task(id: query) { await search() }
         }
@@ -42,8 +43,10 @@ struct SearchView: View {
                 )
             } else {
                 List(results) { work in
-                    SearchResultRow(work: work)
-                        .listRowBackground(Color.loeBackground)
+                    NavigationLink(value: work) {
+                        SearchResultRow(work: work)
+                    }
+                    .listRowBackground(Color.loeBackground)
                         .listRowSeparatorTint(.loeHairline)
                 }
                 .listStyle(.plain)
