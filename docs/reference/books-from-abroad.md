@@ -227,3 +227,20 @@ Estonian books still need another source.
 4. Show Open Library's covers and descriptions for these books, marked as
    coming from Open Library?
 5. Leave the offline catalogue as it is, with no Open Library subset?
+
+## Decisions
+
+Made by the maintainer after reading this note:
+
+- **Open Library is the source** for books from abroad. Google Books and Apple
+  are left out.
+- **Search online once the reader stops typing**, alongside the catalogue,
+  never on every keystroke. A phone stays under Open Library's limit of one
+  request a second.
+- **The `User-Agent` names the app and the repository's address**, with no
+  email or phone number, so the limit stays at one request a second.
+- **Covers from Open Library are shown, credited to Open Library.** Whether
+  descriptions are shown is decided with the description task.
+- **The offline catalogue stays as it is.** Covers load from Open Library when
+  it has one, for books from the catalogue as well as books from abroad, and
+  the reader's own photo always wins.
