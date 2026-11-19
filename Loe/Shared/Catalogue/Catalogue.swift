@@ -100,11 +100,13 @@ actor Catalogue {
             original = CatalogueWork.grouped(candidates).first
         }
 
+        // A book opened from a shelf knows its title and authors but not its language.
+        let language = (editions.first ?? work.editions[0]).language
         let related = Set([work.id] + (original.map { [$0.id] } ?? []))
         let translationKeys = Set(translated.map(CatalogueWork.key(for:)))
         let others = sameLead.filter {
             let key = CatalogueWork.key(for: $0)
-            return !related.contains(key) && !translationKeys.contains(key) && $0.language == work.language
+            return !related.contains(key) && !translationKeys.contains(key) && $0.language == language
         }
         let allEditions = (editions.isEmpty ? work.editions : editions).sorted { ($0.year ?? 0) > ($1.year ?? 0) }
         return Details(
