@@ -28,9 +28,11 @@ automatically with the App Store Connect key and uploads a build that can go to
 internal or external testers. Adding it to an external group, which needs Beta
 App Review the first time, stays a step in App Store Connect.
 
-TestFlight builds use CloudKit's Production environment. Deploy the schema from
-Development to Production in the CloudKit Console after any change to
-`ShelvedBook`, or sync stops for testers. See [Library](library.md).
+TestFlight builds use CloudKit's Production environment. After a change to any
+synced model (`ShelvedBook`, `Taste`, `ChosenPlace`, or a new one), run a debug
+build signed for the container once, so Development learns the new fields, then
+deploy the schema from Development to Production in the CloudKit Console before
+testers sync, or sync stops for them. See [Library](library.md).
 
 ## Secrets
 
