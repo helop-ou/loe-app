@@ -46,7 +46,7 @@ Loe/
     Library/                   The reader's shelves, stored with SwiftData
     UI/                        Brand type, colour and components used across features
   Resources/                   Fonts and licence texts
-  Assets.xcassets/             Brand colours (from loe-app-branding)
+  Assets.xcassets/             Brand colours (from the brand repository)
   Loe.icon                     App icon (Icon Composer)
   Localizable.xcstrings        English source, Estonian translation
 LoeTests/                      Unit tests, grouped by subject
@@ -83,8 +83,8 @@ same contract.
   `.loeHeading(_:)`. Every user-facing string is in `Localizable.xcstrings`
   with its Estonian translation.
 - The brand files (`Assets.xcassets/Loe`, `Loe.icon`, the fonts, and the
-  tone values in `LoeTone.swift`) are generated in `loe-app-branding`. Change
-  them there and copy them over, so the two never drift.
+  tone values in `LoeTone.swift`) are generated in the private brand
+  repository. Change them there and copy them over, so the two never drift.
 
 ## State, concurrency, and boundaries
 

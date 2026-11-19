@@ -11,8 +11,10 @@ you are changing. The guides describe the code as it is today.
 | [Release](release.md) | Build numbers, uploading to TestFlight, secrets, and going public safely |
 
 The brand (colours, type, voice, covers, the cover wash and Sinu toon) is
-documented in the [`loe-app-branding`](https://github.com/helop-ou/loe-app-branding)
-README and not copied here.
+defined in a separate, private brand repository. What the app needs from it is
+copied in: the colour sets, `Loe.icon`, the fonts and the tone values. The
+[coding standards](standards.md#files-and-reusable-components) say how to
+change them.
 
 ## Keeping this clean
 

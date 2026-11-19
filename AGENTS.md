@@ -1,10 +1,9 @@
 # Loe session notes
 
 Loe is a private reading tracker for Estonian and English books, an iOS app
-in SwiftUI. The identity lives in its own repository,
-[`loe-app-branding`](https://github.com/helop-ou/loe-app-branding), checked
-out beside this one. Its README holds the colours, type, voice and the rules
-for covers.
+in SwiftUI. The identity (colours, type, voice and the rules for covers) is
+kept in a separate, private brand repository. Never link to it or name it in
+this repository, which is public.
 
 ## Where the rules live
 
