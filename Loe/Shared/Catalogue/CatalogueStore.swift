@@ -26,7 +26,7 @@ final class CatalogueStore {
     private static let checkedKey = "catalogueCheckedForUpdate"
     nonisolated private static let updateInterval: TimeInterval = 7 * 24 * 60 * 60
 
-    static var defaultURL: URL {
+    nonisolated static var defaultURL: URL {
         URL.applicationSupportDirectory.appending(path: "Catalogue/catalogue.sqlite")
     }
 

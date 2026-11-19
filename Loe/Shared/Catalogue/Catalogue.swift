@@ -127,6 +127,22 @@ actor Catalogue {
         return (editions.isEmpty ? work.editions : editions).sorted { ($0.year ?? 0) > ($1.year ?? 0) }
     }
 
+    /// Fiction in one language under any of these genre or subject headings, the most
+    /// often published first. How Read next finds books for the reader's tastes.
+    func works(withHeadings names: [String], language: String, limit: Int) throws -> [CatalogueWork] {
+        guard !names.isEmpty else { return [] }
+        let editions = try database.rows(
+            """
+            SELECT \(Self.columns) FROM edition e WHERE e.fiction = 1 AND e.language = ? AND e.id IN (
+              SELECT eh.edition_id FROM edition_heading eh JOIN heading h ON h.id = eh.heading_id
+              WHERE h.name IN (\(Self.placeholders(names.count))))
+            """,
+            [.text(language)] + names.map { .text($0) },
+            map: Self.edition
+        )
+        return Array(CatalogueWork.grouped(editions).prefix(limit))
+    }
+
     /// The book that comes after this one, and the series they share.
     struct SeriesNext: Sendable, Hashable {
         let work: CatalogueWork
