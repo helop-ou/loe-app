@@ -236,7 +236,8 @@ results as "From Open Library".
   work, so *The Last Wish* is „Ostatnie życzenie“. `lang=en` with the
   `editions` field returns the English edition inside it.
 - **Titles.** The work's title is shown, with its English edition's subtitle
-  when the work has none ("Halo" and "The Fall of Reach"). When the two
+  when the work has none and the subtitle is seven words or fewer ("Halo" and
+  "The Fall of Reach", but not a publisher's blurb). When the two
   titles share nothing, the book is a translation and the edition's title is
   shown. `OpenLibraryBook.displayTitle` has the rule.
 - **Each book once.** Open Library often has one book as several works. A

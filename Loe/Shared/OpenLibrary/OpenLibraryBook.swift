@@ -78,7 +78,7 @@ nonisolated struct OpenLibraryBook: Hashable, Sendable, Identifiable {
 
     /// The work's title, which is the book's own, unless the English edition shows
     /// it better. A work with no subtitle takes its edition's ("Halo" and "The Fall
-    /// of Reach"). A translated book is filed under its original, so when the two
+    /// of Reach") when it is short enough to be one. A translated book is filed under its original, so when the two
     /// titles share nothing the edition's English one is shown.
     static func displayTitle(work: (title: String, subtitle: String?), edition: (title: String, subtitle: String?)?) -> String {
         let workTitle = joined(work.title, work.subtitle)
@@ -86,7 +86,9 @@ nonisolated struct OpenLibraryBook: Hashable, Sendable, Identifiable {
         let foldedWork = CatalogueQuery.folded(work.title)
         let foldedEdition = CatalogueQuery.folded(edition.title)
         if foldedWork == foldedEdition {
-            return work.subtitle == nil ? joined(work.title, edition.subtitle) : workTitle
+            // A long subtitle on an edition is a publisher's blurb, not part of the title.
+            let short = edition.subtitle.map { $0.split(separator: " ").count <= 7 } ?? false
+            return work.subtitle == nil && short ? joined(work.title, edition.subtitle) : workTitle
         }
         if foldedEdition.contains(foldedWork) || foldedWork.contains(foldedEdition) {
             return workTitle
