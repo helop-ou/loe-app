@@ -560,6 +560,16 @@
         }
       }
     },
+    "Similar books": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sarnased raamatud"
+          }
+        }
+      }
+    },
     "Take a photo": {
       "localizations": {
         "et": {

@@ -49,6 +49,14 @@ struct BookView: View {
                             work.firstYear.map(String.init)
                         }
                     }
+                    if !details.similar.isEmpty {
+                        // The caption is what the book shares with this one: a subject
+                        // heading, genre or series, as the library names it.
+                        let reasons = Dictionary(details.similar.map { ($0.work.id, $0.reason) }, uniquingKeysWith: { first, _ in first })
+                        WorkRail(title: "Similar books", works: details.similar.map(\.work)) { work in
+                            reasons[work.id]
+                        }
+                    }
                 }
             }
             .padding(.horizontal, 20)
