@@ -105,5 +105,5 @@ stays empty.
 ## Before the App Store
 
 - Ask ELNET (ester@elnet.ee) for permission to show ESTER's availability in
-  the app. Internal TestFlight testing goes ahead without it. See
-  [library availability](reference/library-availability.md#decisions).
+  the app. ESTER's statutes put copying its data under ELNET's permission.
+  Internal TestFlight testing goes ahead without it.

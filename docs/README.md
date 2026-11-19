@@ -16,18 +16,13 @@ copied in: the colour sets, `Loe.icon`, the fonts and the tone values. The
 [coding standards](standards.md#files-and-reusable-components) say how to
 change them.
 
-## Reference
-
-Investigations that informed a decision, kept as they were written:
-
-- [Library availability](reference/library-availability.md): where Tallinn's
-  library holdings can be read, and what a lookup would cost in privacy
-
 ## Keeping this clean
 
 - Update the guide that owns a contract when you change it. Give each rule one
   home and link to it from elsewhere.
-- Long technical investigations go in `reference/`.
+- Research, spikes and measurements stay where the work is tracked, not in the
+  repository. A guide keeps the rule or decision the code follows, not the
+  investigation that led to it.
 - Validation evidence (revision, environment, result, what is owed) belongs
   where the work is tracked, not in a guide.
 - Keep routine session history out of the guides.
