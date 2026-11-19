@@ -670,6 +670,26 @@
         }
       }
     },
+    "That barcode isn't an ISBN. Look for the one that starts with 978 or 979.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See triipkood pole ISBN. Otsi seda, mis algab numbritega 978 või 979."
+          }
+        }
+      }
+    },
+    "That's the library's barcode. Look for the one that starts with 978.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See on raamatukogu triipkood. Otsi seda, mis algab numbritega 978."
+          }
+        }
+      }
+    },
     "The camera isn't available": {
       "localizations": {
         "et": {

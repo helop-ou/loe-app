@@ -4,9 +4,12 @@ import Vision
 import VisionKit
 
 /// The camera, reading the barcode on the back of a book. Reports the first ISBN
-/// it sees, once, or that the camera cannot be used.
+/// it sees, once, any other barcode in view so the reader can be told, or that the
+/// camera cannot be used.
 struct BarcodeScanner: UIViewControllerRepresentable {
     let onISBN: (String) -> Void
+    /// The kind of the other barcode in view, or nil once it is gone.
+    let onOther: (ScannedBarcode?) -> Void
     let onUnavailable: () -> Void
 
     /// False on the simulator and on phones without the hardware, where Search
@@ -17,7 +20,7 @@ struct BarcodeScanner: UIViewControllerRepresentable {
 
     func makeUIViewController(context: Context) -> ScannerHost {
         let scanner = DataScannerViewController(
-            recognizedDataTypes: [.barcode(symbologies: [.ean13])],
+            recognizedDataTypes: [.barcode(symbologies: ScannedBarcode.symbologies)],
             qualityLevel: .balanced,
             isHighlightingEnabled: true
         )
@@ -28,16 +31,19 @@ struct BarcodeScanner: UIViewControllerRepresentable {
     func updateUIViewController(_ host: ScannerHost, context: Context) {}
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(onISBN: onISBN, onUnavailable: onUnavailable)
+        Coordinator(onISBN: onISBN, onOther: onOther, onUnavailable: onUnavailable)
     }
 
     final class Coordinator: NSObject, DataScannerViewControllerDelegate {
         private let onISBN: (String) -> Void
+        private let onOther: (ScannedBarcode?) -> Void
         private let onUnavailable: () -> Void
         private var found = false
+        private var other: ScannedBarcode?
 
-        init(onISBN: @escaping (String) -> Void, onUnavailable: @escaping () -> Void) {
+        init(onISBN: @escaping (String) -> Void, onOther: @escaping (ScannedBarcode?) -> Void, onUnavailable: @escaping () -> Void) {
             self.onISBN = onISBN
+            self.onOther = onOther
             self.onUnavailable = onUnavailable
         }
 
@@ -46,16 +52,31 @@ struct BarcodeScanner: UIViewControllerRepresentable {
         }
 
         func dataScanner(_ scanner: DataScannerViewController, didAdd items: [RecognizedItem], allItems: [RecognizedItem]) {
+            examine(allItems, in: scanner)
+        }
+
+        func dataScanner(_ scanner: DataScannerViewController, didUpdate items: [RecognizedItem], allItems: [RecognizedItem]) {
+            examine(allItems, in: scanner)
+        }
+
+        func dataScanner(_ scanner: DataScannerViewController, didRemove items: [RecognizedItem], allItems: [RecognizedItem]) {
+            examine(allItems, in: scanner)
+        }
+
+        private func examine(_ items: [RecognizedItem], in scanner: DataScannerViewController) {
             guard !found else { return }
-            for item in items {
-                guard case .barcode(let barcode) = item,
-                      let payload = barcode.payloadStringValue,
-                      let isbn = CatalogueQuery.isbn13(fromBarcode: payload)
-                else { continue }
+            let barcodes = items.compactMap { item -> ScannedBarcode? in
+                guard case .barcode(let barcode) = item else { return nil }
+                return ScannedBarcode(payload: barcode.payloadStringValue, symbology: barcode.observation.symbology)
+            }
+            let best = ScannedBarcode.best(of: barcodes)
+            if case .isbn(let isbn) = best {
                 found = true
                 scanner.stopScanning()
                 onISBN(isbn)
-                return
+            } else if best != other {
+                other = best
+                onOther(best)
             }
         }
     }
@@ -121,6 +142,7 @@ struct ScanSheet: View {
     @Environment(\.openURL) private var openURL
     @State private var unavailable = false
     @State private var cameraAllowed = false
+    @State private var other: ScannedBarcode?
 
     var body: some View {
         NavigationStack {
@@ -144,17 +166,14 @@ struct ScanSheet: View {
                     BarcodeScanner { isbn in
                         dismiss()
                         onISBN(isbn)
+                    } onOther: { barcode in
+                        other = barcode
                     } onUnavailable: {
                         unavailable = true
                     }
                     .ignoresSafeArea()
                     .overlay(alignment: .bottom) {
-                        Text("Point the camera at the barcode on the back of the book.")
-                            .font(.subheadline)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 14)
-                            .background(.regularMaterial, in: .rect(cornerRadius: 16))
+                        ScanHint(other: other)
                             .padding(24)
                     }
                 }
@@ -176,6 +195,46 @@ struct ScanSheet: View {
                     Button("Cancel") { dismiss() }
                 }
             }
+        }
+    }
+}
+
+/// What the scanner is doing, or why the barcode in view does not open a book.
+struct ScanHint: View {
+    let other: ScannedBarcode?
+    /// The icons differ in width, so the text starts in the same place for each.
+    @ScaledMetric(relativeTo: .subheadline) private var iconWidth = 22.0
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+            Group {
+                switch other {
+                case .library: Image(systemName: "building.columns")
+                case .notABook: Image(systemName: "barcode")
+                case .isbn, nil: Image(systemName: "barcode.viewfinder").symbolEffect(.pulse)
+                }
+            }
+            .foregroundStyle(.loeAccent)
+            .frame(width: iconWidth)
+            .accessibilityHidden(true)
+            Text(message)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .font(.subheadline)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+        .background(.regularMaterial, in: .rect(cornerRadius: 16))
+        .accessibilityElement(children: .combine)
+        .onChange(of: other) {
+            AccessibilityNotification.Announcement(String(localized: message)).post()
+        }
+    }
+
+    private var message: LocalizedStringResource {
+        switch other {
+        case .library: "That's the library's barcode. Look for the one that starts with 978."
+        case .notABook: "That barcode isn't an ISBN. Look for the one that starts with 978 or 979."
+        case .isbn, nil: "Point the camera at the barcode on the back of the book."
         }
     }
 }
