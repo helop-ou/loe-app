@@ -86,7 +86,7 @@ cwebp -q 82 -resize 600 0 /tmp/readme/<file>.png -o .github/readme/screens/<name
 xcrun simctl status_bar <udid> clear
 ```
 
-The header images come from `github/` in `loe-app-branding`.
+The header images come from the brand repository's GitHub images.
 
 ## Privacy
 

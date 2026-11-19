@@ -1,6 +1,6 @@
 //  Sinu toon (your tone): the accent may lean towards the colours of the covers a reader
 //  keeps. Only the accent moves. Every tone has the same weight as Eha, so contrast never
-//  changes. Values come from loe-app-branding's src/tokens.mjs.
+//  changes. Values come from the brand's tokens.
 
 import CoreGraphics
 import Foundation
