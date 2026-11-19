@@ -1,0 +1,160 @@
+{
+ "numFound": 6,
+ "start": 0,
+ "numFoundExact": true,
+ "num_found": 6,
+ "documentation_url": "https://openlibrary.org/dev/docs/api/search",
+ "q": "the last wish sapkowski",
+ "offset": null,
+ "docs": [
+  {
+   "author_name": [
+    "Andrzej Sapkowski"
+   ],
+   "cover_i": 7360819,
+   "first_publish_year": 1993,
+   "key": "/works/OL2577482W",
+   "number_of_pages_median": 342,
+   "title": "Ostatnie Życzenie",
+   "editions": {
+    "numFound": 35,
+    "start": 0,
+    "numFoundExact": true,
+    "docs": [
+     {
+      "key": "/books/OL10426195M",
+      "title": "The Last Wish",
+      "cover_i": 12848705,
+      "language": [
+       "eng"
+      ],
+      "isbn": [
+       "9780316029186",
+       "0316029181"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "author_name": [
+    "Andrzej Sapkowski"
+   ],
+   "cover_i": 13814994,
+   "first_publish_year": 2020,
+   "key": "/works/OL21909292W",
+   "number_of_pages_median": 752,
+   "title": "Witcher Stories Boxed Set",
+   "editions": {
+    "numFound": 1,
+    "start": 0,
+    "numFoundExact": true,
+    "docs": [
+     {
+      "key": "/books/OL29882487M",
+      "title": "Witcher Stories Boxed Set",
+      "subtitle": "the Last Wish, Sword of Destiny",
+      "cover_i": 13814994,
+      "language": [
+       "eng"
+      ],
+      "isbn": [
+       "9780316703291",
+       "031670329X"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "author_name": [
+    "Andrzej Sapkowski"
+   ],
+   "cover_i": 14690346,
+   "first_publish_year": 2020,
+   "key": "/works/OL22144424W",
+   "number_of_pages_median": 8,
+   "title": "Witcher Boxed Set",
+   "editions": {
+    "numFound": 1,
+    "start": 0,
+    "numFoundExact": true,
+    "docs": [
+     {
+      "key": "/books/OL30168915M",
+      "title": "Witcher Boxed Set",
+      "subtitle": "The Last Wish, Sword of Destiny, Blood of Elves, Time of Contempt, Baptism of Fire, the Tower of the Swallow, the Lady of the Lake, Season of Storms",
+      "cover_i": 14690346,
+      "language": [
+       "eng"
+      ],
+      "isbn": [
+       "9781473232273",
+       "1473232279"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "author_name": [
+    "Andrzej Sapkowski"
+   ],
+   "cover_i": 14848910,
+   "first_publish_year": 2023,
+   "key": "/works/OL42662727W",
+   "number_of_pages_median": 370,
+   "subtitle": "Il Guardiano degli Innocenti",
+   "title": "The Witcher",
+   "editions": {
+    "numFound": 1,
+    "start": 0,
+    "numFoundExact": true,
+    "docs": [
+     {
+      "key": "/books/OL58005934M",
+      "title": "The Witcher: Il Guardiano degli Innocenti",
+      "cover_i": 14848910,
+      "language": [
+       "ita"
+      ],
+      "isbn": [
+       "978-8850266722",
+       "8850266723",
+       "9788850266722"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "author_name": [
+    "Andrzej Sapkowski",
+    "Danusia Stok",
+    "David French"
+   ],
+   "first_publish_year": 2023,
+   "key": "/works/OL29209853W",
+   "title": "Witcher Stories Boxed Set",
+   "editions": {
+    "numFound": 1,
+    "start": 0,
+    "numFoundExact": true,
+    "docs": [
+     {
+      "key": "/books/OL40176712M",
+      "title": "Witcher Stories Boxed Set",
+      "subtitle": "the Last Wish and Sword of Destiny",
+      "language": [
+       "eng"
+      ],
+      "isbn": [
+       "9780316565165",
+       "0316565164"
+      ]
+     }
+    ]
+   }
+  }
+ ]
+}
