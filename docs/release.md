@@ -120,6 +120,13 @@ ESTER sees which book records were asked about, from the phone's address, as
 any website would. Loe keeps nothing of it, so the manifest's collected data
 stays empty.
 
+Search asks Open Library about what the reader typed once they pause, over
+HTTPS with no cookies (see [Catalogue](catalogue.md#books-from-abroad)). Open
+Library, run by the Internet Archive, sees the search text from the phone's
+address. The `User-Agent` names the app and the developer's contact, never the
+reader. Loe keeps the answers in memory only, so the collected data stays
+empty here too.
+
 ## Before the App Store
 
 - Ask ELNET (ester@elnet.ee) for permission to show ESTER's availability in

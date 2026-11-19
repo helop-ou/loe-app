@@ -213,6 +213,51 @@ TEST_RUNNER_LOE_CATALOGUE_MANIFEST=http://127.0.0.1:8765/manifest.json xcodebuil
   -only-testing:LoeUITests/SearchJourneyTests/testDownloadsTheCatalogue -collect-test-diagnostics never
 ```
 
+## Books from abroad
+
+Books the bibliography doesn't have, such as English books published abroad,
+are found on [Open Library](https://openlibrary.org), whose catalogue data is
+CC0. [`OpenLibrary`](../Loe/Shared/OpenLibrary/OpenLibrary.swift) asks its
+search from the phone, and Search shows what it finds under the catalogue's
+results as "From Open Library".
+
+- **When it asks.** Only once typing pauses (`OpenLibrary.pause`, 600 ms after
+  the catalogue's own 150 ms), never on each keystroke, and only for three or
+  more characters that are not an ISBN. A new keystroke cancels the wait before
+  anything is sent. Answers are kept in memory for the session, and a search
+  already answered shows at once, as when coming back from a book's page.
+- **What it sends.** `https://openlibrary.org/search.json` with the search
+  text, `lang=en`, a limit of 20 and the fields Loe reads, over a session with
+  no cookies, cache or credentials. The `User-Agent` names the app, the
+  repository and `support@helop.dev`: Open Library asks apps to identify
+  themselves, and allows three requests a second for those that do.
+  `Accept-Language` is set to `en`, so the reader's own languages are not sent.
+- **Translations.** Open Library files a translated book under its original
+  work, so *The Last Wish* is „Ostatnie życzenie“. `lang=en` with the
+  `editions` field returns the English edition inside it.
+- **Titles.** The work's title is shown, with its English edition's subtitle
+  when the work has none ("Halo" and "The Fall of Reach"). When the two
+  titles share nothing, the book is a translation and the edition's title is
+  shown. `OpenLibraryBook.displayTitle` has the rule.
+- **Each book once.** Open Library often has one book as several works. A
+  title (folded, without a leading article) and lead author's surname already
+  in the answer, or among the catalogue's results with or without the
+  catalogue's subtitle, is left out.
+- **Reading it.** The search schema "is not guaranteed to be stable", so every
+  field is optional and a malformed result is skipped, not the whole answer.
+
+A book from Open Library opens as a work with one edition and no catalogue
+record: an empty `erbID` and an `OpenLibraryRecord` with its work key, ISBN and
+cover id. Its page shows no editions, ESTER link or library availability,
+searches the bookshops by title and author, and links back to Open Library.
+How it is kept on a shelf is in [Library](library.md#books-from-open-library).
+
+With no network, or when Open Library fails, the catalogue's results show as
+they are and the section says it can't be reached. Debug builds launched with
+`-openLibraryStub YES` answer "halo" with a fixed Halo book, fail any search
+with "offline" in it, and find nothing for anything else, so the journeys never
+touch the network.
+
 ## What is kept
 
 Skipped: records that are not text (maps, music), doctoral theses (a 502
