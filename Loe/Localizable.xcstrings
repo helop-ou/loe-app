@@ -131,6 +131,16 @@
         }
       }
     },
+    "Add a book": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lisa raamat"
+          }
+        }
+      }
+    },
     "Add a cover photo": {
       "localizations": {
         "et": {
@@ -151,6 +161,16 @@
         }
       }
     },
+    "Add it yourself": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lisa ise"
+          }
+        }
+      }
+    },
     "Add to shelf": {
       "localizations": {
         "et": {
@@ -167,6 +187,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Luba Loel seadetes kaamerat kasutada või sisesta ISBN otsingusse."
+          }
+        }
+      }
+    },
+    "Another language": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Muu keel"
+          }
+        }
+      }
+    },
+    "Author": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autor"
           }
         }
       }
@@ -201,6 +241,16 @@
         }
       }
     },
+    "Can't find it? Add it yourself": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ei leia? Lisa ise"
+          }
+        }
+      }
+    },
     "Cancel": {
       "localizations": {
         "et": {
@@ -221,12 +271,12 @@
         }
       }
     },
-    "Check the spelling, or try the author's name.": {
+    "Check the spelling, try the author's name, or add the book yourself.": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kontrolli kirjapilti või proovi autori nime."
+            "value": "Kontrolli kirjapilti, proovi autori nime või lisa raamat ise."
           }
         }
       }
@@ -347,6 +397,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Muuda"
+          }
+        }
+      }
+    },
+    "Edit book": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Muuda raamatut"
           }
         }
       }
@@ -487,6 +547,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "See võib olla Loe uuemast versioonist."
+          }
+        }
+      }
+    },
+    "Language": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keel"
           }
         }
       }
@@ -711,6 +781,16 @@
         }
       }
     },
+    "Pages": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lehekülgi"
+          }
+        }
+      }
+    },
     "Pages in the book": {
       "localizations": {
         "et": {
@@ -911,6 +991,16 @@
         }
       }
     },
+    "Separate several authors with commas.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mitu autorit eralda komadega."
+          }
+        }
+      }
+    },
     "Set aside": {
       "localizations": {
         "et": {
@@ -1061,12 +1151,12 @@
         }
       }
     },
-    "The catalogue has the books published in Estonia. Try the title instead.": {
+    "The catalogue has the books published in Estonia. Try the title, or add the book yourself.": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kataloogis on Eestis ilmunud raamatud. Proovi pealkirja järgi."
+            "value": "Kataloogis on Eestis ilmunud raamatud. Proovi pealkirja järgi või lisa raamat ise."
           }
         }
       }
@@ -1097,6 +1187,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Põnevus"
+          }
+        }
+      }
+    },
+    "Title": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pealkiri"
           }
         }
       }
@@ -1207,6 +1307,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kas raamatukogus on raamat olemas, näitab ESTER, raamatukogude e-kataloog. Loe küsib sealt ainult selle raamatu kohta. Lingid avanevad brauseris."
+          }
+        }
+      }
+    },
+    "Year": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aasta"
           }
         }
       }
