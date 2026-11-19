@@ -45,6 +45,8 @@ struct PlaceTests {
     @Test func aLocationOfNoKnownLibraryBelongsNowhere() {
         #expect(Place.library(forLocation: "Pärnu KRK lastekirjandus") == nil)
         #expect(Place.library(forLocation: "TlnRKX something") == nil)
+        // A branch Loe does not know yet, whose name starts like one it does.
+        #expect(Place.library(forLocation: "TlnRK Männikuvälja lastekirjandus") == nil)
     }
 
     @Test func aShopLinksToItsSearchAndALibraryDoesNot() {
