@@ -177,3 +177,19 @@ Asking ELNET (ester@elnet.ee) before shipping is the safe course.
 4. Which collections count for a branch: home lending and children's?
 5. Offer only Tallinn branches first, or every ESTER library (Tartu City
    Library has branches too)?
+
+## Decisions
+
+Made by the maintainer after reading this note:
+
+- **Availability shows as soon as a book's page opens**, with no button to
+  tap. So every page view asks ESTER, and the privacy section of
+  `docs/release.md` must say so. The lookup still goes over HTTPS with no
+  cookies, and sends nothing but the record numbers.
+- **Every edition of the book is checked.** When the edition on screen is not
+  on a library's shelf but another edition is, the library's row says so and
+  names that edition.
+- **Every ESTER library can be picked**, not only Tallinn's. The picker needs
+  the list of ESTER locations for all libraries, grouped by library.
+
+Still open: whether ELNET agrees, and which collections count for a branch.
