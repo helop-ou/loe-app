@@ -38,7 +38,8 @@ final class PlacesJourneyTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Apollo"].exists)
         attach("places-settings", app)
 
-        // Swipe the university library away.
+        // Swipe the university library away, once it is clear of the tab bar.
+        app.swipeUp()
         app.staticTexts["Tartu Ülikooli Raamatukogu"].swipeLeft()
         app.buttons["Remove"].tap()
         XCTAssertTrue(app.staticTexts["Tartu Ülikooli Raamatukogu"].waitForNonExistence(timeout: 5))
