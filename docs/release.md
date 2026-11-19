@@ -127,6 +127,12 @@ address. The `User-Agent` names the app and the developer's contact, never the
 reader. Loe keeps the answers in memory only, so the collected data stays
 empty here too.
 
+Covers come from Open Library too (see [Library](library.md#covers)): a
+book's cover id or print ISBN is sent to `covers.openlibrary.org` when the
+book shows, which redirects to the Internet Archive (`archive.org`) for the
+image, so both see which books' covers were asked for. The images are kept in
+the caches folder on the phone, and nothing else.
+
 ## Before the App Store
 
 - Ask ELNET (ester@elnet.ee) for permission to show ESTER's availability in
