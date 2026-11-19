@@ -21,8 +21,8 @@ CloudKit sets the rules for the model:
 - The shelf is stored as its raw name in `shelfName`, so queries can filter on
   it. Read `shelf`.
 
-Sync has only been seen to start: the simulator, with no iCloud account,
-reports `CKAccountStatusNoAccount` and keeps working locally. A device build
+The simulator, with no iCloud account, reports `CKAccountStatusNoAccount` and
+keeps working locally. A device build
 needs the container and push notifications registered for the team, which
 Xcode does on the first signed build with automatic signing.
 
@@ -34,11 +34,6 @@ JPEG (tens of kilobytes) so it syncs quickly, and reads its colour once, which
 `ShelvedBook` keeps beside it. The book's page and the card for the book being
 read take a wash of that colour, and Sinu toon will read the same values.
 Books without a photo get the plain card with their title.
-
-Online covers are left out on purpose. In November 2026, Open Library had a
-cover for 2 of 80 ISBNs sampled from the catalogue, and Google Books refuses
-lookups without an API key. A source worth adding would need a better showing
-than that, and would send which books the reader looks at to someone else.
 
 ## Read next
 
@@ -162,8 +157,7 @@ is), on its way, only to read there, or not in this library (Puudub).
 
 Without a network or an answer the row says it could not check, and the link
 still opens ESTER. `AvailabilityTests` reads two holdings pages saved in
-`LoeTests/Fixtures`. In November 2026 the rules gave the same answer as reading
-ESTER by hand for „Keisri hull“, „Kevade“ and „Rehepapp“ at five libraries.
+`LoeTests/Fixtures`.
 
 ## Rules
 
