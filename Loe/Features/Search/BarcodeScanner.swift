@@ -1,3 +1,4 @@
+import AVFoundation
 import SwiftUI
 import Vision
 import VisionKit
@@ -27,15 +28,21 @@ struct BarcodeScanner: UIViewControllerRepresentable {
     func updateUIViewController(_ host: ScannerHost, context: Context) {}
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(onISBN: onISBN)
+        Coordinator(onISBN: onISBN, onUnavailable: onUnavailable)
     }
 
     final class Coordinator: NSObject, DataScannerViewControllerDelegate {
         private let onISBN: (String) -> Void
+        private let onUnavailable: () -> Void
         private var found = false
 
-        init(onISBN: @escaping (String) -> Void) {
+        init(onISBN: @escaping (String) -> Void, onUnavailable: @escaping () -> Void) {
             self.onISBN = onISBN
+            self.onUnavailable = onUnavailable
+        }
+
+        func dataScanner(_ scanner: DataScannerViewController, becameUnavailableWithError error: DataScannerViewController.ScanningUnavailable) {
+            onUnavailable()
         }
 
         func dataScanner(_ scanner: DataScannerViewController, didAdd items: [RecognizedItem], allItems: [RecognizedItem]) {
@@ -82,9 +89,20 @@ final class ScannerHost: UIViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        start(retrying: true)
+    }
+
+    /// The camera can still be settling just after it appears, so a failed start
+    /// gets one more try before the reader is told.
+    private func start(retrying: Bool) {
         guard !scanner.isScanning else { return }
         do {
             try scanner.startScanning()
+        } catch where retrying {
+            Task {
+                try? await Task.sleep(for: .milliseconds(500))
+                start(retrying: false)
+            }
         } catch {
             onUnavailable()
         }
@@ -102,6 +120,7 @@ struct ScanSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
     @State private var unavailable = false
+    @State private var cameraAllowed = false
 
     var body: some View {
         NavigationStack {
@@ -119,6 +138,8 @@ struct ScanSheet: View {
                         .tint(.loeAccent)
                         .foregroundStyle(.loeOnAccent)
                     }
+                } else if !cameraAllowed {
+                    Color.black.ignoresSafeArea()
                 } else {
                     BarcodeScanner { isbn in
                         dismiss()
@@ -137,6 +158,16 @@ struct ScanSheet: View {
                             .padding(24)
                     }
                 }
+            }
+            // The scanner can only start once the camera is allowed, so ask first
+            // rather than let iOS ask while the scanner is already trying.
+            .task {
+                switch AVCaptureDevice.authorizationStatus(for: .video) {
+                case .authorized: cameraAllowed = true
+                case .notDetermined: cameraAllowed = await AVCaptureDevice.requestAccess(for: .video)
+                default: cameraAllowed = false
+                }
+                unavailable = !cameraAllowed || !DataScannerViewController.isAvailable
             }
             .navigationTitle("Scan a barcode")
             .navigationBarTitleDisplayMode(.inline)
