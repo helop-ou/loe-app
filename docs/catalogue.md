@@ -167,9 +167,6 @@ SHA-256, its size and its schema version.
 - A manifest whose `schema_version` the app does not know is ignored, and
   nothing is downloaded. Apps that old keep their catalogue until they update.
 
-While the repository is private, the manifest and the release asset need a
-GitHub login, so the app gets a 404 and says the download didn't finish.
-
 ### Publishing a new catalogue
 
 1. Rebuild it as above, then `xz -9 -k` it.
