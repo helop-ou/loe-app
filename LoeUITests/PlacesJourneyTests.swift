@@ -7,7 +7,7 @@ final class PlacesJourneyTests: XCTestCase {
     func testPickedPlacesAreWhereToGetIt() throws {
         continueAfterFailure = false
         let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES", "-inMemoryLibrary", "YES"]
+        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES", "-inMemoryLibrary", "YES", "-openLibraryStub", "YES"]
         app.launch()
 
         app.buttons["Settings"].tap()

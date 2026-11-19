@@ -7,7 +7,7 @@ final class AddBookJourneyTests: XCTestCase {
     func testAddsABookByHandEditsItAndRemovesIt() throws {
         continueAfterFailure = false
         let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES", "-inMemoryLibrary", "YES"]
+        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES", "-inMemoryLibrary", "YES", "-openLibraryStub", "YES"]
         app.launch()
 
         app.tabBars.buttons["Search"].tap()
@@ -16,7 +16,7 @@ final class AddBookJourneyTests: XCTestCase {
         }
         let field = app.searchFields.firstMatch
         field.tap()
-        field.typeText("Halo: The Fall of Reach")
+        field.typeText("Recipes from Grandma Tiiu")
         XCTAssertTrue(app.staticTexts["No books found"].waitForExistence(timeout: 5))
         attach("add-nothing-found", app)
         app.buttons["Add it yourself"].tap()
@@ -24,18 +24,18 @@ final class AddBookJourneyTests: XCTestCase {
         // The form starts from what was searched for.
         let title = app.textFields["Title"]
         XCTAssertTrue(title.waitForExistence(timeout: 5))
-        XCTAssertEqual(title.value as? String, "Halo: The Fall of Reach")
+        XCTAssertEqual(title.value as? String, "Recipes from Grandma Tiiu")
         let author = app.textFields["Author"]
         author.tap()
-        author.typeText("Eric Nylund")
+        author.typeText("Tiiu Tamm")
         let pages = app.textFields["Pages"]
         pages.tap()
         pages.typeText("400")
         attach("add-form", app)
         app.buttons["Save"].tap()
 
-        XCTAssertTrue(app.staticTexts["Halo: The Fall of Reach"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["Eric Nylund"].exists)
+        XCTAssertTrue(app.staticTexts["Recipes from Grandma Tiiu"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Tiiu Tamm"].exists)
         XCTAssertTrue(app.buttons["Shelf: Want to read"].exists)
         XCTAssertFalse(app.staticTexts["Editions"].exists)
         attach("add-book-page", app)
@@ -50,7 +50,7 @@ final class AddBookJourneyTests: XCTestCase {
         attach("add-book-edited", app)
 
         app.tabBars.buttons["Shelves"].tap()
-        let shelved = app.buttons.matching(NSPredicate(format: "label CONTAINS 'Halo: The Fall of Reach'")).firstMatch
+        let shelved = app.buttons.matching(NSPredicate(format: "label CONTAINS 'Recipes from Grandma Tiiu'")).firstMatch
         XCTAssertTrue(shelved.waitForExistence(timeout: 5))
         attach("add-shelves", app)
         shelved.tap()

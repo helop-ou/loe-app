@@ -211,6 +211,16 @@
         }
       }
     },
+    "Books published abroad. Loe asks Open Library about what you search for, and nothing else.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Välismaal ilmunud raamatud. Loe küsib Open Libraryst ainult seda, mida sa otsid."
+          }
+        }
+      }
+    },
     "Bookshop": {
       "localizations": {
         "et": {
@@ -467,6 +477,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Otsi raamatukogu"
+          }
+        }
+      }
+    },
+    "From Open Library": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Libraryst"
           }
         }
       }
@@ -741,6 +761,16 @@
         }
       }
     },
+    "Open Library can't be reached right now.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Libraryga ei saa praegu ühendust."
+          }
+        }
+      }
+    },
     "Open Settings": {
       "localizations": {
         "et": {
@@ -981,12 +1011,32 @@
         }
       }
     },
+    "Searching Open Library…": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otsin Open Libraryst…"
+          }
+        }
+      }
+    },
     "See if your library has it": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Vaata, kas raamatukogus on"
+          }
+        }
+      }
+    },
+    "See it on Open Library": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vaata Open Librarys"
           }
         }
       }
@@ -1177,6 +1227,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Allalaadimine jäi pooleli"
+          }
+        }
+      }
+    },
+    "This book comes from Open Library, which Loe asked about it.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See raamat on pärit Open Libraryst, millelt Loe selle kohta küsis."
           }
         }
       }

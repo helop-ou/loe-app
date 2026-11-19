@@ -7,7 +7,7 @@ final class ReadNextJourneyTests: XCTestCase {
     func testSuggestsBooksFromAFavouriteAndKeepsOneForLater() throws {
         continueAfterFailure = false
         let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES", "-inMemoryLibrary", "YES"]
+        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES", "-inMemoryLibrary", "YES", "-openLibraryStub", "YES"]
         app.launch()
 
         app.tabBars.buttons["Read next"].tap()
