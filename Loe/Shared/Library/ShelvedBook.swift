@@ -27,6 +27,18 @@ final class ShelvedBook {
     /// The cover's colour, read once when the photo was added. See `LoeTone.Sample`.
     var coverHue: Double?
     var coverSaturation: Double?
+    /// Where the book came from, stored by name. Read `source` instead.
+    var sourceName: String?
+    /// Year and language, kept for a book the catalogue doesn't have.
+    var year: Int?
+    var language: String?
+
+    /// A book from the catalogue, or one the reader entered because the catalogue
+    /// doesn't have it.
+    enum Source: String {
+        case catalogue
+        case hand
+    }
 
     init(edition: CatalogueEdition, workKey: String, shelf: Shelf, now: Date = .now) {
         self.workKey = workKey
@@ -39,8 +51,45 @@ final class ShelvedBook {
         move(to: shelf, now: now)
     }
 
+    /// A book the reader entered by hand. It has its own key, so it never merges
+    /// with a catalogue book that has the same title.
+    init(entered: EnteredBook, shelf: Shelf, now: Date = .now) {
+        workKey = "hand:" + UUID().uuidString
+        sourceName = Source.hand.rawValue
+        addedAt = now
+        update(from: entered, now: now)
+        move(to: shelf, now: now)
+    }
+
     var shelf: Shelf {
         Shelf(rawValue: shelfName) ?? .wantToRead
+    }
+
+    /// Records from before books could be entered by hand have no source and came
+    /// from the catalogue.
+    var source: Source {
+        sourceName.flatMap(Source.init(rawValue:)) ?? .catalogue
+    }
+
+    /// What the reader entered, as it stands now.
+    var entered: EnteredBook {
+        EnteredBook(title: title, authors: authors.map { $0.replacingOccurrences(of: "; ", with: ", ") } ?? "",
+                    pages: pageCount, year: year, language: language)
+    }
+
+    /// Changes what the reader entered for a book the catalogue doesn't have.
+    func update(from entered: EnteredBook, now: Date = .now) {
+        title = entered.cleanTitle
+        authors = entered.cleanAuthors
+        pageCount = entered.cleanPages
+        if shelf == .read, let pageCount {
+            currentPage = pageCount
+        } else if let currentPage, let pageCount {
+            self.currentPage = min(currentPage, pageCount)
+        }
+        year = entered.cleanYear
+        language = entered.language
+        updatedAt = now
     }
 
     /// Starting a book records when, once. Finishing one records when and puts the
@@ -90,7 +139,9 @@ final class ShelvedBook {
 
     /// Enough of the book to open its page. The page finds the rest in the catalogue.
     var work: CatalogueWork {
-        CatalogueWork(id: workKey, editions: [CatalogueEdition(id: 0, erbID: erbID, title: title, authors: authors, pages: pageCount)])
+        CatalogueWork(id: workKey, editions: [
+            CatalogueEdition(id: 0, erbID: erbID, title: title, authors: authors, year: year, language: language, pages: pageCount),
+        ])
     }
 }
 
@@ -110,6 +161,14 @@ extension ShelvedBook {
             return existing
         }
         let book = ShelvedBook(edition: edition, workKey: work.id, shelf: shelf, now: now)
+        context.insert(book)
+        return book
+    }
+
+    /// Puts a book the reader entered by hand on a shelf.
+    @discardableResult
+    static func add(_ entered: EnteredBook, on shelf: Shelf, in context: ModelContext, now: Date = .now) -> ShelvedBook {
+        let book = ShelvedBook(entered: entered, shelf: shelf, now: now)
         context.insert(book)
         return book
     }
