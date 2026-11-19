@@ -40,6 +40,15 @@ struct ShelvesView: View {
                 }
             }
             .navigationTitle("Shelves")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink {
+                        SettingsView()
+                    } label: {
+                        Label("Settings", systemImage: "gearshape")
+                    }
+                }
+            }
             .navigationDestination(for: CatalogueWork.self) { BookView(work: $0) }
             .navigationDestination(for: Shelf.self) { ShelfListView(shelf: $0) }
         }

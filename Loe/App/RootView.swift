@@ -2,6 +2,10 @@ import SwiftData
 import SwiftUI
 
 struct RootView: View {
+    @AppStorage(TasteQuiz.seenKey) private var quizSeen = false
+    @Query private var tastes: [Taste]
+    @State private var showsQuiz = false
+
     var body: some View {
         TabView {
             Tab("Shelves", systemImage: "books.vertical") {
@@ -15,6 +19,13 @@ struct RootView: View {
             }
         }
         .tint(.loeAccent)
+        .sheet(isPresented: $showsQuiz, onDismiss: { quizSeen = true }) {
+            TasteQuiz()
+        }
+        .onAppear {
+            // Tastes synced from another device mean the reader has answered already.
+            showsQuiz = !quizSeen && tastes.isEmpty
+        }
     }
 }
 
