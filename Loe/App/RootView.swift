@@ -21,5 +21,5 @@ struct RootView: View {
 #Preview {
     RootView()
         .environment(CatalogueStore())
-        .modelContainer(for: ShelvedBook.self, inMemory: true)
+        .modelContainer(for: [ShelvedBook.self, Taste.self], inMemory: true)
 }

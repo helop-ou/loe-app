@@ -16,7 +16,7 @@ enum LibraryStore {
 
     private static func open(_ configuration: ModelConfiguration) -> ModelContainer {
         do {
-            return try ModelContainer(for: ShelvedBook.self, configurations: configuration)
+            return try ModelContainer(for: ShelvedBook.self, Taste.self, configurations: configuration)
         } catch {
             fatalError("The library could not be opened: \(error)")
         }
