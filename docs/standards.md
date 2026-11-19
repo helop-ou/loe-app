@@ -118,6 +118,15 @@ same contract.
   it fail.
 - Verify changed UI in the simulator, in light and dark, in Estonian and
   English, and at accessibility sizes.
+- Snapshot tests render a view with `Snapshot.verify` in `LoeTests` and compare
+  it with a PNG in `LoeTests/Snapshots/iOS-<version>`, in light English, dark
+  Estonian and an accessibility size. Text renders differently on each iOS
+  version, so a runtime without a folder only renders and attaches. A missing
+  reference is recorded and fails the test once: look at it before committing
+  it. To record again, delete the PNG, or create the folder for a new runtime.
+  `ImageRenderer` cannot draw a `NavigationStack`, and a `NavigationLink`
+  outside one draws as disabled, so a view meant for a snapshot takes what
+  opens a book as an action and its screen pushes it onto a path.
 - No new compiler warnings, and no blanket suppression.
 
 ### Pull requests

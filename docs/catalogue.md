@@ -89,6 +89,22 @@ A book's page asks `Catalogue.details(for:)` for the rest of what it shows:
   rather than guess. Each suggestion shows the heading or series
   it shares.
 
+Read next also asks `Catalogue.nextInSeries(after:)` for the book that
+follows one the reader is reading or has read, in its language:
+
+- **A numbered series of the author's own.** The bibliography's series field
+  holds both narrative series („Näljamängud“, 2. raamat) and publisher series
+  („Eesti lugu“, 49). A series counts when at least 70% of its editions share
+  the book's lead author, which lets a companion book by others in. The next
+  book is the lowest number above this one.
+- **A book published in parts**, numbered in its title after the first full
+  stop: „Tõde ja õigus. II jagu“, „Sõrmuste Isand. 2. osa. Kaks kantsi“,
+  „Sõrmuste Isand. Teine osa“. Arabic and Roman numbers and Estonian ordinals
+  up to kümnes are read. The next part is by the same lead author.
+
+Where several works fit, the most often published is chosen. A sequel the
+bibliography does not number, such as „Suvi“ after „Kevade“, is not found.
+
 The page links each edition's ESTER record (the 001 number without its final
 check digit, so `b10500820` is `record=b1050082`) and searches Rahva Raamat and
 Apollo for the title and author.

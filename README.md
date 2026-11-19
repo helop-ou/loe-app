@@ -27,6 +27,7 @@
 - **A page for every book** with its editions, the original of a translation and the translations of an original, and links to ESTER, Rahva Raamat and Apollo
 - **Five shelves**: Reading, Want to read, Read, Set aside and Didn't finish, with ratings and the page you're on
 - **Your own covers**: photograph a book, and its page takes a wash of the cover's colour
+- **Read next**: suggestions from your own ratings, each with its reason: the next book in a series you're reading, more by authors you rated highly, and books like your favourites. Worked out on your phone.
 - **Private**: no account, no ads, no tracking and no server. Your shelves stay on your phone and in your own iCloud.
 - **Estonian and English**, light and dark
 
