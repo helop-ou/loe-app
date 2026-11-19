@@ -51,6 +51,12 @@ struct OpenLibraryTests {
         )
         #expect(title == "Slaughterhouse-Five")
         #expect(OpenLibraryBook.displayTitle(work: ("Piranesi", nil), edition: nil) == "Piranesi")
+        // A publisher's blurb in the subtitle stays out.
+        let onyx = OpenLibraryBook.displayTitle(
+            work: ("Onyx Storm", nil),
+            edition: ("Onyx Storm", "Discover the Follow-Up to the Global Phenomenons, Fourth Wing and Iron Flame!")
+        )
+        #expect(onyx == "Onyx Storm")
     }
 
     @Test func aBrokenAnswerLosesOnlyTheBrokenPart() throws {
