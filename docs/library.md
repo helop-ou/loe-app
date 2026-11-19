@@ -62,6 +62,23 @@ the CloudKit schema to production after the first debug run, as for `Taste`.
 Older versions of Loe read a book entered by hand as a catalogue book with no
 record, and show it without the Edit button.
 
+## Books from Open Library
+
+A book found on Open Library (see [Catalogue](catalogue.md#books-from-abroad))
+is shelved from its page like any other. Its `ShelvedBook` has `sourceName`
+set to `openLibrary`, keeps the Open Library work key, ISBN and cover id
+(`openLibraryKey`, `isbn`, `coverID`) with its year and language, and its page
+opens from the shelf with its link back to Open Library. Its work key is built
+the catalogue's way (folded title and authors), so a book both have stays one
+book on the shelves when the two write its title and authors alike. Open
+Library puts a subtitle into the title and the catalogue keeps it apart, so
+some do not: Search leaves such a book out of the Open Library results when the
+catalogue's results show it, but the two can still be shelved separately.
+
+`openLibraryKey`, `isbn` and `coverID` are new fields on `ShelvedBook`, so
+deploy the CloudKit schema to production before a build with them reaches
+testers (see [Release](release.md#uploading-to-testflight)).
+
 ## Read next
 
 The Read next tab suggests books from the reader's own shelves and the
