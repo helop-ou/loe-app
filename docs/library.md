@@ -40,6 +40,42 @@ cover for 2 of 80 ISBNs sampled from the catalogue, and Google Books refuses
 lookups without an API key. A source worth adding would need a better showing
 than that, and would send which books the reader looks at to someone else.
 
+## Read next
+
+The Read next tab suggests books from the reader's own shelves and the
+catalogue, worked out on the phone. Nothing is sent anywhere.
+[`ReadNext`](../Loe/Features/ReadNext/ReadNext.swift) does the work and
+`ReadNextView` shows it.
+
+- **Where it starts.** Favourites are books rated four or five stars, on any
+  shelf. A series continues from a book being read or already read, unless
+  the reader gave it one or two stars. The eight most recently changed of each
+  are used.
+- **Next in a series.** The next book after one being read or finished,
+  found by `Catalogue.nextInSeries(after:)`. See
+  [Catalogue](catalogue.md#in-the-app).
+- **More by the author.** For each favourite, three of the lead author's other
+  books in the same language, the most often published first, as the book's
+  page lists them. Later books of a series the reader is in are left out, and
+  so is any part after the first, so nothing skips ahead.
+- **Similar books.** For each favourite, the similar books its page shows. A
+  book like several favourites names how many and comes first.
+- **Order.** Series first, then books by favourite authors and similar books
+  in turn, at most 24. Each book is suggested once, for its first reason.
+- **Left out.** Anything on a shelf, from any edition. A title with a part or
+  year after its first full stop, „Harry Potter ja saladuste kamber. 2. aasta“,
+  is the same book as the title without it, by the same author.
+
+Each suggestion says why, naming the reader's book: „Kevade“ in Estonian marks,
+*Truth and justice* in italics for an English one. The first is shown large
+with a button that puts it on Want to read. The list is worked out again when a
+rating or a shelf changes, but not when a page is updated or a suggestion is
+kept, which only takes it off the list.
+
+With no catalogue the tab says to download it. With no favourites it says to
+rate a book four or five stars. With favourites and nothing close enough, it
+says so.
+
 ## Rules
 
 - A book is on one shelf at a time, found by its work key
