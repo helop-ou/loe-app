@@ -241,12 +241,32 @@
         }
       }
     },
+    "Checking…": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kontrollin…"
+          }
+        }
+      }
+    },
     "Choose a photo": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Vali pilt"
+          }
+        }
+      }
+    },
+    "Couldn't check right now": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Praegu ei õnnestunud kontrollida"
           }
         }
       }
@@ -307,6 +327,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kataloog laaditakse alla"
+          }
+        }
+      }
+    },
+    "Due back %@": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tähtaeg %@"
           }
         }
       }
@@ -441,6 +471,16 @@
         }
       }
     },
+    "In storage, can be ordered": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoidlas, saab tellida"
+          }
+        }
+      }
+    },
     "It may be from a newer version of Loe.": {
       "localizations": {
         "et": {
@@ -531,6 +571,16 @@
         }
       }
     },
+    "Not in this library": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Puudub"
+          }
+        }
+      }
+    },
     "Not rated": {
       "localizations": {
         "et": {
@@ -557,6 +607,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Veel pole midagi soovitada"
+          }
+        }
+      }
+    },
+    "On its way between libraries": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teel"
+          }
+        }
+      }
+    },
+    "On loan, overdue": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Laenutatud, tähtaeg möödas"
+          }
+        }
+      }
+    },
+    "On the shelf": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kohal"
+          }
+        }
+      }
+    },
+    "On the shelf: another edition": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kohal: teine väljaanne"
+          }
+        }
+      }
+    },
+    "On the shelf: the %@ edition": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kohal: %@. aasta väljaanne"
+          }
+        }
+      }
+    },
+    "Only to read in the library": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ainult kohapeal lugemiseks"
           }
         }
       }
@@ -1087,6 +1197,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kust saada"
+          }
+        }
+      }
+    },
+    "Whether a library has the book comes from ESTER, the libraries' catalogue, which Loe asks about this book and nothing else. Links open in your browser.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kas raamatukogus on raamat olemas, näitab ESTER, raamatukogude e-kataloog. Loe küsib sealt ainult selle raamatu kohta. Lingid avanevad brauseris."
           }
         }
       }
