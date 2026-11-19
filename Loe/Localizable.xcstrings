@@ -337,12 +337,22 @@
         }
       }
     },
-    "Give a book you've read four or five stars, and Loe will suggest more like it.": {
+    "From your tastes: %@": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Anna loetud raamatule neli või viis tärni ja Loe soovitab sarnaseid."
+            "value": "Sinu maitse järgi: %@"
+          }
+        }
+      }
+    },
+    "Give a book you've read four or five stars, or pick what you like to read in Settings, and Loe will suggest more like it.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anna loetud raamatule neli või viis tärni või vali seadetes, mida sulle meeldib lugeda, ja Loe soovitab sarnaseid."
           }
         }
       }

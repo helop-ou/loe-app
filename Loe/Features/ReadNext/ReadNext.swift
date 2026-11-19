@@ -13,6 +13,8 @@ nonisolated struct ReadNextSuggestion: Identifiable, Hashable, Sendable {
         case sameAuthor(as: Book)
         /// The favourites it shares subject headings, genres or a series with.
         case similar(to: [Book])
+        /// A genre the reader said they like.
+        case taste(Genre)
     }
 
     let work: CatalogueWork
@@ -49,6 +51,7 @@ nonisolated enum ReadNext {
         var favourites = 8
         var series = 8
         var perAuthor = 3
+        var perTaste = 4
         var total = 24
         var similarity = Catalogue.SimilarityLimits.standard
 
@@ -72,6 +75,7 @@ nonisolated enum ReadNext {
 
     static func suggestions(
         from sources: [Source],
+        tastes: [Genre] = [],
         excluding shelved: [Shelved],
         in catalogue: Catalogue,
         limits: Limits = .standard
@@ -80,6 +84,7 @@ nonisolated enum ReadNext {
         var seriesFound: [Catalogue.SeriesNext] = []
         var byAuthor: [[(work: CatalogueWork, from: ReadNextSuggestion.Book)]] = []
         var similar: [[(work: CatalogueWork, from: ReadNextSuggestion.Book)]] = []
+        var languages: [String] = []
 
         let favourites = sources.filter(\.isFavourite).prefix(limits.favourites)
         let continuing = sources.filter { $0.continuesSeries && !$0.isFavourite }.prefix(limits.series)
@@ -88,6 +93,7 @@ nonisolated enum ReadNext {
             guard let details = try? await catalogue.details(for: source.work, similarity: limits.similarity) else { continue }
             let work = CatalogueWork(id: source.work.id, editions: details.editions.isEmpty ? source.work.editions : details.editions)
             let book = ReadNextSuggestion.Book(title: work.title, language: work.language)
+            languages += work.language.map { [$0] } ?? []
             if source.continuesSeries, let next = try? await catalogue.nextInSeries(after: work) {
                 series.append(ReadNextSuggestion(work: next.work, reason: .nextInSeries(after: book)))
                 seriesFound.append(next)
@@ -99,6 +105,7 @@ nonisolated enum ReadNext {
             try Task.checkCancellation()
             guard let editions = try? await catalogue.editions(of: source.work) else { continue }
             let work = CatalogueWork(id: source.work.id, editions: editions)
+            languages += work.language.map { [$0] } ?? []
             if let next = try? await catalogue.nextInSeries(after: work) {
                 let book = ReadNextSuggestion.Book(title: work.title, language: work.language)
                 series.append(ReadNextSuggestion(work: next.work, reason: .nextInSeries(after: book)))
@@ -109,27 +116,40 @@ nonisolated enum ReadNext {
         let fromTheStart = { (work: CatalogueWork) in
             !seriesFound.contains { $0.contains(work) } && (Catalogue.part(of: work.title)?.number ?? 1) == 1
         }
+        // Tastes suggest in the language the reader reads most, Estonian until Loe knows.
+        let language = Dictionary(grouping: languages, by: { $0 }).max { $0.value.count < $1.value.count }?.key ?? "est"
+        var byTaste: [[(work: CatalogueWork, genre: Genre)]] = []
+        for genre in tastes {
+            try Task.checkCancellation()
+            guard let works = try? await catalogue.works(withHeadings: genre.headings, language: language, limit: 50) else { continue }
+            let fresh = works.filter { fromTheStart($0) && !isOnShelf($0, shelved) }
+            byTaste.append(fresh.prefix(limits.perTaste).map { ($0, genre) })
+        }
         return merged(
             series: series,
             byAuthor: byAuthor.map { Array($0.filter { fromTheStart($0.work) }.prefix(limits.perAuthor)) },
             similar: similar.map { $0.filter { fromTheStart($0.work) } },
+            byTaste: byTaste,
             excluding: shelved,
             limit: limits.total
         )
     }
 
-    /// One list from the three kinds: the next books in series first, then books by
-    /// favourite authors and similar books in turn. A book is suggested once, for its
-    /// first reason. A book similar to several favourites comes before one similar to
-    /// a single favourite. `byAuthor` and `similar` hold one list per favourite.
+    /// One list from the four kinds: the next books in series first, then books by
+    /// favourite authors, similar books and books for the reader's tastes in turn. A
+    /// book is suggested once, for its first reason. A book similar to several
+    /// favourites comes before one similar to a single favourite. `byAuthor` and
+    /// `similar` hold one list per favourite, `byTaste` one per genre.
     static func merged(
         series: [ReadNextSuggestion],
         byAuthor: [[(work: CatalogueWork, from: ReadNextSuggestion.Book)]],
         similar: [[(work: CatalogueWork, from: ReadNextSuggestion.Book)]],
+        byTaste: [[(work: CatalogueWork, genre: Genre)]] = [],
         excluding shelved: [Shelved],
         limit: Int
     ) -> [ReadNextSuggestion] {
         let authorQueue = interleaved(byAuthor).map { ReadNextSuggestion(work: $0.work, reason: .sameAuthor(as: $0.from)) }
+        let tasteQueue = interleaved(byTaste).map { ReadNextSuggestion(work: $0.work, reason: .taste($0.genre)) }
 
         // The favourites each book is like, in the order of the favourites.
         var favourites: [String: [ReadNextSuggestion.Book]] = [:]
@@ -156,9 +176,10 @@ nonisolated enum ReadNext {
             taken.append(Shelved(workKey: suggestion.id, title: suggestion.work.title, leadAuthor: suggestion.work.editions[0].leadAuthor))
         }
         series.forEach(take)
-        for index in 0..<max(authorQueue.count, similarQueue.count) {
+        for index in 0..<max(authorQueue.count, similarQueue.count, tasteQueue.count) {
             if index < authorQueue.count { take(authorQueue[index]) }
             if index < similarQueue.count { take(similarQueue[index]) }
+            if index < tasteQueue.count { take(tasteQueue[index]) }
         }
         return result
     }

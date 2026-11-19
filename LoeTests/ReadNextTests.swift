@@ -119,6 +119,41 @@ struct ReadNextTests {
         #expect(found.map(\.work.title) == ["Kooliraamat"])
     }
 
+    // MARK: Tastes
+
+    private static let crimeBooks = Self.books + """
+        ,
+        (40, 'b40', 'Krimka', 'Krimikirjanik', 2010, 1, 0, NULL, 'est', NULL, NULL),
+        (41, 'b41', 'Teine krimka', 'Teine Kirjanik', 2011, 1, 0, NULL, 'est', NULL, NULL),
+        (42, 'b42', 'A crime novel', 'Crime Writer', 2012, 1, 0, NULL, 'eng', NULL, NULL),
+        (43, 'b43', 'A loved novel', 'Loved Writer', 2013, 1, 0, NULL, 'eng', NULL, NULL)
+        """
+
+    private static let crimeHeadings = Self.extra + """
+        INSERT INTO heading (id, kind, name) VALUES (2, 2, 'kriminaalromaanid');
+        INSERT INTO edition_heading VALUES (40, 2), (41, 2), (42, 2);
+        """
+
+    private func withTastes(_ sources: [ReadNext.Source], tastes: [Genre], shelved: [ReadNext.Shelved] = []) async throws -> [ReadNextSuggestion] {
+        let catalogue = try Catalogue(url: CatalogueFixture.make(books: Self.crimeBooks, headings: Self.crimeHeadings))
+        return try await ReadNext.suggestions(from: sources, tastes: tastes, excluding: shelved, in: catalogue, limits: limits)
+    }
+
+    @Test func aTasteBringsBooksUnderItsGenreLeavingOutShelvedOnes() async throws {
+        let found = try await withTastes([], tastes: [.crime], shelved: [Self.shelved("Teine krimka", by: "Teine Kirjanik")])
+        #expect(found.map(\.work.title) == ["Krimka"])
+        #expect(found.first?.reason == .taste(.crime))
+    }
+
+    @Test func tastesSuggestInTheLanguageTheReaderReads() async throws {
+        let found = try await withTastes([Self.source("A loved novel", by: "Loved Writer", rating: 5)], tastes: [.crime])
+        #expect(found.map(\.work.title) == ["A crime novel"])
+    }
+
+    @Test func aTasteWithNothingInTheCatalogueSuggestsNothing() async throws {
+        #expect(try await withTastes([], tastes: [.horror]).isEmpty)
+    }
+
     // MARK: Putting the kinds together
 
     private static func catalogueWork(_ title: String, by author: String = "Autor") -> CatalogueWork {
@@ -136,6 +171,20 @@ struct ReadNextTests {
             limit: 10
         )
         #expect(merged.map(\.work.title) == ["Lahvatab leek", "A1", "S1", "A2", "S2", "S3"])
+    }
+
+    @Test func tastesTakeTheirTurnAfterAuthorsAndSimilarBooks() {
+        let kevade = Self.book("Kevade")
+        let merged = ReadNext.merged(
+            series: [],
+            byAuthor: [[(Self.catalogueWork("A1"), kevade), (Self.catalogueWork("A2"), kevade)]],
+            similar: [[(Self.catalogueWork("S1"), kevade)]],
+            byTaste: [[(Self.catalogueWork("C1"), .crime), (Self.catalogueWork("C2"), .crime)], [(Self.catalogueWork("F1"), .fantasy)]],
+            excluding: [],
+            limit: 10
+        )
+        #expect(merged.map(\.work.title) == ["A1", "S1", "C1", "A2", "F1", "C2"])
+        #expect(merged[2].reason == .taste(.crime))
     }
 
     @Test func eachFavouriteAuthorTakesATurn() {

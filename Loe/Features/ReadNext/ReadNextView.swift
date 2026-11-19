@@ -7,27 +7,33 @@ struct ReadNextView: View {
     @Environment(CatalogueStore.self) private var catalogue
     @Environment(\.modelContext) private var context
     @Query private var books: [ShelvedBook]
+    @Query private var tasteRecords: [Taste]
     @State private var loaded: Loaded?
     @State private var path = NavigationPath()
 
     private struct Loaded {
-        let sources: [ReadNext.Source]
+        let input: Input
         let suggestions: [ReadNextSuggestion]
     }
 
     /// What the suggestions depend on. A page update or a book added to Want to read
-    /// changes neither, so it does not start the work again.
+    /// changes none of it, so it does not start the work again.
     private struct Input: Equatable {
         let sources: [ReadNext.Source]
+        let tastes: [Genre]
         let catalogue: ObjectIdentifier?
     }
 
     var body: some View {
-        let sources = ReadNext.sources(from: books)
+        let input = Input(
+            sources: ReadNext.sources(from: books),
+            tastes: Taste.genres(tasteRecords),
+            catalogue: readyCatalogue.map(ObjectIdentifier.init)
+        )
         NavigationStack(path: $path) {
             Group {
                 if case .ready = catalogue.state {
-                    content(sources: sources)
+                    content(input)
                 } else {
                     EmptyState(
                         title: "Suggestions need the catalogue",
@@ -39,13 +45,14 @@ struct ReadNextView: View {
             .navigationTitle("Read next")
             .navigationDestination(for: CatalogueWork.self) { BookView(work: $0) }
         }
-        .task(id: Input(sources: sources, catalogue: readyCatalogue.map(ObjectIdentifier.init))) {
+        .task(id: input) {
             guard let readyCatalogue else { return }
             let shelved = ReadNext.shelved(books)
-            guard let suggestions = try? await ReadNext.suggestions(from: sources, excluding: shelved, in: readyCatalogue),
-                  !Task.isCancelled
+            guard let suggestions = try? await ReadNext.suggestions(
+                from: input.sources, tastes: input.tastes, excluding: shelved, in: readyCatalogue
+            ), !Task.isCancelled
             else { return }
-            loaded = Loaded(sources: sources, suggestions: suggestions)
+            loaded = Loaded(input: input, suggestions: suggestions)
         }
     }
 
@@ -54,7 +61,7 @@ struct ReadNextView: View {
     }
 
     @ViewBuilder
-    private func content(sources: [ReadNext.Source]) -> some View {
+    private func content(_ input: Input) -> some View {
         let shelved = ReadNext.shelved(books)
         let suggestions = loaded?.suggestions.filter { !ReadNext.isOnShelf($0.work, shelved) }
         if let suggestions, !suggestions.isEmpty {
@@ -67,15 +74,15 @@ struct ReadNextView: View {
                 }
             }
             .background(.loeBackground)
-        } else if !sources.isEmpty && loaded?.sources != sources {
+        } else if !(input.sources.isEmpty && input.tastes.isEmpty) && loaded?.input != input {
             ProgressView()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(.loeBackground)
-        } else if !sources.contains(where: \.isFavourite) {
+        } else if !input.sources.contains(where: \.isFavourite) && input.tastes.isEmpty {
             EmptyState(
                 title: "Nothing to suggest yet",
                 systemImage: "sparkles",
-                description: "Give a book you've read four or five stars, and Loe will suggest more like it."
+                description: "Give a book you've read four or five stars, or pick what you like to read in Settings, and Loe will suggest more like it."
             )
         } else {
             EmptyState(
@@ -225,6 +232,7 @@ struct ReasonLabel: View {
         case .nextInSeries: "books.vertical.fill"
         case .sameAuthor: "person.fill"
         case .similar: "tag.fill"
+        case .taste: "heart.fill"
         }
     }
 
@@ -238,6 +246,8 @@ struct ReasonLabel: View {
             Text("Shares themes with \(title(books[0]))")
         case .similar(let books):
             Text("Shares themes with \(books.count) of your favourites")
+        case .taste(let genre):
+            Text("From your tastes: \(Text(genre.name))")
         }
     }
 
