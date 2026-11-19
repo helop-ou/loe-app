@@ -5,15 +5,16 @@ import SwiftData
 /// signed for it.
 enum LibraryStore {
     static func makeContainer() -> ModelContainer {
-        var inMemory = false
         #if DEBUG
         // Journeys start from empty shelves and leave nothing behind.
-        inMemory = UserDefaults.standard.bool(forKey: "inMemoryLibrary")
+        if UserDefaults.standard.bool(forKey: "inMemoryLibrary") {
+            return open(ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none))
+        }
         #endif
-        let configuration = ModelConfiguration(
-            isStoredInMemoryOnly: inMemory,
-            cloudKitDatabase: inMemory ? .none : .automatic
-        )
+        return open(ModelConfiguration(cloudKitDatabase: .automatic))
+    }
+
+    private static func open(_ configuration: ModelConfiguration) -> ModelContainer {
         do {
             return try ModelContainer(for: ShelvedBook.self, configurations: configuration)
         } catch {
