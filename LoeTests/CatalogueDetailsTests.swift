@@ -4,14 +4,14 @@ import Testing
 
 struct CatalogueDetailsTests {
     private static let books = """
-        (1, 'b1', 'Keisri hull', 'Jaan Kross', 1978, 1, 0, NULL, 'est', NULL),
-        (2, 'b2', 'Keisri hull', 'Jaan Kross', 2017, 1, 0, NULL, 'est', NULL),
-        (3, 'b3', 'The czar''s madman', 'Jaan Kross', 1992, 1, 0, 'Keisri hull', 'eng', 'est'),
-        (4, 'b4', 'Der Verrückte des Zaren', 'Jaan Kross', 1994, 1, 0, 'Keisri hull', 'ger', 'est'),
-        (5, 'b5', 'Kolme katku vahel', 'Jaan Kross', 1970, 1, 0, NULL, 'est', NULL),
-        (6, 'b6', 'Keisri hull', 'Someone Else', 2001, 0, 0, NULL, 'est', NULL),
-        (7, 'b7', 'Professor Martensi ärasõit', 'Jaan Kross', 1984, 1, 0, NULL, 'est', NULL),
-        (8, 'b8', 'Treading air', 'Jaan Kross', 2003, 1, 0, 'Paigallend', 'eng', 'est')
+        (1, 'b1', 'Keisri hull', 'Jaan Kross', 1978, 1, 0, NULL, 'est', NULL, NULL),
+        (2, 'b2', 'Keisri hull', 'Jaan Kross', 2017, 1, 0, NULL, 'est', NULL, NULL),
+        (3, 'b3', 'The czar''s madman', 'Jaan Kross', 1992, 1, 0, 'Keisri hull', 'eng', 'est', NULL),
+        (4, 'b4', 'Der Verrückte des Zaren', 'Jaan Kross', 1994, 1, 0, 'Keisri hull', 'ger', 'est', NULL),
+        (5, 'b5', 'Kolme katku vahel', 'Jaan Kross', 1970, 1, 0, NULL, 'est', NULL, NULL),
+        (6, 'b6', 'Keisri hull', 'Someone Else', 2001, 0, 0, NULL, 'est', NULL, NULL),
+        (7, 'b7', 'Professor Martensi ärasõit', 'Jaan Kross', 1984, 1, 0, NULL, 'est', NULL, NULL),
+        (8, 'b8', 'Treading air', 'Jaan Kross', 2003, 1, 0, 'Paigallend', 'eng', 'est', NULL)
         """
 
     private func work(_ query: String, by author: String = "Jaan Kross") async throws -> (Catalogue, CatalogueWork) {
