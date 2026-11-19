@@ -75,6 +75,19 @@ A book's page asks `Catalogue.details(for:)` for the rest of what it shows:
 - **By the same author**: other works by the lead author in the same language,
   so an Estonian page lists Estonian books and a translation lists others in
   its language.
+- **Similar books**: books by other authors that share what the bibliography
+  says about this one. A subject heading or genre counts only when more than
+  half of the work's editions carry it, so one oddly catalogued edition cannot
+  steer it. Headings on more than 4,000 editions ("romaanid") and format or
+  nationality headings ("e-raamatud", "eesti") say too little and are left
+  out. A narrow publisher series (3 to 400 editions) counts at half weight.
+  Rarer shared headings count for more, a book published often ranks a little
+  higher, and only the same language and the same side of fiction are
+  suggested. Fewer than three good matches and the section is not shown. In
+  November 2026 about 25,000 of 71,000 fiction editions had no genre more
+  specific than "romaanid" or "ilukirjandus", and for those Loe says nothing
+  rather than guess. Each suggestion shows the heading or series
+  it shares.
 
 The page links each edition's ESTER record (the 001 number without its final
 check digit, so `b10500820` is `record=b1050082`) and searches Rahva Raamat and
