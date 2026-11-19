@@ -192,4 +192,10 @@ Made by the maintainer after reading this note:
 - **Every ESTER library can be picked**, not only Tallinn's. The picker needs
   the list of ESTER locations for all libraries, grouped by library.
 
-Still open: whether ELNET agrees, and which collections count for a branch.
+- **A copy counts by the collection it is in.** Home lending and children's
+  copies are Kohal when on the shelf. Storage copies (`varukogu`) show as able
+  to be ordered. Reference and reading-room copies (`teatmekogu`) show as only
+  to read in the library.
+- **ELNET is asked before any public release.** Internal TestFlight testing
+  goes ahead without it, and the going-public checklist in `docs/release.md`
+  gets the step when availability ships.
