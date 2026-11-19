@@ -160,5 +160,5 @@ struct ShelfListView: View {
 #Preview {
     ShelvesView()
         .environment(CatalogueStore())
-        .modelContainer(for: ShelvedBook.self, inMemory: true)
+        .modelContainer(for: [ShelvedBook.self, Taste.self], inMemory: true)
 }
