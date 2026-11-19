@@ -22,6 +22,8 @@ Investigations that informed a decision, kept as they were written:
 
 - [Library availability](reference/library-availability.md): where Tallinn's
   library holdings can be read, and what a lookup would cost in privacy
+- [Books from abroad](reference/books-from-abroad.md): which online service can
+  find English books published outside Estonia, and what it would send
 
 ## Keeping this clean
 
