@@ -10,6 +10,7 @@
   <img src="https://img.shields.io/badge/Swift-6-3A2338?logo=swift&logoColor=white" alt="Swift 6">
   <img src="https://img.shields.io/badge/catalogue-312%2C349_editions-AE4A26" alt="312,349 editions in the catalogue">
   <img src="https://img.shields.io/badge/no_account%2C_no_tracking-AE4A26" alt="No account, no tracking">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/licence-MPL--2.0-3A2338" alt="MPL-2.0"></a>
 </p>
 
 <p align="center">
@@ -34,3 +35,9 @@
 - [Documentation](docs/README.md): standards, the catalogue, the library and releasing
 - [AGENTS.md](AGENTS.md): how to build, test and ship changes
 - Catalogue data: Eesti rahvusbibliograafia, published by Eesti Rahvusraamatukogu (the National Library of Estonia) as open data. See [docs/catalogue.md](docs/catalogue.md).
+
+## Licence
+
+Loe's code is [MPL-2.0](LICENSE). The name and brand artwork are not part of
+that grant, see [TRADEMARKS.md](TRADEMARKS.md). Newsreader is under the SIL
+Open Font License, in [`Loe/Resources/Licenses`](Loe/Resources/Licenses).
