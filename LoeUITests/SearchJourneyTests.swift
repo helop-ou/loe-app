@@ -55,6 +55,20 @@ final class SearchJourneyTests: XCTestCase {
         attachScreenshot("book-translation", of: app)
     }
 
+    @MainActor
+    func testABookSuggestsSimilarBooks() throws {
+        let app = try openSearch()
+        search("kevade luts", in: app)
+        let result = app.staticTexts["Kevade"].firstMatch
+        XCTAssertTrue(result.waitForExistence(timeout: 5))
+        result.tap()
+        let similar = app.staticTexts["Similar books"]
+        for _ in 0..<4 where !similar.isHittable { app.swipeUp() }
+        XCTAssertTrue(similar.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label CONTAINS 'koolijutud'")).firstMatch.exists)
+        attachScreenshot("book-similar", of: app)
+    }
+
     /// Needs a catalogue served from the Mac and none on the simulator yet. See
     /// docs/catalogue.md, "Trying it in the simulator".
     @MainActor
