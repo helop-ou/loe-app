@@ -35,6 +35,33 @@ JPEG (tens of kilobytes) so it syncs quickly, and reads its colour once, which
 read take a wash of that colour, and Sinu toon will read the same values.
 Books without a photo get the plain card with their title.
 
+## Books entered by hand
+
+When Search finds nothing, or the book the reader wants is not among the
+results, they can add it themselves: "Add it yourself" on an empty search, or
+"Can't find it?" under the results. The form starts from what they searched
+for, unless that was an ISBN, and asks for the title, authors, pages, year and
+language. [`EnteredBook`](../Loe/Shared/Library/EnteredBook.swift) tidies what
+was typed: spaces are collapsed, authors separated by commas are kept as the
+catalogue keeps them, and a page count or year that cannot be right is dropped.
+
+The book goes on Want to read and its page opens. It is a `ShelvedBook` like
+any other, with `sourceName` set to `hand` and its year and language kept
+beside it, so it can be rated, read, photographed and synced. Its work key is
+its own (`hand:` and a UUID), so it never merges with a catalogue book of the
+same title, and editing it never changes which book it is.
+
+Its page shows what the reader entered, with Edit to change it. Editions, the
+ESTER link and library availability need a catalogue record and are left out,
+and the bookshops are searched by title and author. Translations and books by
+the same author still come from the catalogue when it has them. Removing the
+book from the shelves deletes it, so its page closes.
+
+`sourceName`, `year` and `language` are new fields on `ShelvedBook`, so deploy
+the CloudKit schema to production after the first debug run, as for `Taste`.
+Older versions of Loe read a book entered by hand as a catalogue book with no
+record, and show it without the Edit button.
+
 ## Read next
 
 The Read next tab suggests books from the reader's own shelves and the
@@ -162,7 +189,8 @@ still opens ESTER. `AvailabilityTests` reads two holdings pages saved in
 ## Rules
 
 - A book is on one shelf at a time, found by its work key
-  (`CatalogueWork.id`). Shelving it again from any edition moves it.
+  (`CatalogueWork.id`). Shelving it again from any edition moves it. A book
+  entered by hand has its own key.
 - A shelved book keeps its own title, authors, ESTER number and page count, so
   the shelves read the same without the catalogue and through catalogue
   updates. Its page opens from that and fills in the rest from the catalogue.
@@ -176,7 +204,9 @@ it. Nothing merges those yet.
 
 ## Testing
 
-`ShelvedBookTests` and `TasteTests` cover the rules on an in-memory store. In
+`ShelvedBookTests`, `ShelvedEnteredBookTests` and `TasteTests` cover the rules
+on an in-memory store, and `AddBookJourneyTests` adds, edits and removes a
+book by hand in the app. In
 debug builds the `-inMemoryLibrary YES` launch argument opens an empty
 in-memory library, which the journeys use so they start from empty shelves and
 leave nothing behind. They pass `-tasteQuizSeen YES` so the quiz stays away,
