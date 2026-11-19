@@ -29,10 +29,28 @@ internal or external testers. Adding it to an external group, which needs Beta
 App Review the first time, stays a step in App Store Connect.
 
 TestFlight builds use CloudKit's Production environment. After a change to any
-synced model (`ShelvedBook`, `Taste`, `ChosenPlace`, or a new one), run a debug
-build signed for the container once, so Development learns the new fields, then
-deploy the schema from Development to Production in the CloudKit Console before
-testers sync, or sync stops for them. See [Library](library.md).
+synced model (`ShelvedBook`, `Taste`, `ChosenPlace`, or a new one), teach
+Development the new fields, then deploy the schema from Development to
+Production in the CloudKit Console before testers sync, or sync stops for them.
+See [Library](library.md).
+
+A debug build launched with `-initializeCloudKitSchema YES` pushes every synced
+model to Development from a throwaway store, so no shelves are touched and
+nothing needs tapping. On a device signed into iCloud, wired or on the same
+network:
+
+```sh
+xcodebuild -scheme Loe -configuration Debug -destination 'id=<device>' \
+  -derivedDataPath /tmp/loe-device -allowProvisioningUpdates build
+xcrun devicectl device install app --device <device> /tmp/loe-device/Build/Products/Debug-iphoneos/Loe.app
+xcrun devicectl device process launch --device <device> --console --terminate-existing ee.helop.loe \
+  -- -initializeCloudKitSchema YES -inMemoryLibrary YES
+```
+
+It prints "CloudKit schema: Development now has every synced model". Then
+choose Deploy Schema Changes in the CloudKit Console, and reinstall Loe from
+TestFlight on that device. `xcrun devicectl list devices` gives the device's
+identifier.
 
 ## Secrets
 
