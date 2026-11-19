@@ -32,5 +32,5 @@ struct SettingsView: View {
     NavigationStack {
         SettingsView()
     }
-    .modelContainer(for: [ShelvedBook.self, Taste.self], inMemory: true)
+    .modelContainer(for: [ShelvedBook.self, Taste.self, ChosenPlace.self], inMemory: true)
 }

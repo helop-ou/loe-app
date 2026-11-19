@@ -92,5 +92,5 @@ struct SearchView: View {
 #Preview {
     SearchView()
         .environment(CatalogueStore())
-        .modelContainer(for: [ShelvedBook.self, Taste.self], inMemory: true)
+        .modelContainer(for: [ShelvedBook.self, Taste.self, ChosenPlace.self], inMemory: true)
 }
