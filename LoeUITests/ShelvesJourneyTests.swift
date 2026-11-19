@@ -7,7 +7,7 @@ final class ShelvesJourneyTests: XCTestCase {
     func testShelvesABookAndTracksReadingIt() throws {
         continueAfterFailure = false
         let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES", "-inMemoryLibrary", "YES"]
+        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES", "-inMemoryLibrary", "YES", "-openLibraryStub", "YES"]
         app.launch()
 
         XCTAssertTrue(app.staticTexts["Your shelves are empty"].waitForExistence(timeout: 5))
@@ -73,7 +73,7 @@ final class ShelvesJourneyTests: XCTestCase {
     func testGivesABookACoverPhoto() throws {
         continueAfterFailure = false
         let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES", "-inMemoryLibrary", "YES"]
+        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES", "-inMemoryLibrary", "YES", "-openLibraryStub", "YES"]
         app.launch()
         app.tabBars.buttons["Search"].tap()
         if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {

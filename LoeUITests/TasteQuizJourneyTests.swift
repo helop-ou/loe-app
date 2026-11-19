@@ -7,7 +7,7 @@ final class TasteQuizJourneyTests: XCTestCase {
     private func launch(firstTime: Bool) -> XCUIApplication {
         continueAfterFailure = false
         let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-inMemoryLibrary", "YES"]
+        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-inMemoryLibrary", "YES", "-openLibraryStub", "YES"]
         // Launch arguments win over what the app saved, so only pass one to start fresh.
         if firstTime { app.launchArguments += ["-tasteQuizSeen", "NO"] }
         app.launch()

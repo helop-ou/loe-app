@@ -38,6 +38,10 @@ struct BookView: View {
 
     private var newest: CatalogueEdition { shown.editions[0] }
 
+    /// Whether the catalogue has the book. One entered by hand or found on Open
+    /// Library has no editions, ESTER record or library copies to show.
+    private var fromCatalogue: Bool { shown.editions.contains { !$0.erbID.isEmpty } }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 32) {
@@ -51,12 +55,12 @@ struct BookView: View {
                 }
                 if let details {
                     // With no author, a title alone would match unrelated books.
-                    if !details.translations.isEmpty && (shown.authors != nil || !enteredByHand) {
+                    if !details.translations.isEmpty && (shown.authors != nil || fromCatalogue) {
                         WorkRail(title: "Translations", works: details.translations) { work in
                             LanguageName.of(work.language).map { String(localized: "In \($0)") }
                         }
                     }
-                    if !enteredByHand {
+                    if fromCatalogue {
                         EditionsSection(editions: details.editions)
                     }
                     WhereToGetIt(work: shown, edition: newest)
@@ -73,6 +77,9 @@ struct BookView: View {
                             reasons[work.id]
                         }
                     }
+                }
+                if let url = newest.openLibrary?.url {
+                    OpenLibraryCredit(url: url)
                 }
             }
             .padding(.horizontal, 20)
@@ -109,6 +116,25 @@ struct BookView: View {
             guard case .ready(let catalogue) = catalogue.state else { return }
             details = try? await catalogue.details(for: base)
         }
+    }
+}
+
+/// Open Library asks for a link back, and the reader should know where a book
+/// from abroad came from.
+private struct OpenLibraryCredit: View {
+    let url: URL
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("This book comes from Open Library, which Loe asked about it.")
+                .foregroundStyle(.loeSecondary)
+            Link(destination: url) {
+                Label("See it on Open Library", systemImage: "arrow.up.right")
+                    .labelStyle(.titleAndIcon)
+            }
+            .tint(.loeAccent)
+        }
+        .font(.footnote)
     }
 }
 

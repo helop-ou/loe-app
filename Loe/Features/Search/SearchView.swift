@@ -8,11 +8,22 @@ struct SearchView: View {
         let entry: EnteredBook
     }
 
+    /// Books from abroad, found on Open Library once typing pauses.
+    enum Online: Equatable {
+        case notAsked
+        case searching
+        case found([OpenLibraryBook])
+        case failed
+    }
+
+    var openLibrary = OpenLibrary.live
+
     @Environment(CatalogueStore.self) private var catalogue
     @Environment(\.modelContext) private var context
     @State private var query = ""
     @State private var results: [CatalogueWork] = []
     @State private var resultsQuery = ""
+    @State private var online: Online = .notAsked
     @State private var scanning = false
     @State private var adding: Adding?
     @State private var path: [CatalogueWork] = []
@@ -69,7 +80,7 @@ struct SearchView: View {
                 ) {
                     addButton(trimmed)
                 }
-            } else if results.isEmpty && resultsQuery == trimmed {
+            } else if results.isEmpty && resultsQuery == trimmed && (online == .notAsked || online == .found([])) {
                 EmptyState(
                     title: "No books found",
                     systemImage: "magnifyingglass",
@@ -78,29 +89,82 @@ struct SearchView: View {
                     addButton(trimmed)
                 }
             } else {
-                List {
-                    ForEach(results) { work in
-                        NavigationLink(value: work) {
-                            SearchResultRow(work: work)
-                        }
-                        .listRowBackground(Color.loeBackground)
-                        .listRowSeparatorTint(.loeHairline)
-                    }
-                    if resultsQuery == trimmed {
-                        Button {
-                            add(trimmed)
-                        } label: {
-                            Label("Can't find it? Add it yourself", systemImage: "plus")
-                                .foregroundStyle(.loeAccent)
-                        }
-                        .listRowBackground(Color.loeBackground)
-                        .listRowSeparator(.hidden)
-                    }
-                }
-                .listStyle(.plain)
-                .scrollContentBackground(.hidden)
-                .background(.loeBackground)
+                resultsList(trimmed)
             }
+        }
+    }
+
+    private func resultsList(_ trimmed: String) -> some View {
+        List {
+            ForEach(results) { work in
+                NavigationLink(value: work) {
+                    SearchResultRow(work: work)
+                }
+                .listRowBackground(Color.loeBackground)
+                .listRowSeparatorTint(.loeHairline)
+            }
+            if resultsQuery == trimmed {
+                onlineSection
+                Button {
+                    add(trimmed)
+                } label: {
+                    Label("Can't find it? Add it yourself", systemImage: "plus")
+                        .foregroundStyle(.loeAccent)
+                }
+                .listRowBackground(Color.loeBackground)
+                .listRowSeparator(.hidden)
+            }
+        }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(.loeBackground)
+    }
+
+    @ViewBuilder
+    private var onlineSection: some View {
+        switch online {
+        case .notAsked, .found([]):
+            EmptyView()
+        case .searching:
+            onlineSection {
+                HStack(spacing: 10) {
+                    ProgressView()
+                    Text("Searching Open Library…")
+                        .foregroundStyle(.loeSecondary)
+                }
+            }
+        case .failed:
+            onlineSection {
+                Text("Open Library can't be reached right now.")
+                    .foregroundStyle(.loeSecondary)
+            }
+        case .found(let books):
+            onlineSection {
+                ForEach(books) { book in
+                    NavigationLink(value: book.work) {
+                        SearchResultRow(work: book.work)
+                    }
+                    .listRowSeparatorTint(.loeHairline)
+                }
+            }
+        }
+    }
+
+    private func onlineSection(@ViewBuilder rows: () -> some View) -> some View {
+        Section {
+            rows()
+                .listRowBackground(Color.loeBackground)
+            // A row rather than the section's footer, which a plain list paints in
+            // the system's own colour.
+            Text("Books published abroad. Loe asks Open Library about what you search for, and nothing else.")
+                .font(.footnote)
+                .foregroundStyle(.loeSecondary)
+                .listRowBackground(Color.loeBackground)
+                .listRowSeparator(.hidden)
+        } header: {
+            Text("From Open Library")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.loeSecondary)
         }
     }
 
@@ -122,6 +186,7 @@ struct SearchView: View {
         guard case .ready(let catalogue) = catalogue.state, !trimmed.isEmpty else {
             results = []
             resultsQuery = trimmed
+            online = .notAsked
             return
         }
         // Wait for a pause in typing. A new keystroke cancels this task.
@@ -131,6 +196,22 @@ struct SearchView: View {
         guard !Task.isCancelled else { return }
         results = found
         resultsQuery = trimmed
+        guard OpenLibrary.asksAbout(trimmed) else {
+            online = .notAsked
+            return
+        }
+        // Back from a book's page, the answer is already known.
+        if let known = await openLibrary.known(trimmed) {
+            online = .found(OpenLibraryBook.unseen(known, besides: found))
+            return
+        }
+        online = .searching
+        do {
+            guard let books = try await openLibrary.search(for: trimmed), !Task.isCancelled else { return }
+            online = .found(OpenLibraryBook.unseen(books, besides: found))
+        } catch {
+            if !Task.isCancelled { online = .failed }
+        }
     }
 }
 
