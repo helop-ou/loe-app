@@ -44,6 +44,53 @@ struct ShelvedOpenLibraryBookTests {
         #expect(books.first?.shelf == .read)
     }
 
+    private let haloInCatalogue = CatalogueEdition(id: 7, erbID: "b10000001", title: "Halo", subtitle: "The fall of reach", authors: "Eric Nylund")
+    private var haloInCatalogueWork: CatalogueWork { CatalogueWork(id: CatalogueWork.key(for: haloInCatalogue), editions: [haloInCatalogue]) }
+
+    private func all() throws -> [ShelvedBook] {
+        try context.fetch(FetchDescriptor<ShelvedBook>())
+    }
+
+    /// The catalogue keeps "The fall of reach" apart, Open Library puts it in the
+    /// title, and only one names the middle initial. It is still one book.
+    @Test func theCataloguesCopyIsMovedNotAddedAgain() throws {
+        try ShelvedBook.shelve(haloInCatalogueWork, edition: haloInCatalogue, on: .wantToRead, in: context)
+        let book = try ShelvedBook.shelve(halo.work, edition: halo.work.editions[0], on: .reading, in: context)
+        let books = try all()
+        #expect(books.count == 1)
+        #expect(book.shelf == .reading)
+        #expect(book.source == .catalogue)
+        #expect(book.subtitle == "The fall of reach")
+    }
+
+    @Test func openLibrarysCopyIsMovedNotAddedAgain() throws {
+        try ShelvedBook.shelve(halo.work, edition: halo.work.editions[0], on: .reading, in: context)
+        let book = try ShelvedBook.shelve(haloInCatalogueWork, edition: haloInCatalogue, on: .read, in: context)
+        #expect(try all().count == 1)
+        #expect(book.shelf == .read)
+        #expect(book.source == .openLibrary)
+    }
+
+    @Test func anotherBookByTheSameAuthorStaysApart() throws {
+        try ShelvedBook.shelve(haloInCatalogueWork, edition: haloInCatalogue, on: .read, in: context)
+        let strike = OpenLibraryBook(record: .init(workKey: "/works/OL2W"), title: "Halo: First Strike", authors: ["Eric S. Nylund"])
+        try ShelvedBook.shelve(strike.work, edition: strike.work.editions[0], on: .wantToRead, in: context)
+        #expect(try all().count == 2)
+    }
+
+    @Test func theSameTitleByAnotherAuthorStaysApart() throws {
+        try ShelvedBook.shelve(haloInCatalogueWork, edition: haloInCatalogue, on: .read, in: context)
+        let other = OpenLibraryBook(record: .init(workKey: "/works/OL3W"), title: "Halo: The Fall of Reach", authors: ["Maria Kask"])
+        try ShelvedBook.shelve(other.work, edition: other.work.editions[0], on: .wantToRead, in: context)
+        #expect(try all().count == 2)
+    }
+
+    @Test func aBookEnteredByHandIsNeverMatched() throws {
+        ShelvedBook.add(EnteredBook(title: "Halo: The Fall of Reach", authors: "Eric Nylund"), on: .read, in: context)
+        try ShelvedBook.shelve(halo.work, edition: halo.work.editions[0], on: .reading, in: context)
+        #expect(try all().count == 2)
+    }
+
     @Test func aCatalogueBookHasNoOpenLibraryRecord() throws {
         let kross = CatalogueEdition(id: 1, erbID: "b10544215", title: "Keisri hull", authors: "Jaan Kross")
         let book = try ShelvedBook.shelve(CatalogueWork(id: CatalogueWork.key(for: kross), editions: [kross]), edition: kross, on: .read, in: context)

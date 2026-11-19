@@ -11,6 +11,9 @@ final class ShelvedBook {
     /// The edition the reader shelved.
     var erbID: String = ""
     var title: String = ""
+    /// The catalogue keeps a subtitle apart, and it tells one book from another
+    /// when the same book comes from Open Library. See `SameBook`.
+    var subtitle: String?
     var authors: String?
     /// Stored by name so queries can filter on it. Read `shelf` instead.
     var shelfName: String = Shelf.wantToRead.rawValue
@@ -50,6 +53,7 @@ final class ShelvedBook {
         self.workKey = workKey
         erbID = edition.erbID
         title = edition.title
+        subtitle = edition.subtitle
         authors = edition.authors
         pageCount = edition.pages
         if let record = edition.openLibrary {
@@ -154,9 +158,14 @@ final class ShelvedBook {
     /// Enough of the book to open its page. The page finds the rest in the catalogue.
     var work: CatalogueWork {
         CatalogueWork(id: workKey, editions: [
-            CatalogueEdition(id: 0, erbID: erbID, title: title, authors: authors, year: year, language: language, pages: pageCount,
-                             openLibrary: openLibraryRecord),
+            CatalogueEdition(id: 0, erbID: erbID, title: title, subtitle: subtitle, authors: authors, year: year, language: language,
+                             pages: pageCount, openLibrary: openLibraryRecord),
         ])
+    }
+
+    /// Every way this book can be written. See `SameBook`.
+    var sameBookKeys: Set<String> {
+        SameBook.keys(title: title, subtitle: subtitle, leadAuthor: work.editions[0].leadAuthor)
     }
 
     var openLibraryRecord: OpenLibraryRecord? {
@@ -176,7 +185,7 @@ extension ShelvedBook {
         in context: ModelContext,
         now: Date = .now
     ) throws -> ShelvedBook {
-        if let existing = try find(work.id, in: context) {
+        if let existing = try find(work.id, in: context) ?? sameBook(as: edition, in: context) {
             existing.move(to: shelf, now: now)
             return existing
         }
@@ -191,6 +200,24 @@ extension ShelvedBook {
         let book = ShelvedBook(entered: entered, shelf: shelf, now: now)
         context.insert(book)
         return book
+    }
+
+    /// The same book already on a shelf from the other source: the catalogue's copy
+    /// of a book from Open Library, or the reverse, written differently enough that
+    /// their work keys differ. Books entered by hand never match.
+    static func sameBook(as edition: CatalogueEdition, in context: ModelContext) throws -> ShelvedBook? {
+        let other: Source
+        if edition.openLibrary != nil {
+            other = .catalogue
+        } else if !edition.erbID.isEmpty {
+            other = .openLibrary
+        } else {
+            return nil
+        }
+        let keys = SameBook.keys(title: edition.title, subtitle: edition.subtitle, leadAuthor: edition.leadAuthor)
+        return try context.fetch(FetchDescriptor<ShelvedBook>()).first {
+            $0.source == other && !keys.isDisjoint(with: $0.sameBookKeys)
+        }
     }
 
     static func find(_ workKey: String, in context: ModelContext) throws -> ShelvedBook? {
