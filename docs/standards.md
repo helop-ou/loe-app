@@ -44,6 +44,7 @@ Loe/
     Settings/                  Settings, and the tastes quiz on first launch
   Shared/
     Catalogue/                 The offline catalogue: SQLite access, search, works
+    Places/                    The libraries and bookshops a reader can pick
     Library/                   The reader's shelves, stored with SwiftData
     UI/                        Brand type, colour and components used across features
   Resources/                   Fonts and licence texts

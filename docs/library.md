@@ -98,6 +98,38 @@ version of Loe may have added.
 container once, then deploy the schema to production, or TestFlight builds
 will not sync it.
 
+## Where to get it
+
+A book's page lists where to get it: the libraries and bookshops the reader
+picked in Settings, in their order, or ESTER, Rahva Raamat and Apollo when
+they have picked none. A library row opens the book's ESTER record and a shop
+row the shop's search for the title and author.
+
+[`Place`](../Loe/Shared/Places/Place.swift) holds every place that can be
+picked:
+
+- **Tallinna Raamatukogud**, branch by branch, as the library's locations page
+  lists them, with the bus and the three small lending points.
+- **Tartu Linnaraamatukogu**: the main library and its four branches.
+- **Every other library in ESTER**, one place each, from ELNET's list of
+  participating libraries.
+- **Rahva Raamat and Apollo.**
+
+Most county and town public libraries are not in ESTER but in URRAM
+(lugeja.ee) or Riksweb, so they cannot be picked yet.
+
+Each place says how ESTER names its shelves in a book's holdings, such as
+`TlnRK Kännukuke lastekirjandus`. The longest prefix that matches decides the
+place, so `Tartu LR Karlova harukogu` is the Karlova branch, while
+`Tartu LR lasteosakond` falls to the main library. Availability will use this
+to put each copy in its place.
+
+Each pick is one `ChosenPlace` record, synced like the shelves, with a
+position for its order. A place's ID is kept in iCloud, so never change one.
+Places this version does not know are kept but not shown. `ChosenPlace` is a
+new record type, so deploy the CloudKit schema to production after the first
+debug run, as for `Taste`.
+
 ## Rules
 
 - A book is on one shelf at a time, found by its work key
