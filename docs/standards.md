@@ -171,10 +171,20 @@ every file, whose review GitHub requests on each pull request.
 
 ### Continuous integration
 
-A tests workflow arrives with the Xcode project and runs the unit suite on
-every pull request. CI runs on pull requests and pushes to `main` only,
-never on a schedule. It is a backstop, not a replacement: run the tests
-before pushing, because CI only reports after the push.
+`.github/workflows/tests.yml` runs on every pull request and every push to
+`main`, never on a schedule:
+
+- **App tests (iOS)**: the whole `Loe` scheme, unit tests and journeys, on
+  GitHub's `xcode-27` image with Xcode 27.2, on a regular iPhone on the newest
+  standard iOS runtime it has. The journeys that need the catalogue skip,
+  because the runner has none. When the local Xcode moves, move
+  `DEVELOPER_DIR` in the same change. A failed run keeps its result bundle
+  and log for 14 days.
+- **Catalogue build tests**: `tools/catalogue` on Ubuntu.
+
+`main` requires the conventions check and both test jobs. CI is a backstop,
+not a replacement: run the tests before pushing, because CI only reports after
+the push.
 
 ## Writing
 

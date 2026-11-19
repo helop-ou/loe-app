@@ -49,24 +49,25 @@ Loe has one secret: the App Store Connect API key "Loe uploads".
   the iCloud container and the catalogue's address are all visible in any
   signed build.
 
-## Before the repository goes public
+## Keeping the public repository safe
 
-Checked on 2026-11-19: no secret or credential file in any commit, and the
-Release binary carries none of the debug launch arguments.
+The repository went public on 2026-11-19, after a scan of every commit found no
+secret or credential file and the Release binary was checked for debug launch
+arguments. It is kept that way:
 
-- Protect `main` and every tag with rulesets: pull request required, required
-  checks, linear history, no force push or deletion. Free on a public
-  repository.
-- Keep every workflow on `pull_request`, never `pull_request_target`, with
-  `permissions: contents: read` unless a job needs more, and
-  `persist-credentials: false` on checkout. A fork's pull request then gets a
-  read-only token and no secrets.
-- Pin every action to a full commit SHA with its version in a comment, and
-  allow only GitHub-owned actions in the repository's Actions settings.
-- A workflow that uploads gets its secrets from an environment limited to
-  `main` (Settings → Environments), never from repository secrets, and runs
-  only on `workflow_dispatch`.
-- Run the history scan again before switching:
+- Rulesets protect `main` (pull request required, the required checks, linear
+  history, no force push or deletion) and every tag (no update or deletion),
+  so a catalogue release can never change under the apps that use it.
+- Only GitHub-owned actions may run, and the default workflow token can only
+  read.
+- Workflows run on `pull_request`, never `pull_request_target`, with
+  `permissions: contents: read` and `persist-credentials: false` on checkout. A
+  fork's pull request gets a read-only token and no secrets.
+- Every action is pinned to a full commit SHA with its version in a comment.
+- A workflow that uploads would get its secrets from an environment limited to
+  `main` (Settings → Environments), never from repository secrets, and run only
+  on `workflow_dispatch`. Uploads happen locally for now.
+- Before anything that could hold a secret merges, run the history scan:
   `git rev-list --all | while read c; do git grep -I -l -E 'BEGIN ([A-Z]+ )?PRIVATE KEY|ghp_|github_pat_|AKIA' "$c"; done`.
 
 ## README screens
