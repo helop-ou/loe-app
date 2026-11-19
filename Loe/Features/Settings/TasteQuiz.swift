@@ -53,5 +53,5 @@ struct TasteQuizContent: View {
 
 #Preview {
     TasteQuiz()
-        .modelContainer(for: [ShelvedBook.self, Taste.self], inMemory: true)
+        .modelContainer(for: [ShelvedBook.self, Taste.self, ChosenPlace.self], inMemory: true)
 }
