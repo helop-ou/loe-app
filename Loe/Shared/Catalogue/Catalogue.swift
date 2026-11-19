@@ -161,7 +161,8 @@ actor Catalogue {
                 scores[id] = entry
             }
         }
-        let strongest = scores.sorted { $0.value.score > $1.value.score }.prefix(400).map(\.key)
+        // Ties broken by edition, so the same book suggests the same books on every launch.
+        let strongest = scores.sorted { ($0.value.score, $1.key) > ($1.value.score, $0.key) }.prefix(400).map(\.key)
         guard !strongest.isEmpty else { return [] }
         let first = work.editions[0]
         let candidates = try database.rows(
