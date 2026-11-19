@@ -240,9 +240,10 @@ results as "From Open Library".
   titles share nothing, the book is a translation and the edition's title is
   shown. `OpenLibraryBook.displayTitle` has the rule.
 - **Each book once.** Open Library often has one book as several works. A
-  title (folded, without a leading article) and lead author's surname already
-  in the answer, or among the catalogue's results with or without the
-  catalogue's subtitle, is left out.
+  book already in the answer, or among the catalogue's results, is left out.
+  [`SameBook`](../Loe/Shared/Catalogue/SameBook.swift) decides: the title
+  with or without the catalogue's subtitle, folded and without a leading
+  article, and the lead author's surname. The shelves use the same rule.
 - **Reading it.** The search schema "is not guaranteed to be stable", so every
   field is optional and a malformed result is skipped, not the whole answer.
 

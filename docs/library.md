@@ -68,16 +68,21 @@ A book found on Open Library (see [Catalogue](catalogue.md#books-from-abroad))
 is shelved from its page like any other. Its `ShelvedBook` has `sourceName`
 set to `openLibrary`, keeps the Open Library work key, ISBN and cover id
 (`openLibraryKey`, `isbn`, `coverID`) with its year and language, and its page
-opens from the shelf with its link back to Open Library. Its work key is built
-the catalogue's way (folded title and authors), so a book both have stays one
-book on the shelves when the two write its title and authors alike. Open
-Library puts a subtitle into the title and the catalogue keeps it apart, so
-some do not: Search leaves such a book out of the Open Library results when the
-catalogue's results show it, but the two can still be shelved separately.
+opens from the shelf with its link back to Open Library.
 
-`openLibraryKey`, `isbn` and `coverID` are new fields on `ShelvedBook`, so
-deploy the CloudKit schema to production before a build with them reaches
-testers (see [Release](release.md#uploading-to-testflight)).
+A book both sources have stays one book on the shelves. Its work key is built
+the catalogue's way (folded title and authors), and when the two write it
+differently, shelving it looks for the other source's copy first and moves
+that one instead of adding a second. [`SameBook`](../Loe/Shared/Catalogue/SameBook.swift)
+decides, as it does for Search: the title with or without its subtitle (the
+catalogue keeps a subtitle apart, Open Library puts it in the title), folded
+and without a leading article, and the lead author's surname, so "Eric Nylund"
+and "Eric S. Nylund" match. A book shelved from the catalogue keeps its
+subtitle for this. Books entered by hand are never matched.
+
+`subtitle`, `openLibraryKey`, `isbn` and `coverID` are new fields on
+`ShelvedBook`, so deploy the CloudKit schema to production before a build with
+them reaches testers (see [Release](release.md#uploading-to-testflight)).
 
 ## Read next
 
@@ -206,7 +211,8 @@ still opens ESTER. `AvailabilityTests` reads two holdings pages saved in
 ## Rules
 
 - A book is on one shelf at a time, found by its work key
-  (`CatalogueWork.id`). Shelving it again from any edition moves it. A book
+  (`CatalogueWork.id`), or for the catalogue's and Open Library's copies of
+  one book, by `SameBook`. Shelving it again from any edition moves it. A book
   entered by hand has its own key.
 - A shelved book keeps its own title, authors, ESTER number and page count, so
   the shelves read the same without the catalogue and through catalogue
@@ -221,9 +227,9 @@ it. Nothing merges those yet.
 
 ## Testing
 
-`ShelvedBookTests`, `ShelvedEnteredBookTests` and `TasteTests` cover the rules
-on an in-memory store, and `AddBookJourneyTests` adds, edits and removes a
-book by hand in the app. In
+`ShelvedBookTests`, `ShelvedEnteredBookTests`, `ShelvedOpenLibraryBookTests`
+and `TasteTests` cover the rules on an in-memory store, and
+`AddBookJourneyTests` adds, edits and removes a book by hand in the app. In
 debug builds the `-inMemoryLibrary YES` launch argument opens an empty
 in-memory library, which the journeys use so they start from empty shelves and
 leave nothing behind. They pass `-tasteQuizSeen YES` so the quiz stays away,
