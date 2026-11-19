@@ -8,7 +8,10 @@ struct BookView: View {
 
     @Environment(CatalogueStore.self) private var catalogue
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dismiss) private var dismiss
     @State private var details: Catalogue.Details?
+    @State private var editing = false
+    @State private var enteredByHand = false
     @Query private var shelved: [ShelvedBook]
 
     init(work: CatalogueWork) {
@@ -19,11 +22,18 @@ struct BookView: View {
 
     private var book: ShelvedBook? { shelved.first }
 
+    /// A book entered by hand reads from what the reader entered, which they can
+    /// change while the page is open.
+    private var base: CatalogueWork {
+        if let book, book.source == .hand { return book.work }
+        return work
+    }
+
     /// The work with every edition once they have loaded. A page opened from a shelf
     /// starts with only the edition that was shelved.
     private var shown: CatalogueWork {
-        guard let editions = details?.editions, !editions.isEmpty else { return work }
-        return CatalogueWork(id: work.id, editions: editions)
+        guard !enteredByHand, let editions = details?.editions, !editions.isEmpty else { return base }
+        return CatalogueWork(id: base.id, editions: editions)
     }
 
     private var newest: CatalogueEdition { shown.editions[0] }
@@ -32,17 +42,23 @@ struct BookView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 32) {
                 BookHeader(work: shown, edition: newest, book: book)
-                ShelfControls(work: shown, edition: newest, book: book)
+                // A book entered by hand that was just removed is on its way off screen.
+                if book != nil || !enteredByHand {
+                    ShelfControls(work: shown, edition: newest, book: book)
+                }
                 if newest.originalTitle != nil {
                     OriginalCard(edition: newest, original: details?.original)
                 }
                 if let details {
-                    if !details.translations.isEmpty {
+                    // With no author, a title alone would match unrelated books.
+                    if !details.translations.isEmpty && (shown.authors != nil || !enteredByHand) {
                         WorkRail(title: "Translations", works: details.translations) { work in
                             LanguageName.of(work.language).map { String(localized: "In \($0)") }
                         }
                     }
-                    EditionsSection(editions: details.editions)
+                    if !enteredByHand {
+                        EditionsSection(editions: details.editions)
+                    }
                     WhereToGetIt(work: shown, edition: newest)
                     if !details.sameAuthor.isEmpty {
                         WorkRail(title: "By the same author", works: details.sameAuthor) { work in
@@ -72,9 +88,26 @@ struct BookView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
-        .task(id: work.id) {
+        .toolbar {
+            if book != nil, enteredByHand {
+                Button("Edit") { editing = true }
+            }
+        }
+        .sheet(isPresented: $editing) {
+            if let book {
+                EnteredBookSheet("Edit book", book: book.entered) { book.update(from: $0) }
+            }
+        }
+        .onChange(of: book?.source, initial: true) { _, source in
+            if source == .hand { enteredByHand = true }
+        }
+        .onChange(of: book == nil) { _, removed in
+            // A book entered by hand exists only on the shelves, so its page goes with it.
+            if removed && enteredByHand { dismiss() }
+        }
+        .task(id: base) {
             guard case .ready(let catalogue) = catalogue.state else { return }
-            details = try? await catalogue.details(for: work)
+            details = try? await catalogue.details(for: base)
         }
     }
 }

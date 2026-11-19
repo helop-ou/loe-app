@@ -2,14 +2,23 @@ import SwiftData
 import SwiftUI
 
 struct SearchView: View {
+    /// What the add form starts from, each time it opens.
+    private struct Adding: Identifiable {
+        let id = UUID()
+        let entry: EnteredBook
+    }
+
     @Environment(CatalogueStore.self) private var catalogue
+    @Environment(\.modelContext) private var context
     @State private var query = ""
     @State private var results: [CatalogueWork] = []
     @State private var resultsQuery = ""
     @State private var scanning = false
+    @State private var adding: Adding?
+    @State private var path: [CatalogueWork] = []
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             content
                 .navigationTitle("Search")
                 .navigationDestination(for: CatalogueWork.self) { BookView(work: $0) }
@@ -22,6 +31,13 @@ struct SearchView: View {
                 }
                 .sheet(isPresented: $scanning) {
                     ScanSheet { query = $0 }
+                }
+                .sheet(item: $adding) { adding in
+                    EnteredBookSheet("Add a book", book: adding.entry) { book in
+                        // A book entered by hand lives on a shelf, so it starts on Want to read.
+                        let shelved = ShelvedBook.add(book, on: .wantToRead, in: context)
+                        path.append(shelved.work)
+                    }
                 }
         }
     }
@@ -49,27 +65,56 @@ struct SearchView: View {
                 EmptyState(
                     title: "No book with this ISBN",
                     systemImage: "barcode",
-                    description: "The catalogue has the books published in Estonia. Try the title instead."
-                )
+                    description: "The catalogue has the books published in Estonia. Try the title, or add the book yourself."
+                ) {
+                    addButton(trimmed)
+                }
             } else if results.isEmpty && resultsQuery == trimmed {
                 EmptyState(
                     title: "No books found",
                     systemImage: "magnifyingglass",
-                    description: "Check the spelling, or try the author's name."
-                )
+                    description: "Check the spelling, try the author's name, or add the book yourself."
+                ) {
+                    addButton(trimmed)
+                }
             } else {
-                List(results) { work in
-                    NavigationLink(value: work) {
-                        SearchResultRow(work: work)
-                    }
-                    .listRowBackground(Color.loeBackground)
+                List {
+                    ForEach(results) { work in
+                        NavigationLink(value: work) {
+                            SearchResultRow(work: work)
+                        }
+                        .listRowBackground(Color.loeBackground)
                         .listRowSeparatorTint(.loeHairline)
+                    }
+                    if resultsQuery == trimmed {
+                        Button {
+                            add(trimmed)
+                        } label: {
+                            Label("Can't find it? Add it yourself", systemImage: "plus")
+                                .foregroundStyle(.loeAccent)
+                        }
+                        .listRowBackground(Color.loeBackground)
+                        .listRowSeparator(.hidden)
+                    }
                 }
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
                 .background(.loeBackground)
             }
         }
+    }
+
+    private func addButton(_ text: String) -> some View {
+        Button { add(text) } label: {
+            Text("Add it yourself")
+                .foregroundStyle(.loeOnAccent)
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(.loeAccent)
+    }
+
+    private func add(_ text: String) {
+        adding = Adding(entry: EnteredBook(searchedFor: text))
     }
 
     private func search() async {
