@@ -53,9 +53,7 @@ Loe has one secret: the App Store Connect API key "Loe uploads".
 
 ## Keeping the public repository safe
 
-The repository went public on 2026-11-19, after a scan of every commit found no
-secret or credential file and the Release binary was checked for debug launch
-arguments. It is kept that way:
+The repository is public. It stays safe to be:
 
 - Rulesets protect `main` (pull request required, the required checks, linear
   history, no force push or deletion) and every tag (no update or deletion),

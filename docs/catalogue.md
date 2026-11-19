@@ -88,11 +88,10 @@ A book's page asks `Catalogue.details(for:)` for the rest of what it shows:
   out. A narrow publisher series (3 to 400 editions) counts at half weight.
   Rarer shared headings count for more, a book published often ranks a little
   higher, and only the same language and the same side of fiction are
-  suggested. Fewer than three good matches and the section is not shown. In
-  November 2026 about 25,000 of 71,000 fiction editions had no genre more
-  specific than "romaanid" or "ilukirjandus", and for those Loe says nothing
-  rather than guess. Each suggestion shows the heading or series
-  it shares.
+  suggested. Fewer than three good matches and the section is not shown, so
+  a book with no genre more specific than "romaanid" or "ilukirjandus" gets
+  none rather than a guess. Each suggestion shows the heading or series it
+  shares.
 
 Read next also asks `Catalogue.nextInSeries(after:)` for the book that
 follows one the reader is reading or has read, in its language:
@@ -134,20 +133,12 @@ first.
 | Poetry | luuletused, poeemid, haikud, proosaluuletused, sonetid, armastusluule, värssromaanid |
 | Young adult | noorsookirjandus, koolijutud |
 
-What the November 2026 catalogue showed:
-
-- Plot twists and mysteries have no heading. „Psühholoogilised romaanid“ are
-  mostly psychological thrillers (348 of 522 since 2000 are also
-  „põnevusromaanid“), and mysteries are catalogued as crime. „Müsteeriumid“
-  are medieval mystery plays.
-- Each genre has at least 230 fiction editions since 2000. Plays were left
-  out: 78% of them are from before 1990.
-- Genre headings arrived around 1990, so older classics rarely carry one.
-  Fiction in other languages hardly does: since 2000, 99 English and 109
-  Russian editions carry one of the main novel genres, against 14,732 in
-  Estonian.
-- Of fiction since 2000, 6,662 of 43,426 editions have no genre beyond
-  „romaanid“ or „ilukirjandus“, and no genre reaches them.
+- The bibliography catalogues mysteries as crime, so they come under Crime and
+  mystery. „Müsteeriumid“ are medieval mystery plays, and plays are not
+  offered.
+- Genre headings arrived around 1990 and are rare outside Estonian, so a genre
+  finds mostly Estonian fiction from the last thirty years. A novel with no
+  genre beyond „romaanid“ or „ilukirjandus“ is not found by any.
 
 `GenreTests` checks every heading against the catalogue installed on the
 simulator, where there is one, so a misspelt name fails instead of finding
