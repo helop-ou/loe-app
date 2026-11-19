@@ -141,6 +141,16 @@
         }
       }
     },
+    "Allow Loe to use the camera in Settings, or type the ISBN into Search.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Luba Loel seadetes kaamerat kasutada või sisesta ISBN otsingusse."
+          }
+        }
+      }
+    },
     "Apollo": {
       "shouldTranslate": false
     },
@@ -353,6 +363,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Veel pole midagi soovitada"
+          }
+        }
+      }
+    },
+    "Open Settings": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ava seaded"
           }
         }
       }
@@ -576,6 +596,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pildista"
+          }
+        }
+      }
+    },
+    "The camera isn't available": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kaamera pole kasutatav"
           }
         }
       }
