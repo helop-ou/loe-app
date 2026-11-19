@@ -238,33 +238,60 @@ private struct EditionRow: View {
     }
 }
 
+/// The reader's libraries and bookshops, in their order, or ESTER and two bookshops
+/// when they have not picked any.
 private struct WhereToGetIt: View {
     let work: CatalogueWork
     let edition: CatalogueEdition
 
-    var body: some View {
+    @Query private var chosen: [ChosenPlace]
+
+    private struct Row: Identifiable {
+        let id: String
+        let name: String
+        let detail: Text
+        let url: URL
+    }
+
+    private var rows: [Row] {
         let query = BookLinks.query(for: work)
+        let ester = BookLinks.ester(edition.erbID)
+        let places = ChosenPlace.places(chosen)
+        guard !places.isEmpty else {
+            return [
+                ester.map { Row(id: "ester", name: "ESTER", detail: Text("See if your library has it"), url: $0) },
+                BookLinks.rahvaRaamat(query).map { Row(id: Place.rahvaRaamat.id, name: Place.rahvaRaamat.name, detail: Text("Bookshop"), url: $0) },
+                BookLinks.apollo(query).map { Row(id: Place.apollo.id, name: Place.apollo.name, detail: Text("Bookshop"), url: $0) },
+            ].compactMap { $0 }
+        }
+        return places.compactMap { place in
+            switch place.kind {
+            case .library:
+                ester.map { Row(id: place.id, name: place.name, detail: place.group.map { Text(verbatim: $0) } ?? Text("Library"), url: $0) }
+            case .shop:
+                BookLinks.shop(place, query: query).map { Row(id: place.id, name: place.name, detail: Text("Bookshop"), url: $0) }
+            }
+        }
+    }
+
+    var body: some View {
+        let rows = rows
         VStack(alignment: .leading, spacing: 12) {
             Text("Where to get it")
                 .loeHeading(.section)
                 .foregroundStyle(.loeInk)
             VStack(spacing: 0) {
-                if let ester = BookLinks.ester(edition.erbID) {
-                    LinkRow(name: "ESTER", detail: "See if your library has it", url: ester)
-                    Divider().overlay(.loeHairline)
-                }
-                if let url = BookLinks.rahvaRaamat(query) {
-                    LinkRow(name: "Rahva Raamat", detail: "Bookshop", url: url)
-                    Divider().overlay(.loeHairline)
-                }
-                if let url = BookLinks.apollo(query) {
-                    LinkRow(name: "Apollo", detail: "Bookshop", url: url)
+                ForEach(rows) { row in
+                    LinkRow(name: row.name, detail: row.detail, url: row.url)
+                    if row.id != rows.last?.id {
+                        Divider().overlay(.loeHairline)
+                    }
                 }
             }
             .padding(.horizontal, 16)
             .background(.loeCard, in: .rect(cornerRadius: 18))
             .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(.loeHairline))
-            Text("Opens in your browser.")
+            Text("Opens in your browser. Choose your libraries and shops in Settings.")
                 .font(.footnote)
                 .foregroundStyle(.loeSecondary)
         }
@@ -272,8 +299,8 @@ private struct WhereToGetIt: View {
 }
 
 private struct LinkRow: View {
-    let name: LocalizedStringKey
-    let detail: LocalizedStringKey
+    let name: String
+    let detail: Text
     let url: URL
 
     var body: some View {
@@ -283,7 +310,7 @@ private struct LinkRow: View {
                     Text(name)
                         .font(.body.weight(.semibold))
                         .foregroundStyle(.loeInk)
-                    Text(detail)
+                    detail
                         .font(.subheadline)
                         .foregroundStyle(.loeSecondary)
                 }

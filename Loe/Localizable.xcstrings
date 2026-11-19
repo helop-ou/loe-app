@@ -121,12 +121,32 @@
         }
       }
     },
+    "A book's page lists these, in this order. With none chosen, it shows ESTER, Rahva Raamat and Apollo.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Raamatu lehel on need selles järjekorras. Kui ühtegi pole valitud, on seal ESTER, Rahva Raamat ja Apollo."
+          }
+        }
+      }
+    },
     "Add a cover photo": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Lisa kaanepilt"
+          }
+        }
+      }
+    },
+    "Add a library or bookshop": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lisa raamatukogu või raamatupood"
           }
         }
       }
@@ -151,15 +171,22 @@
         }
       }
     },
-    "Apollo": {
-      "shouldTranslate": false
-    },
     "Bookshop": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Raamatupood"
+          }
+        }
+      }
+    },
+    "Bookshops": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Raamatupoed"
           }
         }
       }
@@ -284,8 +311,15 @@
         }
       }
     },
-    "ESTER": {
-      "shouldTranslate": false
+    "Edit": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Muuda"
+          }
+        }
+      }
     },
     "Editions": {
       "localizations": {
@@ -333,6 +367,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Otsi raamatut ja lisa see riiulisse."
+          }
+        }
+      }
+    },
+    "Find a library": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otsi raamatukogu"
           }
         }
       }
@@ -403,6 +447,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "See võib olla Loe uuemast versioonist."
+          }
+        }
+      }
+    },
+    "Libraries and bookshops": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Raamatukogud ja raamatupoed"
+          }
+        }
+      }
+    },
+    "Library": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Raamatukogu"
           }
         }
       }
@@ -507,12 +571,22 @@
         }
       }
     },
-    "Opens in your browser.": {
+    "Opens in your browser. Choose your libraries and shops in Settings.": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Avaneb brauseris."
+            "value": "Avaneb brauseris. Oma raamatukogud ja poed saad valida seadetes."
+          }
+        }
+      }
+    },
+    "Other libraries in ESTER": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teised ESTERi raamatukogud"
           }
         }
       }
@@ -577,9 +651,6 @@
         }
       }
     },
-    "Rahva Raamat": {
-      "shouldTranslate": false
-    },
     "Rating": {
       "localizations": {
         "et": {
@@ -626,6 +697,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Loen praegu"
+          }
+        }
+      }
+    },
+    "Remove": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eemalda"
           }
         }
       }
