@@ -109,6 +109,49 @@ follows one the reader is reading or has read, in its language:
 Where several works fit, the most often published is chosen. A sequel the
 bibliography does not number, such as „Suvi“ after „Kevade“, is not found.
 
+### Genres
+
+The quiz's genres find books through the bibliography's genre headings (655),
+which carry nearly all the signal on fiction. Subject headings (650) on fiction
+are mostly nationalities. Each `Genre` lists the heading names it takes, as the
+bibliography spells them, and `Catalogue.works(withHeadings:language:limit:)`
+finds fiction in one language under any of them, the most often published
+first.
+
+| Genre | Headings |
+| --- | --- |
+| Crime and mystery | kriminaalromaanid, kriminaaljutud |
+| Thrillers | põnevusromaanid, spiooniromaanid |
+| Psychological | psühholoogilised romaanid |
+| Romance | armastusromaanid, haiglaromaanid |
+| Family and drama | perekonnaromaanid, päevikromaanid, arenguromaanid, külaromaanid |
+| Historical | ajaloolised romaanid, biograafilised romaanid, sõjaromaanid, ajaloolised näidendid |
+| Fantasy | fantaasiaromaanid, fantaasiakirjandus |
+| Science fiction | ulmeromaanid, ulmejutud, ulmekirjandus, düstoopiad |
+| Horror | õudusromaanid, õudusjutud |
+| Humour | huumor, humoreskid (kirjandus), satiirilised romaanid, satiir |
+| Poetry | luuletused, poeemid, haikud, proosaluuletused, sonetid, armastusluule, värssromaanid |
+| Young adult | noorsookirjandus, koolijutud |
+
+What the November 2026 catalogue showed:
+
+- Plot twists and mysteries have no heading. „Psühholoogilised romaanid“ are
+  mostly psychological thrillers (348 of 522 since 2000 are also
+  „põnevusromaanid“), and mysteries are catalogued as crime. „Müsteeriumid“
+  are medieval mystery plays.
+- Each genre has at least 230 fiction editions since 2000. Plays were left
+  out: 78% of them are from before 1990.
+- Genre headings arrived around 1990, so older classics rarely carry one.
+  Fiction in other languages hardly does: since 2000, 99 English and 109
+  Russian editions carry one of the main novel genres, against 14,732 in
+  Estonian.
+- Of fiction since 2000, 6,662 of 43,426 editions have no genre beyond
+  „romaanid“ or „ilukirjandus“, and no genre reaches them.
+
+`GenreTests` checks every heading against the catalogue installed on the
+simulator, where there is one, so a misspelt name fails instead of finding
+nothing.
+
 The page links each edition's ESTER record (the 001 number without its final
 check digit, so `b10500820` is `record=b1050082`) and searches Rahva Raamat and
 Apollo for the title and author.
