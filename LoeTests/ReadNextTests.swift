@@ -125,17 +125,22 @@ struct ReadNextTests {
         ,
         (40, 'b40', 'Krimka', 'Krimikirjanik', 2010, 1, 0, NULL, 'est', NULL, NULL),
         (41, 'b41', 'Teine krimka', 'Teine Kirjanik', 2011, 1, 0, NULL, 'est', NULL, NULL),
+        (44, 'b44', 'Teine krimka', 'Teine Kirjanik', 2015, 1, 0, NULL, 'est', NULL, NULL),
         (42, 'b42', 'A crime novel', 'Crime Writer', 2012, 1, 0, NULL, 'eng', NULL, NULL),
         (43, 'b43', 'A loved novel', 'Loved Writer', 2013, 1, 0, NULL, 'eng', NULL, NULL)
         """
 
     private static let crimeHeadings = Self.extra + """
         INSERT INTO heading (id, kind, name) VALUES (2, 2, 'kriminaalromaanid');
-        INSERT INTO edition_heading VALUES (40, 2), (41, 2), (42, 2);
+        INSERT INTO edition_heading VALUES (40, 2), (41, 2), (44, 2), (42, 2);
         """
 
-    private func withTastes(_ sources: [ReadNext.Source], tastes: [Genre], shelved: [ReadNext.Shelved] = []) async throws -> [ReadNextSuggestion] {
+    private func withTastes(
+        _ sources: [ReadNext.Source], tastes: [Genre], shelved: [ReadNext.Shelved] = [], perTaste: Int = 4
+    ) async throws -> [ReadNextSuggestion] {
         let catalogue = try Catalogue(url: CatalogueFixture.make(books: Self.crimeBooks, headings: Self.crimeHeadings))
+        var limits = limits
+        limits.perTaste = perTaste
         return try await ReadNext.suggestions(from: sources, tastes: tastes, excluding: shelved, in: catalogue, limits: limits)
     }
 
@@ -143,6 +148,12 @@ struct ReadNextTests {
         let found = try await withTastes([], tastes: [.crime], shelved: [Self.shelved("Teine krimka", by: "Teine Kirjanik")])
         #expect(found.map(\.work.title) == ["Krimka"])
         #expect(found.first?.reason == .taste(.crime))
+    }
+
+    @Test func aShelvedBookDoesNotTakeAGenresPlace() async throws {
+        // Teine krimka, published twice, would be crime's one book, but it is on a shelf.
+        let found = try await withTastes([], tastes: [.crime], shelved: [Self.shelved("Teine krimka", by: "Teine Kirjanik")], perTaste: 1)
+        #expect(found.map(\.work.title) == ["Krimka"])
     }
 
     @Test func tastesSuggestInTheLanguageTheReaderReads() async throws {
