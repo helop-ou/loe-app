@@ -121,14 +121,49 @@ Most county and town public libraries are not in ESTER but in URRAM
 Each place says how ESTER names its shelves in a book's holdings, such as
 `TlnRK Kännukuke lastekirjandus`. The longest prefix that matches decides the
 place, so `Tartu LR Karlova harukogu` is the Karlova branch, while
-`Tartu LR lasteosakond` falls to the main library. Availability will use this
-to put each copy in its place.
+`Tartu LR lasteosakond` falls to the main library. Availability uses this to
+put each copy in its place.
 
 Each pick is one `ChosenPlace` record, synced like the shelves, with a
 position for its order. A place's ID is kept in iCloud, so never change one.
 Places this version does not know are kept but not shown. `ChosenPlace` is a
 new record type, so deploy the CloudKit schema to production after the first
 debug run, as for `Taste`.
+
+## Availability
+
+When the reader has picked libraries, a book's page asks ESTER which copies
+they have as soon as it opens, with no button to tap, and each library's row
+says what it found. [`AvailabilityChecker`](../Loe/Shared/Places/AvailabilityChecker.swift)
+fetches each edition's holdings page from the web catalogue over HTTPS, at most
+four at a time, for the twelve newest editions. Its session keeps no cookies,
+cache or credentials, so ESTER learns which records were asked about and the
+phone's address, and nothing else. Answers are reused for ten minutes, in
+memory only. With no library picked, nothing is asked. ESTER is named under
+the list, as its statutes ask of anything that shows its data.
+
+[`ESTERHoldings`](../Loe/Shared/Places/Availability.swift) reads each row of a
+holdings page by the comment that starts each cell (`field 1` is the location,
+`field %` the status, `field !` a note) and counts the copy by where it is:
+
+| ESTER says | Counts as |
+| --- | --- |
+| KOHAL, or "Teavik tagastamisel" (just returned) | On the shelf, or in storage when the location is a `hoidla` that is not an open `avahoidla` |
+| TÄHTAEG and a date | On loan until then. Over 60 days past, taken to be lost and left out |
+| VARUKOGUS | In storage, can be ordered |
+| TEEL | On its way between libraries |
+| KOHALKASUTUS, ARHIIVEKSEMPLAR, a note EI LAENUTATA or KOHALKASUTUS, or a reference, reading room, archive or `telli saali` location | Only to read in the library |
+| REMONDI AJAKS PAKITUD, ARVE ESITATUD, anything else | Left out |
+
+A library's row then says the first of these that is true: the edition on
+screen is on the shelf, another edition is (naming its year), a copy can be
+ordered from storage, the first due date to come (or overdue, when every loan
+is), on its way, only to read there, or not in this library (Puudub).
+
+Without a network or an answer the row says it could not check, and the link
+still opens ESTER. `AvailabilityTests` reads two holdings pages saved in
+`LoeTests/Fixtures`. In November 2026 the rules gave the same answer as reading
+ESTER by hand for „Keisri hull“, „Kevade“ and „Rehepapp“ at five libraries.
 
 ## Rules
 

@@ -3,7 +3,9 @@
 <plist version="1.0">
 <dict>
 	<!-- Loe collects nothing and tracks nobody. Reading data stays on the phone
-	     and in the reader's own iCloud. See docs/release.md, "Privacy". -->
+	     and in the reader's own iCloud. A book's page asks ESTER which libraries
+	     have it, sending only the book's record numbers. See docs/release.md,
+	     "Privacy". -->
 	<key>NSPrivacyTracking</key>
 	<false/>
 	<key>NSPrivacyTrackingDomains</key>

@@ -95,3 +95,15 @@ The header images come from the brand repository's GitHub images.
 only required-reason API is `UserDefaults`, for the appearance setting and the
 catalogue's update check. The catalogue download sends nothing about the
 reader, and covers are the reader's own photos.
+
+When a reader has picked libraries, a book's page asks ESTER about that book
+as it opens, over HTTPS with no cookies (see [Library](library.md#availability)).
+ESTER sees which book records were asked about, from the phone's address, as
+any website would. Loe keeps nothing of it, so the manifest's collected data
+stays empty.
+
+## Before the App Store
+
+- Ask ELNET (ester@elnet.ee) for permission to show ESTER's availability in
+  the app. Internal TestFlight testing goes ahead without it. See
+  [library availability](reference/library-availability.md#decisions).
