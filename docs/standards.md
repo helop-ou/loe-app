@@ -41,6 +41,7 @@ Loe/
     ReadNext/
     Search/                    Search, and the catalogue download
     Book/                      A book's own page
+    Settings/                  Settings, and the tastes quiz on first launch
   Shared/
     Catalogue/                 The offline catalogue: SQLite access, search, works
     Library/                   The reader's shelves, stored with SwiftData

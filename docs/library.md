@@ -60,8 +60,13 @@ catalogue, worked out on the phone. Nothing is sent anywhere.
   so is any part after the first, so nothing skips ahead.
 - **Similar books.** For each favourite, the similar books its page shows. A
   book like several favourites names how many and comes first.
-- **Order.** Series first, then books by favourite authors and similar books
-  in turn, at most 24. Each book is suggested once, for its first reason.
+- **Tastes.** For each genre the reader likes, four of the most often
+  published books under its headings, in the language the reader's favourites
+  and series are mostly in, Estonian until there are any. See
+  [Catalogue](catalogue.md#genres).
+- **Order.** Series first, then books by favourite authors, similar books and
+  books for the reader's tastes in turn, at most 24. Each book is suggested
+  once, for its first reason.
 - **Left out.** Anything on a shelf, from any edition. A title with a part or
   year after its first full stop, „Harry Potter ja saladuste kamber. 2. aasta“,
   is the same book as the title without it, by the same author.
@@ -69,12 +74,29 @@ catalogue, worked out on the phone. Nothing is sent anywhere.
 Each suggestion says why, naming the reader's book: „Kevade“ in Estonian marks,
 *Truth and justice* in italics for an English one. The first is shown large
 with a button that puts it on Want to read. The list is worked out again when a
-rating or a shelf changes, but not when a page is updated or a suggestion is
-kept, which only takes it off the list.
+rating, a shelf or a taste changes, but not when a page is updated or a
+suggestion is kept, which only takes it off the list.
 
-With no catalogue the tab says to download it. With no favourites it says to
-rate a book four or five stars. With favourites and nothing close enough, it
-says so.
+With no catalogue the tab says to download it. With no favourites and no
+tastes it says to rate a book four or five stars or pick tastes in Settings.
+With something to go on and nothing close enough, it says so.
+
+## Tastes
+
+On first launch Loe asks what the reader likes to read: twelve genres to tap,
+from [`Genre`](../Loe/Shared/Catalogue/Genre.swift). Done keeps the picks and
+Skip keeps nothing. Either way the quiz is not asked again on that phone
+(`tasteQuizSeen` in its user defaults), nor on a phone that already has tastes
+from iCloud. Settings, from the gear on Shelves, changes them at any time.
+
+Each liked genre is one `Taste` record, synced like the shelves, so two
+devices adding the same genre offline cannot clash. `Taste.set` removes a
+second record of a genre and keeps genres it does not know, which a newer
+version of Loe may have added.
+
+`Taste` is a new record type for CloudKit. Run a debug build signed for the
+container once, then deploy the schema to production, or TestFlight builds
+will not sync it.
 
 ## Rules
 
@@ -93,8 +115,9 @@ it. Nothing merges those yet.
 
 ## Testing
 
-`ShelvedBookTests` covers the rules on an in-memory store. In debug builds the
-`-inMemoryLibrary YES` launch argument opens an empty in-memory library, which
-`ShelvesJourneyTests` uses so it starts from empty shelves and leaves nothing
-behind. Its cover journey picks the newest photo in the simulator's
+`ShelvedBookTests` and `TasteTests` cover the rules on an in-memory store. In
+debug builds the `-inMemoryLibrary YES` launch argument opens an empty
+in-memory library, which the journeys use so they start from empty shelves and
+leave nothing behind. They pass `-tasteQuizSeen YES` so the quiz stays away,
+and `TasteQuizJourneyTests` passes `NO` to see it. Its cover journey picks the newest photo in the simulator's
 Photos, so add a cover image first with `xcrun simctl addmedia <udid> cover.jpg`.
