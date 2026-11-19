@@ -24,8 +24,11 @@ replaces the whole file. There is no incremental update.
 bibliography as CC0 1.0. One page on data.digar.ee says CC BY-SA 3.0 EE
 instead. Loe credits the National Library of Estonia in the app either way.
 
-The bibliography only holds books published in Estonia. An English translation
-of an Estonian novel published abroad is not in it.
+The bibliography holds books published in Estonia, and some published elsewhere
+by Estonian authors or about Estonia, such as Jaan Kross in English from London
+and New York. Other books published abroad are not in it. [Books from
+abroad](reference/books-from-abroad.md) compares the online sources that could
+find them.
 
 ## Rebuilding
 
