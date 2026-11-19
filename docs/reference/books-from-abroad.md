@@ -235,10 +235,11 @@ Made by the maintainer after reading this note:
 - **Open Library is the source** for books from abroad. Google Books and Apple
   are left out.
 - **Search online once the reader stops typing**, alongside the catalogue,
-  never on every keystroke. A phone stays under Open Library's limit of one
-  request a second.
-- **The `User-Agent` names the app and the repository's address**, with no
-  email or phone number, so the limit stays at one request a second.
+  never on every keystroke. A phone stays under Open Library's limit of three
+  requests a second.
+- **The `User-Agent` names the app, the repository's address and
+  `support@helop.dev`**, the contact Open Library asks for, which raises the
+  limit to three requests a second.
 - **Covers from Open Library are shown, credited to Open Library.** Whether
   descriptions are shown is decided with the description task.
 - **The offline catalogue stays as it is.** Covers load from Open Library when
