@@ -51,6 +51,15 @@ struct CatalogueDetailsTests {
         #expect(inEnglish == ["Treading air"])
     }
 
+    @Test func aBookOpenedFromAShelfListsTheAuthorsOtherBooks() async throws {
+        // A shelf keeps the title and authors, not the language or the catalogue id.
+        let catalogue = try Catalogue(url: CatalogueFixture.make(books: Self.books))
+        let edition = CatalogueEdition(id: 0, erbID: "b1", title: "Keisri hull", authors: "Jaan Kross")
+        let work = CatalogueWork(id: CatalogueWork.key(for: edition), editions: [edition])
+        let sameAuthor = try await catalogue.details(for: work).sameAuthor.map(\.title)
+        #expect(Set(sameAuthor) == ["Kolme katku vahel", "Professor Martensi ärasõit"])
+    }
+
     @Test func theSameTitleByAnotherAuthorStaysApart() async throws {
         let (catalogue, work) = try await work("keisri hull", by: "Someone Else")
         let details = try await catalogue.details(for: work)
