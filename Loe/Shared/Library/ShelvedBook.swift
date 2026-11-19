@@ -32,12 +32,18 @@ final class ShelvedBook {
     /// Year and language, kept for a book the catalogue doesn't have.
     var year: Int?
     var language: String?
+    /// Where a book from Open Library lives there, such as "/works/OL18626W".
+    var openLibraryKey: String?
+    var isbn: String?
+    /// Open Library's cover for the book, which the reader's own photo replaces.
+    var coverID: Int?
 
-    /// A book from the catalogue, or one the reader entered because the catalogue
-    /// doesn't have it.
+    /// A book from the catalogue, from Open Library, or one the reader entered
+    /// because neither has it.
     enum Source: String {
         case catalogue
         case hand
+        case openLibrary
     }
 
     init(edition: CatalogueEdition, workKey: String, shelf: Shelf, now: Date = .now) {
@@ -46,6 +52,14 @@ final class ShelvedBook {
         title = edition.title
         authors = edition.authors
         pageCount = edition.pages
+        if let record = edition.openLibrary {
+            sourceName = Source.openLibrary.rawValue
+            openLibraryKey = record.workKey
+            isbn = record.isbn
+            coverID = record.coverID
+            year = edition.year
+            language = edition.language
+        }
         addedAt = now
         updatedAt = now
         move(to: shelf, now: now)
@@ -140,8 +154,14 @@ final class ShelvedBook {
     /// Enough of the book to open its page. The page finds the rest in the catalogue.
     var work: CatalogueWork {
         CatalogueWork(id: workKey, editions: [
-            CatalogueEdition(id: 0, erbID: erbID, title: title, authors: authors, year: year, language: language, pages: pageCount),
+            CatalogueEdition(id: 0, erbID: erbID, title: title, authors: authors, year: year, language: language, pages: pageCount,
+                             openLibrary: openLibraryRecord),
         ])
+    }
+
+    var openLibraryRecord: OpenLibraryRecord? {
+        guard source == .openLibrary, let openLibraryKey else { return nil }
+        return OpenLibraryRecord(workKey: openLibraryKey, isbn: isbn, coverID: coverID)
     }
 }
 
