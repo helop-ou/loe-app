@@ -33,7 +33,37 @@ the book is on a shelf. `CoverPhoto` shrinks it to at most 900 pixels tall as a
 JPEG (tens of kilobytes) so it syncs quickly, and reads its colour once, which
 `ShelvedBook` keeps beside it. The book's page and the card for the book being
 read take a wash of that colour, and Sinu toon will read the same values.
-Books without a photo get the plain card with their title.
+
+Without a photo, a book shows Open Library's cover when it has one, and the
+plain card with its title otherwise. The reader's photo always wins, and
+removing it brings Open Library's cover back. The cover is credited under it
+on the book's page, and its colour gives the wash until there is a photo.
+[`Covers`](../Loe/Shared/OpenLibrary/Covers.swift) loads them:
+
+- **Which cover.** A book from Open Library by its cover id, which every
+  search answer carries and which Open Library does not rate limit, else its
+  ISBN. A catalogue book by `Catalogue.coverISBN`: the print ISBN of the
+  edition on the shelf, else of the newest edition that has one, so the
+  shelves and the book's page show the same cover. E-book editions and PDF,
+  e-book, series and wrongly printed (`vale`, also after `köites`) ISBNs
+  would find another book's cover, so they are not used. A book entered by
+  hand has none.
+- **Where.** Search results ask only by cover id. Lookups by ISBN wait for a
+  book's own page and the shelves: Open Library allows 100 every five minutes
+  from one address and had few catalogue books' covers, so lists would spend
+  that, and tell it about every book scrolled past, for little.
+- **How often.** Only covers on screen are asked for (the shelf rails are
+  lazy), four at a time, and one scrolled past while it waited is dropped
+  before it is sent. Lookups by ISBN are counted as they are sent and stop
+  short of 90 every five minutes, skipped rather than blocked. A cover is kept
+  in the caches folder, and the 200 most recent in memory. A book with none
+  (404) is not asked about again for 30 days. A failure, a rate limit or an
+  answer that is not an image is not remembered past the session.
+- **What is sent.** The cover id or ISBN to `covers.openlibrary.org`, with the
+  same `User-Agent` as search and no cookies. Open Library redirects to the
+  Internet Archive (`archive.org`), which serves the image and so sees the
+  same request. Debug builds launched with `-openLibraryStub YES` give every
+  cover id a plain green cover and no ISBN one, from memory only.
 
 ## Books entered by hand
 
