@@ -12,6 +12,8 @@ struct BookView: View {
     @State private var details: Catalogue.Details?
     @State private var editing = false
     @State private var enteredByHand = false
+    @State private var coverArt: CoverArt?
+    @State private var openLibraryCover: Covers.Loaded?
     @Query private var shelved: [ShelvedBook]
 
     init(work: CatalogueWork) {
@@ -42,10 +44,23 @@ struct BookView: View {
     /// Library has no editions, ESTER record or library copies to show.
     private var fromCatalogue: Bool { shown.editions.contains { !$0.erbID.isEmpty } }
 
+    /// Open Library's cover for the book: a book from there by its own cover, a
+    /// catalogue book by its cover ISBN (`Catalogue.coverISBN`), as the shelves ask.
+    static func coverArt(for work: CatalogueWork, shelved erbID: String? = nil, in catalogue: Catalogue) async -> CoverArt? {
+        if let record = work.editions[0].openLibrary { return CoverArt(record) }
+        guard work.editions.contains(where: { !$0.erbID.isEmpty }),
+              let isbn = try? await catalogue.coverISBN(for: work, preferring: erbID)
+        else { return nil }
+        return .isbn(isbn)
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 32) {
-                BookHeader(work: shown, edition: newest, book: book)
+                BookHeader(
+                    work: shown, edition: newest, book: book, art: coverArt,
+                    credit: book?.coverPhoto == nil && openLibraryCover != nil
+                ) { openLibraryCover = $0 }
                 // A book entered by hand that was just removed is on its way off screen.
                 if book != nil || !enteredByHand {
                     ShelfControls(work: shown, edition: newest, book: book)
@@ -87,7 +102,7 @@ struct BookView: View {
         }
         .background {
             // A book's own page takes a soft wash of its cover's colour.
-            if let wash = book?.coverSample.flatMap({ CoverWash.color($0, dark: colorScheme == .dark, surface: .page) }) {
+            if let wash = (book?.coverSample ?? openLibraryCover?.sample).flatMap({ CoverWash.color($0, dark: colorScheme == .dark, surface: .page) }) {
                 LinearGradient(colors: [wash, .loeBackground], startPoint: .top, endPoint: UnitPoint(x: 0.5, y: 0.55))
                     .ignoresSafeArea()
             } else {
@@ -113,8 +128,12 @@ struct BookView: View {
             if removed && enteredByHand { dismiss() }
         }
         .task(id: base) {
-            guard case .ready(let catalogue) = catalogue.state else { return }
+            guard case .ready(let catalogue) = catalogue.state else {
+                coverArt = base.editions[0].openLibrary.flatMap(CoverArt.init)
+                return
+            }
             details = try? await catalogue.details(for: base)
+            coverArt = await Self.coverArt(for: shown, shelved: book?.erbID, in: catalogue)
         }
     }
 }
@@ -142,13 +161,24 @@ private struct BookHeader: View {
     let work: CatalogueWork
     let edition: CatalogueEdition
     let book: ShelvedBook?
+    let art: CoverArt?
+    /// Whether Open Library's cover is showing, which is credited under it.
+    let credit: Bool
+    let onCover: (Covers.Loaded?) -> Void
 
     var body: some View {
         HStack(alignment: .top, spacing: 18) {
-            if let book {
-                CoverPhotoMenu(book: book, title: work.title, width: 140)
-            } else {
-                BookCover(title: work.title, width: 140)
+            VStack(alignment: .leading, spacing: 6) {
+                if let book {
+                    CoverPhotoMenu(book: book, title: work.title, art: art, width: 140, onCover: onCover)
+                } else {
+                    BookCover(title: work.title, art: art, width: 140, onCover: onCover)
+                }
+                if credit {
+                    Text("Cover: Open Library")
+                        .font(.caption2)
+                        .foregroundStyle(.loeSecondary)
+                }
             }
             VStack(alignment: .leading, spacing: 6) {
                 Text(work.title)
