@@ -16,6 +16,13 @@ copied in: the colour sets, `Loe.icon`, the fonts and the tone values. The
 [coding standards](standards.md#files-and-reusable-components) say how to
 change them.
 
+## Reference
+
+Investigations that informed a decision, kept as they were written:
+
+- [Library availability](reference/library-availability.md): where Tallinn's
+  library holdings can be read, and what a lookup would cost in privacy
+
 ## Keeping this clean
 
 - Update the guide that owns a contract when you change it. Give each rule one
