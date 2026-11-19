@@ -23,6 +23,7 @@ guide is right and this file needs fixing.
 | [Coding standards](docs/standards.md) | Project setup, folder structure, Observation and `MainActor` rules, review and verification, pull requests, writing |
 | [Library](docs/library.md) | The reader's shelves: SwiftData, iCloud sync, the CloudKit rules for the model |
 | [Catalogue](docs/catalogue.md) | The offline catalogue: source, licence, rebuilding, field mapping |
+| [Release](docs/release.md) | Build numbers, TestFlight uploads, secrets, the checklist for going public |
 
 ## Session workflow
 
@@ -75,6 +76,8 @@ guide is right and this file needs fixing.
   works, not whether it looks like someone meant it. When the simulator is
   out of reach, render the view to a PNG with `ImageRenderer` in a test and
   look at that.
+- Never print, copy or commit a credential, or its file metadata. See
+  [Release](docs/release.md#secrets).
 - Report only what was verified. Before saying a change is done, run the
   build and the relevant tests, and say what ran. If a step was skipped or a
   check failed, say so and show the output. Never describe an unrun check as
