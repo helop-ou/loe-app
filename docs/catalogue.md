@@ -59,7 +59,11 @@ Search matches every word the reader typed, the last one as a prefix while
 it is being typed. A string that reads as a valid ISBN is looked up by number
 instead. On a phone, Search can also scan the barcode on a book's back cover
 with VisionKit. Only an EAN-13 that starts 978 or 979 and passes its check digit
-counts as an ISBN, so a price or shop code next to it is ignored. The simulator
+counts as an ISBN, and an ISBN in view wins over any other barcode. The scanner
+also reads the barcode types library stickers use (Code 128, Code 39, Codabar
+and interleaved 2 of 5) and other shop codes, only to tell the reader that is
+not the one, and keeps scanning. A 978 or 979 code that fails its check digit
+is a misread, so it is read again rather than called the wrong barcode. The simulator
 has no camera, so the scan button is not shown there. Hits are grouped into works (the same title by the same authors), a
 title typed exactly comes first, and among the rest a book published in many
 editions ranks a little higher.
