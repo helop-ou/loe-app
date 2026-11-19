@@ -234,6 +234,16 @@
         }
       }
     },
+    "Download it in Search, then give the books you've read a rating.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Laadi see otsingus alla ja hinda siis loetud raamatuid."
+          }
+        }
+      }
+    },
     "Download the catalogue": {
       "localizations": {
         "et": {
@@ -287,6 +297,16 @@
         }
       }
     },
+    "Give a book you've read four or five stars, and Loe will suggest more like it.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anna loetud raamatule neli või viis tärni ja Loe soovitab sarnaseid."
+          }
+        }
+      }
+    },
     "In %@": {
       "localizations": {
         "et": {
@@ -307,12 +327,42 @@
         }
       }
     },
+    "Loe found nothing close enough to the books you rated highly. Rate a few more.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loe ei leidnud midagi piisavalt sarnast raamatutele, mida kõrgelt hindasid. Hinda veel mõnda."
+          }
+        }
+      }
+    },
     "Loe keeps every Estonian book on your phone, so search works offline. It's one download of about 30 MB.": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Loe hoiab kõiki eesti raamatuid sinu telefonis, nii et otsing töötab ka võrguühenduseta. Selleks tuleb üks kord alla laadida umbes 30 MB."
+          }
+        }
+      }
+    },
+    "More by the author of %@": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Veel %@ autorilt"
+          }
+        }
+      }
+    },
+    "Next after %@": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Järg raamatule %@"
           }
         }
       }
@@ -419,16 +469,6 @@
     },
     "Rahva Raamat": {
       "shouldTranslate": false
-    },
-    "Rate a few books and Loe will suggest what to read next.": {
-      "localizations": {
-        "et": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hinda paari raamatut ja Loe soovitab, mida edasi lugeda."
-          }
-        }
-      }
     },
     "Rating": {
       "localizations": {
@@ -550,6 +590,26 @@
         }
       }
     },
+    "Shares themes with %@": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sarnaste teemadega kui %@"
+          }
+        }
+      }
+    },
+    "Shares themes with %lld of your favourites": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sarnaste teemadega kui %lld sinu lemmikut"
+          }
+        }
+      }
+    },
     "Shelf: %@": {
       "localizations": {
         "et": {
@@ -586,6 +646,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sarnased raamatud"
+          }
+        }
+      }
+    },
+    "Suggestions need the catalogue": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Soovitusteks on vaja kataloogi"
           }
         }
       }

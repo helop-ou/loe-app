@@ -83,7 +83,7 @@ actor Catalogue {
         return Array(CatalogueWork.ranked(hits, query: text).prefix(limit))
     }
 
-    func details(for work: CatalogueWork) throws -> Details {
+    func details(for work: CatalogueWork, similarity limits: SimilarityLimits = .standard) throws -> Details {
         let author = work.editions[0].leadAuthor
         let sameLead = try byLeadAuthor(author)
 
@@ -113,7 +113,7 @@ actor Catalogue {
             original: original,
             translations: CatalogueWork.grouped(translated),
             sameAuthor: Array(CatalogueWork.grouped(others).prefix(12)),
-            similar: try similar(to: CatalogueWork(id: work.id, editions: allEditions))
+            similar: try similar(to: CatalogueWork(id: work.id, editions: allEditions), limits: limits)
         )
     }
 

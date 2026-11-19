@@ -1,0 +1,220 @@
+import Foundation
+import SwiftData
+import Testing
+@testable import Loe
+
+struct ReadNextTests {
+    // Kevade is a school story, like three books by others. Luts also wrote Suvi.
+    // Näljamängud is Collins's own numbered series. Tõde ja õigus is published in
+    // parts, and Tammsaare also wrote Põrgupõhja. „Mees“ comes in two parts.
+    private static let books = """
+        (1, 'b1', 'Kevade', 'Oskar Luts', 1912, 1, 0, NULL, 'est', NULL, NULL),
+        (2, 'b2', 'Kevade', 'Oskar Luts', 2012, 1, 0, NULL, 'est', NULL, NULL),
+        (3, 'b3', 'Suvi', 'Oskar Luts', 1918, 1, 0, NULL, 'est', NULL, NULL),
+        (4, 'b4', 'Agu Sihvka annab aru', 'Jaan Rannap', 1977, 1, 0, NULL, 'est', NULL, NULL),
+        (5, 'b5', 'Agu Sihvka annab aru', 'Jaan Rannap', 2005, 1, 0, NULL, 'est', NULL, NULL),
+        (6, 'b6', 'Kooliraamat', 'Indrek Koff', 2010, 1, 0, NULL, 'est', NULL, NULL),
+        (10, 'b10', 'Näljamängud', 'Suzanne Collins', 2009, 1, 0, NULL, 'est', NULL, 'Näljamängud'),
+        (11, 'b11', 'Lahvatab leek', 'Suzanne Collins', 2010, 1, 0, NULL, 'est', NULL, 'Näljamängud'),
+        (12, 'b12', 'Pilapasknäär', 'Suzanne Collins', 2011, 1, 0, NULL, 'est', NULL, 'Näljamängud'),
+        (20, 'b20', 'Tõde ja õigus. I jagu', 'A. H. Tammsaare', 1926, 1, 0, NULL, 'est', NULL, NULL),
+        (21, 'b21', 'Tõde ja õigus. II jagu', 'A. H. Tammsaare', 1929, 1, 0, NULL, 'est', NULL, NULL),
+        (22, 'b22', 'Tõde ja õigus. III jagu', 'A. H. Tammsaare', 1931, 1, 0, NULL, 'est', NULL, NULL),
+        (23, 'b23', 'Põrgupõhja uus Vanapagan', 'A. H. Tammsaare', 1939, 1, 0, NULL, 'est', NULL, NULL),
+        (30, 'b30', 'Mees. 1. osa', 'Keegi Kirjanik', 2001, 1, 0, NULL, 'est', NULL, NULL),
+        (31, 'b31', 'Mees. 2. osa', 'Keegi Kirjanik', 2002, 1, 0, NULL, 'est', NULL, NULL)
+        """
+
+    private static let extra = """
+        UPDATE edition SET series_number = id - 9 WHERE id BETWEEN 10 AND 12;
+        INSERT INTO heading (id, kind, name) VALUES (1, 2, 'koolijutud');
+        INSERT INTO edition_heading VALUES (1, 1), (2, 1), (4, 1), (5, 1), (6, 1);
+        """
+
+    private let catalogue: Catalogue
+    // Thresholds for a catalogue of a few books.
+    private let limits = ReadNext.Limits(
+        similarity: Catalogue.SimilarityLimits(maximumHeadingEditions: 20, seriesEditions: 50...60, minimumScore: 0, minimumWorks: 1, limit: 10)
+    )
+
+    init() throws {
+        catalogue = try Catalogue(url: CatalogueFixture.make(books: Self.books, headings: Self.extra))
+    }
+
+    /// A book as a shelf keeps it: its title and authors, no catalogue id or language.
+    private static func work(_ title: String, by author: String) -> CatalogueWork {
+        let edition = CatalogueEdition(id: 0, erbID: "", title: title, authors: author)
+        return CatalogueWork(id: CatalogueWork.key(for: edition), editions: [edition])
+    }
+
+    private static func source(_ title: String, by author: String, on shelf: Shelf = .read, rating: Int? = nil) -> ReadNext.Source {
+        ReadNext.Source(work: work(title, by: author), shelf: shelf, rating: rating)
+    }
+
+    private static func shelved(_ title: String, by author: String) -> ReadNext.Shelved {
+        ReadNext.Shelved(workKey: work(title, by: author).id, title: title, leadAuthor: author)
+    }
+
+    private static func book(_ title: String) -> ReadNextSuggestion.Book {
+        ReadNextSuggestion.Book(title: title, language: "est")
+    }
+
+    private func suggestions(_ sources: [ReadNext.Source], shelved: [ReadNext.Shelved] = []) async throws -> [ReadNextSuggestion] {
+        let onShelves = shelved + sources.map { ReadNext.Shelved(workKey: $0.work.id, title: $0.work.title, leadAuthor: $0.work.editions[0].leadAuthor) }
+        return try await ReadNext.suggestions(from: sources, excluding: onShelves, in: catalogue, limits: limits)
+    }
+
+    private func reasons(_ suggestions: [ReadNextSuggestion]) -> [String: ReadNextSuggestion.Reason] {
+        Dictionary(uniqueKeysWithValues: suggestions.map { ($0.work.title, $0.reason) })
+    }
+
+    // MARK: From the catalogue
+
+    @Test func aFavouriteBringsTheAuthorsOtherBooksAndSimilarOnes() async throws {
+        let found = reasons(try await suggestions([Self.source("Kevade", by: "Oskar Luts", rating: 5)]))
+        #expect(found["Suvi"] == .sameAuthor(as: Self.book("Kevade")))
+        #expect(found["Agu Sihvka annab aru"] == .similar(to: [Self.book("Kevade")]))
+        #expect(found["Kooliraamat"] == .similar(to: [Self.book("Kevade")]))
+        #expect(found["Kevade"] == nil)
+    }
+
+    @Test func threeStarsIsNotAFavourite() async throws {
+        let found = try await suggestions([Self.source("Kevade", by: "Oskar Luts", rating: 3)])
+        #expect(found.isEmpty)
+    }
+
+    @Test func theNextBookInASeriesBeingReadComesFirst() async throws {
+        let found = try await suggestions([
+            Self.source("Kevade", by: "Oskar Luts", rating: 5),
+            Self.source("Näljamängud", by: "Suzanne Collins", on: .reading),
+        ])
+        #expect(found.first?.work.title == "Lahvatab leek")
+        #expect(found.first?.reason == .nextInSeries(after: Self.book("Näljamängud")))
+        #expect(!found.contains { $0.work.title == "Pilapasknäär" })
+    }
+
+    @Test func aSeriesIsSuggestedFromItsNextBookOnly() async throws {
+        let found = reasons(try await suggestions([Self.source("Tõde ja õigus. I jagu", by: "A. H. Tammsaare", rating: 5)]))
+        #expect(found["Tõde ja õigus. II jagu"] == .nextInSeries(after: Self.book("Tõde ja õigus. I jagu")))
+        #expect(found["Põrgupõhja uus Vanapagan"] == .sameAuthor(as: Self.book("Tõde ja õigus. I jagu")))
+        #expect(found["Tõde ja õigus. III jagu"] == nil)
+    }
+
+    @Test(arguments: [(Shelf.read, 2), (.didNotFinish, nil), (.wantToRead, nil), (.setAside, nil)] as [(Shelf, Int?)])
+    func aSeriesTheReaderDidNotTakeToIsNotContinued(shelf: Shelf, rating: Int?) async throws {
+        let found = try await suggestions([Self.source("Mees. 1. osa", by: "Keegi Kirjanik", on: shelf, rating: rating)])
+        #expect(found.isEmpty)
+    }
+
+    @Test func aSeriesTheReaderLikedWellEnoughIsContinued() async throws {
+        let found = try await suggestions([Self.source("Mees. 1. osa", by: "Keegi Kirjanik", on: .read, rating: 3)])
+        #expect(found.map(\.work.title) == ["Mees. 2. osa"])
+    }
+
+    @Test func booksOnAnyShelfAreLeftOut() async throws {
+        let found = try await suggestions(
+            [Self.source("Kevade", by: "Oskar Luts", rating: 5)],
+            shelved: [Self.shelved("Agu Sihvka annab aru", by: "Jaan Rannap"), Self.shelved("Suvi", by: "Oskar Luts")]
+        )
+        #expect(found.map(\.work.title) == ["Kooliraamat"])
+    }
+
+    // MARK: Putting the kinds together
+
+    private static func catalogueWork(_ title: String, by author: String = "Autor") -> CatalogueWork {
+        let edition = CatalogueEdition(id: 1, erbID: "", title: title, authors: author)
+        return CatalogueWork(id: CatalogueWork.key(for: edition), editions: [edition])
+    }
+
+    @Test func seriesFirstThenAuthorsAndSimilarBooksTakeTurns() {
+        let kevade = Self.book("Kevade")
+        let merged = ReadNext.merged(
+            series: [ReadNextSuggestion(work: Self.catalogueWork("Lahvatab leek"), reason: .nextInSeries(after: Self.book("Näljamängud")))],
+            byAuthor: [[(Self.catalogueWork("A1"), kevade), (Self.catalogueWork("A2"), kevade)]],
+            similar: [[(Self.catalogueWork("S1"), kevade), (Self.catalogueWork("S2"), kevade), (Self.catalogueWork("S3"), kevade)]],
+            excluding: [],
+            limit: 10
+        )
+        #expect(merged.map(\.work.title) == ["Lahvatab leek", "A1", "S1", "A2", "S2", "S3"])
+    }
+
+    @Test func eachFavouriteAuthorTakesATurn() {
+        let merged = ReadNext.merged(
+            series: [],
+            byAuthor: [
+                [(Self.catalogueWork("Suvi"), Self.book("Kevade")), (Self.catalogueWork("Talve"), Self.book("Kevade"))],
+                [(Self.catalogueWork("Liblikas"), Self.book("Rehepapp"))],
+            ],
+            similar: [],
+            excluding: [],
+            limit: 10
+        )
+        #expect(merged.map(\.work.title) == ["Suvi", "Liblikas", "Talve"])
+    }
+
+    @Test func aBookLikeSeveralFavouritesComesFirstAndNamesThem() {
+        let merged = ReadNext.merged(
+            series: [],
+            byAuthor: [],
+            similar: [
+                [(Self.catalogueWork("Only Kevade"), Self.book("Kevade")), (Self.catalogueWork("Both"), Self.book("Kevade"))],
+                [(Self.catalogueWork("Both"), Self.book("Suvi"))],
+            ],
+            excluding: [],
+            limit: 10
+        )
+        #expect(merged.map(\.work.title) == ["Both", "Only Kevade"])
+        #expect(merged.first?.reason == .similar(to: [Self.book("Kevade"), Self.book("Suvi")]))
+    }
+
+    @Test func aBookIsSuggestedOnceForItsFirstReasonAndTheListStopsAtTheLimit() {
+        let kevade = Self.book("Kevade")
+        let merged = ReadNext.merged(
+            series: [ReadNextSuggestion(work: Self.catalogueWork("Same"), reason: .nextInSeries(after: kevade))],
+            byAuthor: [[(Self.catalogueWork("Same"), kevade), (Self.catalogueWork("Same. 2. aasta"), kevade)]],
+            similar: [[(Self.catalogueWork("S1"), kevade), (Self.catalogueWork("S2"), kevade), (Self.catalogueWork("S3"), kevade)]],
+            excluding: [],
+            limit: 3
+        )
+        #expect(merged.map(\.work.title) == ["Same", "S1", "S2"])
+        #expect(merged.first?.reason == .nextInSeries(after: kevade))
+    }
+
+    @Test func anEditionWithAPartAfterItsTitleIsTheSameBookOnTheShelf() {
+        let shelved = [ReadNext.Shelved(workKey: "other", title: "Harry Potter ja saladuste kamber. 2. aasta", leadAuthor: "J. K. Rowling")]
+        #expect(ReadNext.isOnShelf(Self.catalogueWork("Harry Potter ja saladuste kamber", by: "J. K. Rowling"), shelved))
+        #expect(!ReadNext.isOnShelf(Self.catalogueWork("Harry Potter ja saladuste kamber", by: "Keegi Teine"), shelved))
+
+        let kevade = [ReadNext.Shelved(workKey: "kevade", title: "Kevade", leadAuthor: "Oskar Luts")]
+        #expect(ReadNext.isOnShelf(Self.catalogueWork("Kevade. 2. osa", by: "Oskar Luts"), kevade))
+        #expect(!ReadNext.isOnShelf(Self.catalogueWork("Kevade ja suvi", by: "Oskar Luts"), kevade))
+    }
+
+    // MARK: From the shelves
+
+    @Test @MainActor func favouritesAndSeriesBeingReadAreSourcesMostRecentFirst() throws {
+        let container = try ModelContainer(
+            for: ShelvedBook.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none)
+        )
+        let context = ModelContext(container)
+        let monday = Date(timeIntervalSince1970: 1_800_000_000)
+        func shelve(_ title: String, on shelf: Shelf, rating: Int? = nil, day: Double) throws {
+            let edition = CatalogueEdition(id: 1, erbID: title, title: title, authors: "Autor")
+            let book = try ShelvedBook.shelve(Self.catalogueWork(title), edition: edition, on: shelf, in: context, now: monday)
+            book.rate(rating, now: monday.addingTimeInterval(day * 86_400))
+        }
+        try shelve("Loved", on: .read, rating: 5, day: 1)
+        try shelve("Reading", on: .reading, day: 3)
+        try shelve("Liked", on: .read, rating: 3, day: 2)
+        try shelve("Disliked", on: .read, rating: 2, day: 4)
+        try shelve("Unrated", on: .read, day: 5)
+        try shelve("Wanted", on: .wantToRead, day: 6)
+        try shelve("Abandoned", on: .didNotFinish, rating: 4, day: 7)
+
+        let sources = ReadNext.sources(from: try context.fetch(FetchDescriptor<ShelvedBook>()))
+        #expect(sources.map(\.work.title) == ["Abandoned", "Unrated", "Reading", "Liked", "Loved"])
+        #expect(sources.filter(\.isFavourite).map(\.work.title) == ["Abandoned", "Loved"])
+        #expect(sources.filter(\.continuesSeries).map(\.work.title) == ["Unrated", "Reading", "Liked", "Loved"])
+    }
+}
