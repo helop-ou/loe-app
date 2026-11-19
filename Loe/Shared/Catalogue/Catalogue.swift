@@ -85,8 +85,7 @@ actor Catalogue {
 
     func details(for work: CatalogueWork) throws -> Details {
         let author = work.editions[0].leadAuthor
-        let byAuthor = try author.map { try matching(CatalogueQuery.phrase($0, in: "authors"), limit: 3000) } ?? []
-        let sameLead = byAuthor.filter { Self.sameAuthor($0.leadAuthor, author) }
+        let sameLead = try byLeadAuthor(author)
 
         let editions = sameLead.filter { CatalogueWork.key(for: $0) == work.id }
         let translated = try matching(CatalogueQuery.phrase(work.title, in: "original_title"), limit: 500).filter {
@@ -116,6 +115,122 @@ actor Catalogue {
             sameAuthor: Array(CatalogueWork.grouped(others).prefix(12)),
             similar: try similar(to: CatalogueWork(id: work.id, editions: allEditions))
         )
+    }
+
+    /// Every edition of the work, newest first. A book opened from a shelf starts with
+    /// only the edition that was shelved.
+    func editions(of work: CatalogueWork) throws -> [CatalogueEdition] {
+        let first = work.editions[0]
+        let found = try first.leadAuthor.map { try byLeadAuthor($0) }
+            ?? matching(CatalogueQuery.phrase(first.title, in: "title"), limit: 3000)
+        let editions = found.filter { CatalogueWork.key(for: $0) == work.id }
+        return (editions.isEmpty ? work.editions : editions).sorted { ($0.year ?? 0) > ($1.year ?? 0) }
+    }
+
+    /// The book that comes after this one, and the series they share.
+    struct SeriesNext: Sendable, Hashable {
+        let work: CatalogueWork
+        /// The series as the editions name it, or the title the parts share.
+        let series: String
+
+        func contains(_ other: CatalogueWork) -> Bool {
+            let folded = CatalogueQuery.folded(series)
+            return other.editions.contains {
+                $0.series == series || Catalogue.part(of: $0.title).map { CatalogueQuery.folded($0.base) == folded } == true
+            }
+        }
+    }
+
+    /// The next book in a series by this book's author, in its language: the next
+    /// number in a series mostly by that author, or the next part of a book published
+    /// in parts, such as „Tõde ja õigus. II jagu“. Publisher series that mix many
+    /// authors are not series in this sense. Pass the work with all its editions.
+    func nextInSeries(after work: CatalogueWork) throws -> SeriesNext? {
+        let first = work.editions[0]
+        let author = first.leadAuthor
+        var seen: Set<String> = []
+        for edition in work.editions {
+            guard let series = edition.series, let number = Self.leadingNumber(edition.seriesNumber),
+                  seen.insert(series).inserted
+            else { continue }
+            let members = try matching(CatalogueQuery.phrase(series, in: "series"), limit: 2000).filter { $0.series == series }
+            let own = members.filter { Self.sameAuthor($0.leadAuthor, author) }.count
+            // Mostly the author's own, which lets a play or a companion book by others in.
+            guard members.count > 1, Double(own) >= 0.7 * Double(members.count) else { continue }
+            let later = members.compactMap { member -> (edition: CatalogueEdition, number: Int)? in
+                guard member.language == first.language, CatalogueWork.key(for: member) != work.id,
+                      let number = Self.leadingNumber(member.seriesNumber)
+                else { return nil }
+                return (member, number)
+            }
+            .filter { $0.number > number }
+            guard let next = later.map(\.number).min(),
+                  let found = CatalogueWork.grouped(later.filter { $0.number == next }.map(\.edition)).first
+            else { continue }
+            return SeriesNext(work: found, series: series)
+        }
+        for edition in work.editions {
+            guard let part = Self.part(of: edition.title), seen.insert(part.base).inserted else { continue }
+            let base = CatalogueQuery.folded(part.base)
+            let candidates = try matching(CatalogueQuery.phrase(part.base, in: "title"), limit: 3000).filter {
+                guard Self.sameAuthor($0.leadAuthor, author), $0.language == first.language,
+                      let other = Self.part(of: $0.title)
+                else { return false }
+                return CatalogueQuery.folded(other.base) == base && other.number == part.number + 1
+            }
+            if let found = CatalogueWork.grouped(candidates).first {
+                return SeriesNext(work: found, series: part.base)
+            }
+        }
+        return nil
+    }
+
+    /// The number a series number starts with: "2. raamat" is 2.
+    nonisolated static func leadingNumber(_ text: String?) -> Int? {
+        text.flatMap { Int($0.prefix { $0.isASCII && $0.isNumber }) }
+    }
+
+    private nonisolated static let ordinals = [
+        "esimene", "teine", "kolmas", "neljas", "viies", "kuues", "seitsmes", "kaheksas", "uheksas", "kumnes",
+    ]
+
+    /// A title with a part number after its first full stop: „Tõde ja õigus. II jagu“,
+    /// „Sõrmuste Isand. 2. osa. Kaks kantsi“, „Sõrmuste Isand. Teine osa“.
+    nonisolated static func part(of title: String) -> (base: String, number: Int)? {
+        guard let stop = title.range(of: ". ") else { return nil }
+        let base = String(title[..<stop.lowerBound])
+        let rest = title[stop.upperBound...]
+        let token = String(rest.prefix { $0 != " " && $0 != "." })
+        let after = rest.dropFirst(token.count)
+        let number: Int?
+        if let arabic = Int(token), token.allSatisfy(\.isASCII) {
+            number = after.hasPrefix(".") ? arabic : nil
+        } else if let roman = romanNumber(token) {
+            number = after.isEmpty || after.hasPrefix(" ") || after.hasPrefix(".") ? roman : nil
+        } else {
+            number = ordinals.firstIndex(of: CatalogueQuery.folded(token)).map { $0 + 1 }
+        }
+        guard let number, number > 0, !base.isEmpty else { return nil }
+        return (base, number)
+    }
+
+    private nonisolated static func romanNumber(_ token: String) -> Int? {
+        let values: [Character: Int] = ["I": 1, "V": 5, "X": 10, "L": 50]
+        guard !token.isEmpty, token.count <= 6 else { return nil }
+        var total = 0
+        var previous = 0
+        for character in token.reversed() {
+            guard let value = values[character] else { return nil }
+            total += value < previous ? -value : value
+            previous = max(previous, value)
+        }
+        return total
+    }
+
+    /// Every edition whose first author is this one.
+    private func byLeadAuthor(_ author: String?) throws -> [CatalogueEdition] {
+        guard let author else { return [] }
+        return try matching(CatalogueQuery.phrase(author, in: "authors"), limit: 3000).filter { Self.sameAuthor($0.leadAuthor, author) }
     }
 
     /// Books like this one by other authors, from what the bibliography says about
