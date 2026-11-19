@@ -26,7 +26,7 @@ final class ReadmeScreensTests: XCTestCase {
         }
         continueAfterFailure = false
         let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-inMemoryLibrary", "YES"]
+        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES", "-inMemoryLibrary", "YES"]
         app.launch()
         app.tabBars.buttons["Search"].tap()
         if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {

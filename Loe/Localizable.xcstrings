@@ -224,12 +224,32 @@
         }
       }
     },
+    "Crime and mystery": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Krimi"
+          }
+        }
+      }
+    },
     "Didn't finish": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Jäi pooleli"
+          }
+        }
+      }
+    },
+    "Done": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valmis"
           }
         }
       }
@@ -277,6 +297,26 @@
         }
       }
     },
+    "Family and drama": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elu ja suhted"
+          }
+        }
+      }
+    },
+    "Fantasy": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fantaasia"
+          }
+        }
+      }
+    },
     "Find a book": {
       "localizations": {
         "et": {
@@ -303,6 +343,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Anna loetud raamatule neli või viis tärni ja Loe soovitab sarnaseid."
+          }
+        }
+      }
+    },
+    "Historical": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajalooline"
+          }
+        }
+      }
+    },
+    "Horror": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Õudus"
+          }
+        }
+      }
+    },
+    "Humour": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Huumor"
           }
         }
       }
@@ -457,12 +527,42 @@
         }
       }
     },
+    "Pick a few and Loe will suggest books from them. It's worked out on your phone, and you can change it in Settings.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vali mõned ja Loe soovitab nende järgi raamatuid. See arvutatakse sinu telefonis ja seadetes saad valikut muuta."
+          }
+        }
+      }
+    },
+    "Poetry": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Luule"
+          }
+        }
+      }
+    },
     "Point the camera at the barcode on the back of the book.": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Suuna kaamera raamatu tagakaanel olevale triipkoodile."
+          }
+        }
+      }
+    },
+    "Psychological": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Psühholoogiline"
           }
         }
       }
@@ -500,6 +600,16 @@
         }
       }
     },
+    "Read next suggests books from these. They stay on your phone and in your iCloud.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loe edasi soovitab nende järgi raamatuid. Need jäävad sinu telefoni ja sinu iCloudi."
+          }
+        }
+      }
+    },
     "Reading": {
       "localizations": {
         "et": {
@@ -530,6 +640,16 @@
         }
       }
     },
+    "Romance": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Armastus"
+          }
+        }
+      }
+    },
     "Save": {
       "localizations": {
         "et": {
@@ -546,6 +666,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Skanni triipkood"
+          }
+        }
+      }
+    },
+    "Science fiction": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ulme"
           }
         }
       }
@@ -586,6 +716,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kõrvale pandud"
+          }
+        }
+      }
+    },
+    "Settings": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seaded"
           }
         }
       }
@@ -646,6 +786,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sarnased raamatud"
+          }
+        }
+      }
+    },
+    "Skip": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jäta vahele"
           }
         }
       }
@@ -740,6 +890,16 @@
         }
       }
     },
+    "Thrillers": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Põnevus"
+          }
+        }
+      }
+    },
     "Title, author or ISBN": {
       "localizations": {
         "et": {
@@ -820,6 +980,16 @@
         }
       }
     },
+    "What do you like to read?": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mida sulle meeldib lugeda?"
+          }
+        }
+      }
+    },
     "Where to get it": {
       "localizations": {
         "et": {
@@ -840,12 +1010,32 @@
         }
       }
     },
+    "Young adult": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noortele"
+          }
+        }
+      }
+    },
     "Your shelves are empty": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Riiulid on tühjad"
+          }
+        }
+      }
+    },
+    "Your tastes": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sinu maitse"
           }
         }
       }

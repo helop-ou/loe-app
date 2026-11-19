@@ -98,7 +98,7 @@ final class SearchJourneyTests: XCTestCase {
     private func launch(arguments: [String] = []) -> XCUIApplication {
         continueAfterFailure = false
         let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE"] + arguments
+        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES"] + arguments
         app.launch()
         return app
     }
