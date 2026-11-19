@@ -27,5 +27,8 @@ xcuserdata/
 .env.*
 *.xcconfig
 
+# The template is committed, the real file is not.
+!.env.example
+
 # Python
 __pycache__/
