@@ -17,6 +17,15 @@ nonisolated enum BookLinks {
         search("https://www.apollo.ee/catalogsearch/result/", query)
     }
 
+    /// A bookshop's search for the book, or nil for a place that is not a shop.
+    static func shop(_ place: Place, query: String) -> URL? {
+        switch place.id {
+        case Place.rahvaRaamat.id: rahvaRaamat(query)
+        case Place.apollo.id: apollo(query)
+        default: nil
+        }
+    }
+
     /// What to search a bookshop for: the title and its first author.
     static func query(for work: CatalogueWork) -> String {
         [work.title, work.editions[0].leadAuthor].compactMap { $0 }.joined(separator: " ")
