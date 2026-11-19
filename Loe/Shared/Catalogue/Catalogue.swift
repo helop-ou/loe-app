@@ -62,6 +62,35 @@ actor Catalogue {
         """
     private static let scoreColumn: Int32 = 17
 
+    /// The ISBN a work's cover is looked up by: the print ISBN of the edition the
+    /// reader shelved, else of the newest edition that has one. The shelves and the
+    /// book's page ask the same way, so they show the same cover.
+    func coverISBN(for work: CatalogueWork, preferring erbID: String? = nil) throws -> String? {
+        let editions = try editions(of: work).map(\.erbID)
+        var seen: Set<String> = []
+        return try printISBN(of: ([erbID].compactMap { $0 } + editions).filter { seen.insert($0).inserted })
+    }
+
+    /// The print ISBN of the first of these editions that has one, for finding its
+    /// cover. E-book and PDF ISBNs, series ISBNs and ISBNs printed wrong on the book
+    /// (`vale`, alone or after `köites`) would find another book's cover, or none.
+    func printISBN(of erbIDs: [String]) throws -> String? {
+        let asked = Array(erbIDs.filter { !$0.isEmpty }.prefix(12))
+        guard !asked.isEmpty else { return nil }
+        let rows = try database.rows(
+            """
+            SELECT e.erb_id, isbn.isbn13, isbn.qualifier FROM isbn JOIN edition e ON e.id = isbn.edition_id
+            WHERE e.electronic = 0 AND e.erb_id IN (\(asked.map { _ in "?" }.joined(separator: ",")))
+            """,
+            asked.map { .text($0) }
+        ) { row in (erbID: row.text(0) ?? "", isbn: row.text(1) ?? "", qualifier: row.text(2) ?? "") }
+        let print = rows.filter { $0.qualifier.isEmpty || ($0.qualifier.hasPrefix("köites") && !$0.qualifier.contains("vale")) }
+        for erbID in asked {
+            if let found = print.first(where: { $0.erbID == erbID }) { return found.isbn }
+        }
+        return nil
+    }
+
     func search(_ text: String, limit: Int = 50) throws -> [CatalogueWork] {
         if let isbn = CatalogueQuery.isbn13(text) {
             let editions = try database.rows(
