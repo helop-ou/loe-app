@@ -35,39 +35,29 @@ nonisolated struct OpenLibraryBook: Hashable, Sendable, Identifiable {
         return CatalogueWork(id: CatalogueWork.key(for: edition), editions: [edition])
     }
 
-    /// The lead author's surname, folded, which is how the same person is spotted
-    /// with or without a middle initial.
-    var surname: String? {
-        authors.first.flatMap { CatalogueQuery.folded($0).split(separator: " ").last.map(String.init) }
+    /// Every way this book can be written. See `SameBook`.
+    var sameBookKeys: Set<String> {
+        SameBook.keys(title: title, leadAuthor: authors.first)
     }
 
     /// The books in an answer, each once. Open Library often has one book as several
-    /// works, so a title and surname already seen is left out.
+    /// works, so a book already seen is left out.
     static func books(in response: OpenLibrarySearchResponse) -> [OpenLibraryBook] {
         var seen: Set<String> = []
-        return (response.docs ?? []).compactMap(book).filter { seen.insert($0.sameness).inserted }
+        return (response.docs ?? []).compactMap(book).filter { book in
+            let keys = book.sameBookKeys
+            defer { seen.formUnion(keys) }
+            return seen.isDisjoint(with: keys)
+        }
     }
 
-    /// Books the catalogue's results don't already show. The catalogue keeps a
-    /// subtitle apart, so its title is tried with and without it.
+    /// Books the catalogue's results don't already show.
     static func unseen(_ books: [OpenLibraryBook], besides works: [CatalogueWork]) -> [OpenLibraryBook] {
-        let shown = Set(works.flatMap { work in
+        let shown = works.reduce(into: Set<String>()) { keys, work in
             let edition = work.editions[0]
-            let surname = edition.leadAuthor.flatMap { CatalogueQuery.folded($0).split(separator: " ").last.map(String.init) }
-            let titles = [work.title] + (edition.subtitle.map { ["\(work.title): \($0)"] } ?? [])
-            return titles.map { sameness(title: $0, surname: surname) }
-        })
-        return books.filter { !shown.contains($0.sameness) }
-    }
-
-    private var sameness: String { Self.sameness(title: title, surname: surname) }
-
-    /// The title folded and without a leading article, so "The czar's madman" and
-    /// "Czar S Madman" by the same author are one book.
-    private static func sameness(title: String, surname: String?) -> String {
-        var words = CatalogueQuery.folded(title).split(separator: " ")
-        if words.count > 1, ["the", "a", "an"].contains(words[0]) { words.removeFirst() }
-        return words.joined(separator: " ") + "|" + (surname ?? "")
+            keys.formUnion(SameBook.keys(title: work.title, subtitle: edition.subtitle, leadAuthor: edition.leadAuthor))
+        }
+        return books.filter { shown.isDisjoint(with: $0.sameBookKeys) }
     }
 
     static func book(_ doc: OpenLibrarySearchResponse.Doc) -> OpenLibraryBook? {
