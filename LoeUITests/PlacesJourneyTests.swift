@@ -64,7 +64,7 @@ final class PlacesJourneyTests: XCTestCase {
         XCTAssertFalse(app.links.matching(NSPredicate(format: "label CONTAINS 'Rahva Raamat'")).firstMatch.exists)
         XCTAssertFalse(app.links.matching(NSPredicate(format: "label CONTAINS 'Tartu Ülikooli'")).firstMatch.exists)
         // ESTER is asked as the page opens, so the library says what it has.
-        let answered = NSPredicate(format: "label CONTAINS 'Kännukuke' AND NOT (label CONTAINS 'Checking')")
+        let answered = NSPredicate(format: "label CONTAINS 'Kännukuke' AND NOT (label CONTAINS 'Checking') AND NOT (label CONTAINS 'check right now')")
         XCTAssertTrue(app.links.matching(answered).firstMatch.waitForExistence(timeout: 20))
         attach("places-book", app)
     }
