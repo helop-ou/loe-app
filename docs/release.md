@@ -69,6 +69,25 @@ Release binary carries none of the debug launch arguments.
 - Run the history scan again before switching:
   `git rev-list --all | while read c; do git grep -I -l -E 'BEGIN ([A-Z]+ )?PRIVATE KEY|ghp_|github_pat_|AKIA' "$c"; done`.
 
+## README screens
+
+The screens in the README are the real app, captured by `ReadmeScreensTests`
+with the catalogue on the simulator and a cover photo as the newest picture in
+its Photos (the green cover is a stand-in, not publisher artwork). It skips
+unless asked:
+
+```sh
+xcrun simctl status_bar <udid> override --time 9:41 --batteryState charged --batteryLevel 100
+TEST_RUNNER_LOE_README_SCREENS=1 xcodebuild test -scheme Loe \
+  -destination 'platform=iOS Simulator,id=<udid>' \
+  -only-testing:LoeUITests/ReadmeScreensTests -resultBundlePath /tmp/readme.xcresult
+xcrun xcresulttool export attachments --path /tmp/readme.xcresult --output-path /tmp/readme
+cwebp -q 82 -resize 600 0 /tmp/readme/<file>.png -o .github/readme/screens/<name>.webp
+xcrun simctl status_bar <udid> clear
+```
+
+The header images come from `github/` in `loe-app-branding`.
+
 ## Privacy
 
 `Loe/PrivacyInfo.xcprivacy` declares no tracking and no collected data. The
