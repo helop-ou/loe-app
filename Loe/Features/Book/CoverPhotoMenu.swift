@@ -6,7 +6,10 @@ import SwiftUI
 struct CoverPhotoMenu: View {
     let book: ShelvedBook
     let title: String
+    /// Open Library's cover, shown until the reader adds a photo and again once they remove it.
+    var art: CoverArt?
     let width: CGFloat
+    var onCover: ((Covers.Loaded?) -> Void)?
 
     @State private var takingPhoto = false
     @State private var choosingPhoto = false
@@ -22,7 +25,7 @@ struct CoverPhotoMenu: View {
                 Button("Remove photo", systemImage: "trash", role: .destructive) { book.setCover(nil) }
             }
         } label: {
-            BookCover(title: title, photo: book.coverPhoto, width: width)
+            BookCover(title: title, photo: book.coverPhoto, art: art, width: width, onCover: onCover)
                 .overlay(alignment: .bottomTrailing) {
                     if book.coverPhoto == nil {
                         Image(systemName: "camera.fill")

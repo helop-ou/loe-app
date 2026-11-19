@@ -28,6 +28,8 @@ final class OpenLibraryJourneyTests: XCTestCase {
 
         XCTAssertTrue(app.staticTexts["Eric S. Nylund"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["2001"].exists)
+        // The stub's cover for Halo, credited under it.
+        XCTAssertTrue(app.staticTexts["Cover: Open Library"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.staticTexts["Editions"].exists)
         XCTAssertFalse(app.buttons["Edit"].exists)
         attach("openlibrary-book", app)
@@ -47,6 +49,7 @@ final class OpenLibraryJourneyTests: XCTestCase {
         app.tabBars.buttons["Shelves"].tap()
         let shelved = app.buttons.matching(NSPredicate(format: "label CONTAINS 'Halo: The Fall of Reach'")).firstMatch
         XCTAssertTrue(shelved.waitForExistence(timeout: 5))
+        attach("openlibrary-shelves", app)
         shelved.tap()
         // Opened from the shelf, it is still the book from Open Library.
         XCTAssertTrue(app.buttons["Shelf: Reading"].waitForExistence(timeout: 5))

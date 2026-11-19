@@ -331,6 +331,16 @@
         }
       }
     },
+    "Cover: Open Library": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kaanepilt: Open Library"
+          }
+        }
+      }
+    },
     "Crime and mystery": {
       "localizations": {
         "et": {

@@ -58,10 +58,11 @@ struct ShelvesView: View {
 private struct ReadingCard: View {
     let book: ShelvedBook
     @Environment(\.colorScheme) private var colorScheme
+    @State private var openLibraryCover: Covers.Loaded?
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
-            BookCover(title: book.title, photo: book.coverPhoto, width: 92)
+            ShelvedBookCover(book: book, width: 92) { openLibraryCover = $0 }
             VStack(alignment: .leading, spacing: 4) {
                 Text(Shelf.reading.name)
                     .font(.footnote.weight(.semibold))
@@ -80,7 +81,7 @@ private struct ReadingCard: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            book.coverSample.flatMap { CoverWash.color($0, dark: colorScheme == .dark, surface: .card) } ?? .loeCard,
+            (book.coverSample ?? openLibraryCover?.sample).flatMap { CoverWash.color($0, dark: colorScheme == .dark, surface: .card) } ?? .loeCard,
             in: .rect(cornerRadius: 20)
         )
         .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(.loeHairline))
@@ -109,10 +110,11 @@ private struct ShelfRail: View {
             }
             .buttonStyle(.plain)
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(alignment: .top, spacing: 14) {
+                // Lazy, so covers are asked for only as books scroll into view.
+                LazyHStack(alignment: .top, spacing: 14) {
                     ForEach(books.prefix(20)) { book in
                         NavigationLink(value: book.work) {
-                            BookCover(title: book.title, photo: book.coverPhoto, width: 96)
+                            ShelvedBookCover(book: book, width: 96)
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel(Text(book.title))
@@ -145,7 +147,7 @@ struct ShelfListView: View {
                 ForEach(books) { book in
                     NavigationLink(value: book.work) {
                         VStack(alignment: .leading, spacing: 6) {
-                            BookCover(title: book.title, photo: book.coverPhoto, width: 100)
+                            ShelvedBookCover(book: book, width: 100)
                             Text(book.title)
                                 .font(.subheadline)
                                 .foregroundStyle(.loeInk)
