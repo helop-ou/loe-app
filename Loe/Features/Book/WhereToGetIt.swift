@@ -27,15 +27,24 @@ struct WhereToGetIt: View {
 
     var body: some View {
         let places = ChosenPlace.places(chosen)
-        let asksESTER = places.contains { $0.kind == .library }
-        WhereToGetItCard(rows: rows(places), namesESTER: asksESTER)
-            .task(id: Request(editions: work.editions.map(\.erbID), asks: asksESTER)) {
-                guard asksESTER else { return }
-                copies = .checking
-                let found = await checker.copies(of: work.editions)
-                guard !Task.isCancelled else { return }
-                copies = found.map(Copies.found) ?? .failed
-            }
+        let asksESTER = Self.asksESTER(places: places, editions: work.editions)
+        let rows = rows(places)
+        if !rows.isEmpty {
+            WhereToGetItCard(rows: rows, namesESTER: asksESTER)
+                .task(id: Request(editions: work.editions.map(\.erbID), asks: asksESTER)) {
+                    guard asksESTER else { return }
+                    copies = .checking
+                    let found = await checker.copies(of: work.editions)
+                    guard !Task.isCancelled else { return }
+                    copies = found.map(Copies.found) ?? .failed
+                }
+        }
+    }
+
+    /// ESTER is asked only for a picked library and a book it has a record of. A
+    /// book entered by hand has none.
+    static func asksESTER(places: [Place], editions: [CatalogueEdition]) -> Bool {
+        places.contains { $0.kind == .library } && editions.contains { BookLinks.ester($0.erbID) != nil }
     }
 
     private func rows(_ places: [Place]) -> [WhereToGetItCard.Row] {
