@@ -109,6 +109,25 @@ struct CatalogueSimilarTests {
         #expect(similar.first { $0.work.title == "Seitsmes rahukevad" }?.reason == "Eesti lugu")
     }
 
+    @Test func equalMatchesAreChosenTheSameWayEveryTime() async throws {
+        // Two thousand books tie, more than the 400 kept for ranking. The earliest in
+        // the catalogue are kept, not whichever the dictionary happens to list first.
+        let tied = (100..<2100).map { "(\($0), 'b\($0)', 'Raamat \($0)', 'Autor \($0)', 2000, 1, 0, NULL, 'est', NULL, NULL)" }
+        let books = """
+            (1, 'b1', 'Kevade', 'Oskar Luts', 1912, 1, 0, NULL, 'est', NULL, NULL),
+            """ + tied.joined(separator: ",\n")
+        let headings = """
+            INSERT INTO heading (id, kind, name) VALUES (1, 2, 'koolijutud');
+            INSERT INTO edition_heading SELECT id, 1 FROM edition;
+            """
+        let catalogue = try Catalogue(url: CatalogueFixture.make(books: books, headings: headings))
+        let work = try #require(try await catalogue.search("kevade").first)
+        var limits = lenient
+        limits.maximumHeadingEditions = 5000
+        let titles = try await catalogue.similar(to: work, limits: limits).map(\.work.title)
+        #expect(Set(titles) == Set((100..<110).map { "Raamat \($0)" }))
+    }
+
     @Test func tooFewGoodMatchesShowNone() async throws {
         let (catalogue, work) = try await kevade()
         var limits = lenient
