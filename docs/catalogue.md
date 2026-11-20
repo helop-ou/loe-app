@@ -262,11 +262,16 @@ results as "From Open Library".
   `editions` field returns the English edition inside it.
 - **Titles.** The work's title is shown, with its English edition's subtitle
   when the work has none and the subtitle is seven words or fewer ("Halo" and
-  "The Fall of Reach", but not a publisher's blurb). When the two
+  "The Fall of Reach", but not a publisher's blurb). An edition whose short
+  subtitle differs from its work's is another book filed under that work, and
+  it shows under its own subtitle: Open Library keeps an edition of "Halo: The
+  Fall of Reach" under "Halo: First Strike". When the two
   titles share nothing, the book is a translation and the edition's title is
   shown. `OpenLibraryBook.displayTitle` has the rule.
 - **Each book once.** Open Library often has one book as several works. A
   book already in the answer, or among the catalogue's results, is left out.
+  When one of those works is another book's, as above, the book's own work is
+  the one kept.
   [`SameBook`](../Loe/Shared/Catalogue/SameBook.swift) decides: the title
   with or without the catalogue's subtitle, folded and without a leading
   article, and the lead author's surname. The shelves use the same rule.
