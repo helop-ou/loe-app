@@ -131,6 +131,26 @@
         }
       }
     },
+    "A private reading tracker for Estonian and English books. No account, no ads, no tracking.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privaatne lugemispäevik eesti- ja ingliskeelsete raamatute jaoks. Kontota, reklaamita, jälgimiseta."
+          }
+        }
+      }
+    },
+    "About Loe": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loest"
+          }
+        }
+      }
+    },
     "Add a book": {
       "localizations": {
         "et": {
@@ -211,12 +231,42 @@
         }
       }
     },
+    "Availability comes from ESTER, the catalogue Estonian libraries share, run by the ELNET Consortium.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saadavus tuleb ESTERist, Eesti raamatukogude ühisest kataloogist, mida peab ELNET Konsortsium."
+          }
+        }
+      }
+    },
     "Books": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Raamatuid"
+          }
+        }
+      }
+    },
+    "Books from abroad, and covers": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Välismaal ilmunud raamatud ja kaaned"
+          }
+        }
+      }
+    },
+    "Books published abroad and the covers of books come from Open Library, an open catalogue run by the Internet Archive.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Välismaal ilmunud raamatud ja raamatute kaaned tulevad Open Libraryst, avatud kataloogist, mida peab Internet Archive."
           }
         }
       }
@@ -401,6 +451,36 @@
         }
       }
     },
+    "Covers": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kaaned"
+          }
+        }
+      }
+    },
+    "Covers come from Open Library and the Internet Archive, which see which books' covers were asked for. Loe keeps the covers on your phone.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kaaned tulevad Open Libraryst ja Internet Archive'ist, kes näevad, milliste raamatute kaasi küsiti. Loe hoiab kaasi sinu telefonis."
+          }
+        }
+      }
+    },
+    "Credits": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tänuga"
+          }
+        }
+      }
+    },
     "Crime and mystery": {
       "localizations": {
         "et": {
@@ -461,6 +541,16 @@
         }
       }
     },
+    "Downloading it, and looking once a week for a new edition, fetches files from GitHub. Nothing about you is sent.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Selle allalaadimiseks ja kord nädalas uue väljaande otsimiseks tuuakse failid GitHubist. Sinu kohta ei saadeta midagi."
+          }
+        }
+      }
+    },
     "Downloading the catalogue": {
       "localizations": {
         "et": {
@@ -477,6 +567,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tähtaeg %@"
+          }
+        }
+      }
+    },
+    "ESTER and ELNET": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ESTER ja ELNET"
+          }
+        }
+      }
+    },
+    "Each of these sees your phone's internet address, as any website would. Nothing Loe sends carries an account, cookies or your name, and Loe keeps no record of it.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Igaüks neist näeb sinu telefoni internetiaadressi, nagu iga veebisait. Miski, mida Loe saadab, ei kanna kontot, küpsiseid ega sinu nime, ja Loe ei pea sellest arvet."
           }
         }
       }
@@ -551,6 +661,16 @@
         }
       }
     },
+    "Feedback": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tagasiside"
+          }
+        }
+      }
+    },
     "Find a book": {
       "localizations": {
         "et": {
@@ -607,6 +727,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Anna loetud raamatule neli või viis tärni või vali seadetes, mida sulle meeldib lugeda, ja Loe soovitab sarnaseid."
+          }
+        }
+      }
+    },
+    "Headings are set in Newsreader by Production Type. Copyright 2020 The Newsreader Project Authors.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pealkirjad on laotud Production Type'i kirjatüübis Newsreader. Copyright 2020 The Newsreader Project Authors."
           }
         }
       }
@@ -691,6 +821,16 @@
         }
       }
     },
+    "Libraries": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Raamatukogud"
+          }
+        }
+      }
+    },
     "Libraries and bookshops": {
       "localizations": {
         "et": {
@@ -711,12 +851,42 @@
         }
       }
     },
+    "Links": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lingid"
+          }
+        }
+      }
+    },
+    "Links on a book's page open in your browser, like any other link.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Raamatu lehel olevad lingid avanevad sinu brauseris nagu iga teine link."
+          }
+        }
+      }
+    },
     "Loe found nothing close enough to the books you rated highly. Rate a few more.": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Loe ei leidnud midagi piisavalt sarnast raamatutele, mida kõrgelt hindasid. Hinda veel mõnda."
+          }
+        }
+      }
+    },
+    "Loe has no ads, no analytics and no tracking.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loes pole reklaame, analüütikat ega jälgimist."
           }
         }
       }
@@ -731,6 +901,26 @@
         }
       }
     },
+    "Loe's catalogue is built from the Estonian National Bibliography, the National Library's record of the books published in Estonia. It is open data under CC0 1.0.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loe kataloog on tehtud Eesti rahvusbibliograafiast, Rahvusraamatukogu andmebaasist Eestis ilmunud raamatute kohta. See on avaandmed CC0 1.0 alusel."
+          }
+        }
+      }
+    },
+    "Loe's code is open under the Mozilla Public License 2.0. The name Loe, its marks and its icon are not part of the licence.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loe kood on avatud Mozilla Public License 2.0 alusel. Nimi Loe, selle märgid ja ikoon litsentsi alla ei kuulu."
+          }
+        }
+      }
+    },
     "More by the author of %@": {
       "localizations": {
         "et": {
@@ -741,12 +931,32 @@
         }
       }
     },
+    "National Library of Estonia": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eesti Rahvusraamatukogu"
+          }
+        }
+      }
+    },
     "New changes stay on this phone until there's room. Free up space or get more in the Settings app, under your name and iCloud.": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Uued muudatused jäävad selles telefonis ootele, kuni ruumi tuleb. Vabasta ruumi või hangi seda juurde rakenduses Seaded, oma nime ja iCloudi alt."
+          }
+        }
+      }
+    },
+    "Newsreader": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Newsreader"
           }
         }
       }
@@ -911,6 +1121,16 @@
         }
       }
     },
+    "Open Library": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Library"
+          }
+        }
+      }
+    },
     "Open Library can't be reached right now.": {
       "localizations": {
         "et": {
@@ -1007,6 +1227,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Suuna kaamera raamatu tagakaanel olevale triipkoodile."
+          }
+        }
+      }
+    },
+    "Privacy": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privaatsus"
           }
         }
       }
@@ -1131,6 +1361,16 @@
         }
       }
     },
+    "Report a problem on GitHub": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anna veast teada GitHubis"
+          }
+        }
+      }
+    },
     "Romance": {
       "localizations": {
         "et": {
@@ -1201,6 +1441,16 @@
         }
       }
     },
+    "Searching": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otsimine"
+          }
+        }
+      }
+    },
     "Searching Open Library…": {
       "localizations": {
         "et": {
@@ -1227,6 +1477,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vaata Open Librarys"
+          }
+        }
+      }
+    },
+    "See the code on GitHub": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vaata koodi GitHubis"
           }
         }
       }
@@ -1331,6 +1591,16 @@
         }
       }
     },
+    "Source code": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lähtekood"
+          }
+        }
+      }
+    },
     "Suggestions need the catalogue": {
       "localizations": {
         "et": {
@@ -1377,6 +1647,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kaamera pole kasutatav"
+          }
+        }
+      }
+    },
+    "The catalogue": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kataloog"
           }
         }
       }
@@ -1437,6 +1717,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Uusim väljaanne vajab Loe uuemat versiooni."
+          }
+        }
+      }
+    },
+    "The typeface for headings": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pealkirjade kirjatüüp"
           }
         }
       }
@@ -1581,6 +1871,16 @@
         }
       }
     },
+    "Version %@ (%@)": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Versioon %@ (%@)"
+          }
+        }
+      }
+    },
     "Waiting for a connection": {
       "localizations": {
         "et": {
@@ -1601,12 +1901,62 @@
         }
       }
     },
+    "What Loe sends, and where": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mida Loe saadab ja kuhu"
+          }
+        }
+      }
+    },
     "What do you like to read?": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Mida sulle meeldib lugeda?"
+          }
+        }
+      }
+    },
+    "What stays with you": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mis jääb sinu juurde"
+          }
+        }
+      }
+    },
+    "What stays with you, and what Loe sends where": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mis jääb sinu juurde ja mida Loe kuhu saadab"
+          }
+        }
+      }
+    },
+    "When you stop typing, Loe asks Open Library about what you typed. Open Library, run by the Internet Archive, sees what you searched for.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kui lõpetad trükkimise, küsib Loe Open Library käest, mida sa kirjutasid. Open Library, mida peab Internet Archive, näeb, mida otsisid."
+          }
+        }
+      }
+    },
+    "When you've chosen libraries, opening a book asks ESTER whether they have it. ESTER sees which book was asked about.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kui oled raamatukogud valinud, küsib raamatu avamine ESTERilt, kas neil see on. ESTER näeb, millise raamatu kohta küsiti."
           }
         }
       }
@@ -1621,12 +1971,32 @@
         }
       }
     },
+    "Whether a library has a book": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kas raamatukogus on raamat olemas"
+          }
+        }
+      }
+    },
     "Whether a library has the book comes from ESTER, the libraries' catalogue, which Loe asks about this book and nothing else. Links open in your browser.": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Kas raamatukogus on raamat olemas, näitab ESTER, raamatukogude e-kataloog. Loe küsib sealt ainult selle raamatu kohta. Lingid avanevad brauseris."
+          }
+        }
+      }
+    },
+    "Write to us": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kirjuta meile"
           }
         }
       }
@@ -1737,6 +2107,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sinu riiulid sünkroonitakse iCloudiga"
+          }
+        }
+      }
+    },
+    "Your shelves, ratings, pages, cover photos, tastes and libraries are kept on this phone and in your own iCloud. There's no Loe account and no Loe server.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sinu riiulid, hinnangud, leheküljed, kaanefotod, maitsed ja raamatukogud hoitakse selles telefonis ja sinu enda iCloudis. Loel pole kontot ega serverit."
           }
         }
       }
