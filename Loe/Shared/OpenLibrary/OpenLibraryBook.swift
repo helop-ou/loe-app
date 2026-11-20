@@ -67,7 +67,8 @@ nonisolated struct OpenLibraryBook: Hashable, Sendable, Identifiable {
         let isbn = edition?.isbn?.lazy.compactMap { CatalogueQuery.isbn13($0) }.first
         let languages = edition?.language ?? []
         return OpenLibraryBook(
-            record: OpenLibraryRecord(workKey: key, isbn: isbn, coverID: doc.coverID ?? edition?.coverID),
+            // The work's own cover can be another book's, so the edition shown comes first.
+            record: OpenLibraryRecord(workKey: key, isbn: isbn, coverID: edition?.coverID ?? doc.coverID),
             title: title,
             authors: (doc.authors ?? []).map(\.trimmed).filter { !$0.isEmpty },
             year: doc.firstPublishYear,
