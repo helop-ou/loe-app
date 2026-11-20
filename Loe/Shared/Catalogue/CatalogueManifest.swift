@@ -17,6 +17,15 @@ nonisolated struct CatalogueManifest: Decodable, Equatable, Sendable {
         case size
     }
 
+    /// The month an edition was built in, from a version such as "2026-11".
+    static func month(ofVersion version: String) -> Date? {
+        let parts = version.split(separator: "-")
+        guard parts.count == 2, let year = Int(parts[0]), let month = Int(parts[1]), (1...12).contains(month) else {
+            return nil
+        }
+        return Calendar(identifier: .gregorian).date(from: DateComponents(year: year, month: month, day: 15))
+    }
+
     init(version: String, schemaVersion: Int, url: URL, sha256: String, size: Int?) {
         self.version = version
         self.schemaVersion = schemaVersion

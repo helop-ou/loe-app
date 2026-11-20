@@ -349,7 +349,7 @@ actor Catalogue {
 
     private var cachedEditionCount: Int?
 
-    private func editionCount() throws -> Int {
+    func editionCount() throws -> Int {
         if let cachedEditionCount { return cachedEditionCount }
         let count = try database.rows("SELECT COUNT(*) FROM edition") { $0.integer(0) ?? 0 }.first ?? 0
         cachedEditionCount = count

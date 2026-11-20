@@ -211,6 +211,16 @@
         }
       }
     },
+    "Books": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Raamatuid"
+          }
+        }
+      }
+    },
     "Books published abroad. Loe asks Open Library about what you search for, and nothing else.": {
       "localizations": {
         "et": {
@@ -271,12 +281,32 @@
         }
       }
     },
+    "Catalogue": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kataloog"
+          }
+        }
+      }
+    },
     "Change the cover photo": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Muuda kaanepilti"
+          }
+        }
+      }
+    },
+    "Check for a new edition": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otsi uut väljaannet"
           }
         }
       }
@@ -297,6 +327,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kontrolli ühendust ja proovi uuesti."
+          }
+        }
+      }
+    },
+    "Checked for a new edition": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uut väljaannet viimati otsitud"
           }
         }
       }
@@ -341,6 +381,16 @@
         }
       }
     },
+    "Couldn't check. Check your connection and try again.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ei saanud vaadata. Kontrolli ühendust ja proovi uuesti."
+          }
+        }
+      }
+    },
     "Cover: Open Library": {
       "localizations": {
         "et": {
@@ -377,6 +427,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Valmis"
+          }
+        }
+      }
+    },
+    "Download it again": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Laadi uuesti alla"
           }
         }
       }
@@ -441,12 +501,32 @@
         }
       }
     },
+    "Edition": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Väljaanne"
+          }
+        }
+      }
+    },
     "Editions": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Väljaanded"
+          }
+        }
+      }
+    },
+    "Every book published in Estonia, from the National Library of Estonia, so search works offline.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kõik Eestis ilmunud raamatud, Eesti Rahvusraamatukogult, et otsing töötaks ka võrguta."
           }
         }
       }
@@ -711,6 +791,16 @@
         }
       }
     },
+    "Not on this phone": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pole selles telefonis"
+          }
+        }
+      }
+    },
     "Not rated": {
       "localizations": {
         "et": {
@@ -727,6 +817,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pole veel alustanud"
+          }
+        }
+      }
+    },
+    "Not yet": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Veel mitte"
           }
         }
       }
@@ -787,6 +887,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kohal: %@. aasta väljaanne"
+          }
+        }
+      }
+    },
+    "On this phone": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Selles telefonis"
           }
         }
       }
@@ -981,12 +1091,42 @@
         }
       }
     },
+    "Remove from this phone": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eemalda telefonist"
+          }
+        }
+      }
+    },
     "Remove photo": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Eemalda pilt"
+          }
+        }
+      }
+    },
+    "Remove the catalogue": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eemalda kataloog"
+          }
+        }
+      }
+    },
+    "Remove the catalogue?": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kas eemaldada kataloog?"
           }
         }
       }
@@ -1037,6 +1177,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Otsi"
+          }
+        }
+      }
+    },
+    "Search and suggestions need it until you download it again. Your shelves stay as they are.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otsing ja soovitused vajavad seda, kuni selle uuesti alla laadid. Sinu riiulid jäävad, nagu on."
           }
         }
       }
@@ -1281,6 +1431,16 @@
         }
       }
     },
+    "The newest edition needs a newer version of Loe.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uusim väljaanne vajab Loe uuemat versiooni."
+          }
+        }
+      }
+    },
     "They're on every device signed in to your iCloud that has Loe.": {
       "localizations": {
         "et": {
@@ -1297,6 +1457,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "See raamat on pärit Open Libraryst, millelt Loe selle kohta küsis."
+          }
+        }
+      }
+    },
+    "This is the newest edition.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See on uusim väljaanne."
           }
         }
       }
@@ -1381,12 +1551,32 @@
         }
       }
     },
+    "Unknown": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teadmata"
+          }
+        }
+      }
+    },
     "Update page": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Muuda lehekülge"
+          }
+        }
+      }
+    },
+    "Updated to the newest edition.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uusim väljaanne on nüüd telefonis."
           }
         }
       }
