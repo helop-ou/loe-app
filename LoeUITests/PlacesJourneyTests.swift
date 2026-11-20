@@ -38,10 +38,15 @@ final class PlacesJourneyTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Apollo"].exists)
         attach("places-settings", app)
 
-        // Swipe the university library away, once it is clear of the tab bar.
-        app.swipeUp()
-        app.staticTexts["Tartu Ülikooli Raamatukogu"].swipeLeft()
-        app.buttons["Remove"].tap()
+        // Swipe the university library away. A full swipe up scrolls the long Settings
+        // page too far, under the navigation bar, so drag the row to the middle instead.
+        let tartu = app.staticTexts["Tartu Ülikooli Raamatukogu"]
+        let middle = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        middle.press(forDuration: 0.1, thenDragTo: middle.withOffset(CGVector(dx: 0, dy: app.frame.midY - tartu.frame.midY)))
+        tartu.swipeLeft()
+        let remove = app.buttons["Remove"]
+        XCTAssertTrue(remove.waitForExistence(timeout: 5))
+        remove.tap()
         XCTAssertTrue(app.staticTexts["Tartu Ülikooli Raamatukogu"].waitForNonExistence(timeout: 5))
 
         app.tabBars.buttons["Search"].tap()
