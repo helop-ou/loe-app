@@ -15,10 +15,7 @@ actor OpenLibrary {
     ].joined(separator: ",")
 
     /// Open Library asks apps to name themselves and give a contact.
-    static let userAgent: String = {
-        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
-        return "Loe/\(version) (https://github.com/helop-ou/loe-app; support@helop.dev)"
-    }()
+    static let userAgent = "Loe/\(LoeProject.version) (\(LoeProject.repository.absoluteString); \(LoeProject.contact))"
 
     private let fetch: @Sendable (URLRequest) async throws -> Data
     private var answers: [String: [OpenLibraryBook]] = [:]
