@@ -268,13 +268,21 @@ still opens ESTER. `AvailabilityTests` reads two holdings pages saved in
 
 ## Rules
 
-- A book is on one shelf at a time, found by its work key
-  (`CatalogueWork.id`), or for the catalogue's and Open Library's copies of
-  one book, by `SameBook`. Shelving it again from any edition moves it. A book
-  entered by hand has its own key.
+- A book is on one shelf at a time, and shelving it again from any edition
+  moves it. [`ShelvedIdentity`](../Loe/Shared/Library/ShelvedIdentity.swift)
+  finds the reader's copy, for a book's page, for shelving and for Read next:
+  by its record first (the ESTER number of the edition that was shelved, or
+  the Open Library work), then by its work key (`CatalogueWork.id`, the folded
+  title and authors), then as the other source's copy, by `SameBook`. A book
+  entered by hand is only ever found by its own key.
+- The work key is never relied on alone, and it is not rewritten. Titles and
+  authors get corrected, in the catalogue, in how the catalogue is built and
+  on Open Library, and the work key changes with them. The record does not.
 - A shelved book keeps its own title, authors, ESTER number and page count, so
   the shelves read the same without the catalogue and through catalogue
-  updates. Its page opens from that and fills in the rest from the catalogue.
+  updates. Its page opens from that and fills in the rest from the catalogue,
+  which finds the book by its ESTER number when the title or authors it was
+  shelved under are no longer the catalogue's.
 - Moving to Reading records when it started, once. Moving to Read records when
   it finished and turns to the last page.
 - Ratings are one to five stars, or none. The page stays between zero and the
