@@ -46,6 +46,7 @@ Loe/
     Catalogue/                 The offline catalogue: SQLite access, search, works
     Places/                    The libraries and bookshops a reader can pick
     Library/                   The reader's shelves, stored with SwiftData
+    Network/                   The session every client asks through
     UI/                        Brand type, colour and components used across features
   Resources/                   Fonts and licence texts
   Assets.xcassets/             Brand colours (from the brand repository)
@@ -102,7 +103,10 @@ same contract.
   late results. Load with `.task(id:)`. UI loading must not cancel itself by
   replacing the view branch that owns its task.
 - Networking, credentials and response validation live in shared clients.
-  Views never assemble their own requests.
+  Views never assemble their own requests. Every client asks through
+  `PrivateSession`, which keeps no cookies, cache or credentials and sends a
+  fixed `User-Agent` and `Accept-Language`. `PrivateSessionTests` fails when a
+  file builds its own session.
 - Add a protocol or package only for a concrete boundary, test seam or reuse
   need. Not for every type.
 - A record saved on the device reads every key as optional and falls back

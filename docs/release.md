@@ -119,6 +119,12 @@ only required-reason API is `UserDefaults`, for the appearance setting and the
 catalogue's update check. The catalogue download sends nothing about the
 reader, and covers are the reader's own photos.
 
+Every request goes through
+[`PrivateSession`](../Loe/Shared/Network/PrivateSession.swift): no cookies,
+cache or credentials, a `User-Agent` that names the app, its repository and the
+developer's contact, and `Accept-Language: en`, so the reader's own languages
+are never sent.
+
 When a reader has picked libraries, a book's page asks ESTER about that book
 as it opens, over HTTPS with no cookies (see [Library](library.md#availability)).
 ESTER sees which book records were asked about, from the phone's address, as
