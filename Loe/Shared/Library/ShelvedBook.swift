@@ -155,6 +155,12 @@ final class ShelvedBook {
         return Double(currentPage) / Double(pageCount)
     }
 
+    /// Whether removing the book loses something the reader put there: a rating, a
+    /// page, a cover photo, when they read it, or a book they entered themselves.
+    var keepsSomethingOfTheReaders: Bool {
+        source == .hand || rating != nil || currentPage != nil || coverPhoto != nil || startedAt != nil || finishedAt != nil
+    }
+
     /// Enough of the book to open its page. The page finds the rest in the catalogue.
     var work: CatalogueWork {
         CatalogueWork(id: workKey, editions: [

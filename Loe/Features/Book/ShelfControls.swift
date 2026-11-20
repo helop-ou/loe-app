@@ -10,6 +10,7 @@ struct ShelfControls: View {
 
     @Environment(\.modelContext) private var context
     @State private var editingPage = false
+    @State private var confirmsRemoval = false
 
     var body: some View {
         if let book {
@@ -42,6 +43,12 @@ struct ShelfControls: View {
             .sheet(isPresented: $editingPage) {
                 PageSheet(book: book)
             }
+            .confirmationDialog("Remove this book?", isPresented: $confirmsRemoval, titleVisibility: .visible) {
+                Button("Remove", role: .destructive) { context.delete(book) }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Its rating, page, dates and cover photo go too. This can't be undone.")
+            }
         } else {
             shelfMenu(current: nil) {
                 Text("Add to shelf")
@@ -70,7 +77,11 @@ struct ShelfControls: View {
             if let current {
                 Divider()
                 Button(role: .destructive) {
-                    context.delete(current)
+                    if current.keepsSomethingOfTheReaders {
+                        confirmsRemoval = true
+                    } else {
+                        context.delete(current)
+                    }
                 } label: {
                     Text("Remove from shelves")
                 }
