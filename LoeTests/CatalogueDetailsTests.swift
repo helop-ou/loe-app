@@ -67,4 +67,31 @@ struct CatalogueDetailsTests {
         #expect(details.translations.isEmpty)
         #expect(details.sameAuthor.isEmpty)
     }
+
+    @Test func aBookShelvedBeforeItsTitleAndAuthorWereCorrectedIsFoundByItsRecord() async throws {
+        let catalogue = try Catalogue(url: CatalogueFixture.make(books: Self.books))
+        let edition = CatalogueEdition(id: 0, erbID: "b1", title: "Keisri hul", authors: "J. Kross")
+        let work = CatalogueWork(id: CatalogueWork.key(for: edition), editions: [edition])
+        let details = try await catalogue.details(for: work)
+        #expect(details.editions.map(\.year) == [2017, 1978])
+        #expect(Set(details.translations.map(\.title)) == ["The czar's madman", "Der Verrückte des Zaren"])
+        #expect(Set(details.sameAuthor.map(\.title)) == ["Kolme katku vahel", "Professor Martensi ärasõit"])
+        #expect(try await catalogue.editions(of: work).map(\.year) == [2017, 1978])
+    }
+
+    @Test func aBookTheCatalogueNoLongerHasShowsWhatTheShelfKept() async throws {
+        let catalogue = try Catalogue(url: CatalogueFixture.make(books: Self.books))
+        let edition = CatalogueEdition(id: 0, erbID: "b999", title: "Kadunud raamat", authors: "Keegi Teine")
+        let work = CatalogueWork(id: CatalogueWork.key(for: edition), editions: [edition])
+        #expect(try await catalogue.details(for: work).editions == [edition])
+        #expect(try await catalogue.editions(of: work) == [edition])
+    }
+
+    @Test func aBookWithNoAuthorOpenedFromAShelfShowsWhatTheShelfKept() async throws {
+        let books = Self.books + ",\n(9, 'b9', 'Eesti muinasjutud', NULL, 1990, 0, 0, NULL, 'est', NULL, NULL)"
+        let catalogue = try Catalogue(url: CatalogueFixture.make(books: books))
+        let edition = CatalogueEdition(id: 0, erbID: "b9", title: "Eesti muinasjutud")
+        let work = CatalogueWork(id: CatalogueWork.key(for: edition), editions: [edition])
+        #expect(try await catalogue.details(for: work).editions == [edition])
+    }
 }
