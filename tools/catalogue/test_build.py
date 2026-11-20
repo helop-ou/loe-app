@@ -252,6 +252,28 @@ class ConvertTests(unittest.TestCase):
         self.assertIsNone(self.convert(title, fixed=FIXED[:30]).language)
         self.assertEqual(self.convert(title, fixed=FIXED[:35] + "eng" + FIXED[38:]).language, "eng")
 
+    def test_a_record_with_no_title_proper_is_skipped_and_counted(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = os.path.join(directory, "erb.xml")
+            records = [
+                record("b50000001", field("245", ("b", "romaan"))),
+                record("b50000002", field("245", ("n", "2. osa"), ("p", "Kaks kantsi"))),
+                record("b50000003", field("245", ("a", " / "))),
+                record("b50000004", field("245", ("a", "... ja õnne elus"))),
+                TODE_JA_OIGUS,
+            ]
+            with open(source, "w", encoding="utf-8") as f:
+                f.write(collection(*records))
+            lines = []
+            out = os.path.join(directory, "catalogue.sqlite")
+            kept, skipped = build.build(out, [source], log=lines.append, allow_small=True)
+            self.assertEqual((kept, skipped), (2, {"no title proper": 3}))
+            self.assertIn("skipped 3 (no title proper)", lines)
+            db = sqlite3.connect(out)
+            titles = [t for (t,) in db.execute("SELECT title FROM edition ORDER BY erb_id")]
+            self.assertEqual(titles, ["Tõde ja õigus. 1. kd.", "... ja õnne elus"])
+            db.close()
+
 
 class RefusalTests(unittest.TestCase):
     def setUp(self):
