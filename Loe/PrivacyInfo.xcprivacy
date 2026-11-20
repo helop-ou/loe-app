@@ -5,9 +5,9 @@
 	<!-- Loe collects nothing and tracks nobody. Reading data stays on the phone
 	     and in the reader's own iCloud. A book's page asks ESTER which libraries
 	     have it, sending only the book's record numbers. Search asks Open
-	     Library about what the reader typed, and covers are asked for by
-	     cover id or ISBN from Open Library and the Internet Archive, and
-	     nothing else. See docs/release.md, "Privacy". -->
+	     Library about what the reader typed, and for a book found on Open
+	     Library its cover is asked for by cover id or ISBN from Open
+	     Library and the Internet Archive, and nothing else. See docs/release.md, "Privacy". -->
 	<key>NSPrivacyTracking</key>
 	<false/>
 	<key>NSPrivacyTrackingDomains</key>

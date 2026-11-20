@@ -39,8 +39,8 @@ struct Credit: Identifiable {
         Credit(
             id: "open-library",
             name: "Open Library",
-            role: "Books from abroad, and covers",
-            about: "Books published abroad and the covers of books come from Open Library, an open catalogue run by the Internet Archive.",
+            role: "Books from abroad, and their covers",
+            about: "Books published abroad and their covers come from Open Library, an open catalogue run by the Internet Archive.",
             link: URL(string: "https://openlibrary.org")!
         ),
         Credit(
