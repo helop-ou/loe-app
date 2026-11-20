@@ -54,7 +54,8 @@ identifier.
 
 ## Secrets
 
-Loe has one secret: the App Store Connect API key "Loe uploads".
+Loe has two secrets: the App Store Connect API key "Loe uploads", and
+SonarCloud's analysis token.
 
 - The `.p8` lives in `~/.appstoreconnect/private_keys/`, readable only by its
   owner (`chmod 600`), with its download attributes removed (`xattr -c`). It is
@@ -65,6 +66,10 @@ Loe has one secret: the App Store Connect API key "Loe uploads".
   passes only the path to `xcodebuild`.
 - A key that has been exposed anywhere is revoked in App Store Connect and
   replaced, not kept.
+- The SonarCloud token is the repository secret `SONAR_TOKEN`, used only by
+  the scan job (see [standards](standards.md#continuous-integration)). It can
+  only run analyses. Nobody reads its value back: if it may have leaked,
+  revoke it in SonarCloud and set a new one.
 - Nothing else in the repository is secret. The team ID, bundle identifiers,
   the iCloud container and the catalogue's address are all visible in any
   signed build.
@@ -76,8 +81,8 @@ The repository is public. It stays safe to be:
 - Rulesets protect `main` (pull request required, the required checks, linear
   history, no force push or deletion) and every tag (no update or deletion),
   so a catalogue release can never change under the apps that use it.
-- Only GitHub-owned actions may run, and the default workflow token can only
-  read.
+- Only GitHub-owned actions may run, plus SonarCloud's scan action at the one
+  commit the workflow pins, and the default workflow token can only read.
 - Workflows run on `pull_request`, never `pull_request_target`, with
   `permissions: contents: read` and `persist-credentials: false` on checkout. A
   fork's pull request gets a read-only token and no secrets.

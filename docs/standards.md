@@ -170,6 +170,13 @@ are the commit types: `feat`, `fix`, `docs`, `test`, `refactor`, `perf`,
   comes back on merge. Rebase the branch, and the ones stacked on it, onto
   `origin/main`, resolve each conflict in the commit that causes it, and push
   with `--force-with-lease` (`gh stack sync` does all of it for a stack).
+- **Coverage decides where the tests go.** SonarCloud scores each pull
+  request on its own and wants 80 % of new code covered. New code in a file
+  that `sonar.coverage.exclusions` does not exclude needs the tests that run
+  it in the same pull request. In a stack, the feature and its tests are the
+  bottom, and anything built on them goes above. Views are excluded, so their
+  snapshots can still be a pull request of their own. Check the changed files
+  against the exclusions before splitting.
 
 `.github/workflows/conventions.yml` runs `scripts/check-pull-request.sh` on
 every pull request and again when its title or description is edited. The
@@ -192,10 +199,29 @@ every file, whose review GitHub requests on each pull request.
   `DEVELOPER_DIR` in the same change. A failed run keeps its result bundle
   and log for 14 days.
 - **Catalogue build tests**: `tools/catalogue` on Ubuntu.
+- **SonarCloud scan**: the app tests collect coverage, and
+  `scripts/coverage-to-sonar.py` turns the result bundle into Sonar's format.
+  This job then runs the scan with it on Ubuntu, using the `SONAR_TOKEN`
+  secret, and SonarCloud's app reports the quality gate on the pull request
+  as "SonarCloud Code Analysis". It also runs on each push to `main`, so the
+  dashboard for `main` stays current. A fork's pull request has no secrets, so
+  it skips the scan. `sonar-project.properties` says which folders are app
+  code and which are tests, and leaves views out of coverage: files named
+  `*View`, `*Sheet`, `*Picker`, `*Row`, `*Section`, `*Menu` or `*Controls`,
+  `BarcodeScanner.swift`, `TasteQuiz.swift` and `Shared/UI`. Snapshots,
+  journeys and the simulator check those. A view-only file with another name
+  goes on that list. The catalogue's Python is tested but reports no
+  coverage, which would need a package the build doesn't otherwise use.
+  Automatic analysis in SonarCloud must stay off, or the two analyses
+  collide.
+- The scan action is the one action from outside GitHub the repository
+  allows, and only at the commit the workflow pins (Settings → Actions →
+  General lists `SonarSource/sonarqube-scan-action@<commit>`). Moving the pin
+  means moving that pattern too, or the scan stops running.
 
-`main` requires the conventions check and both test jobs. CI is a backstop,
-not a replacement: run the tests before pushing, because CI only reports after
-the push.
+`main` requires the conventions check, both test jobs and SonarCloud's quality
+gate. CI is a backstop, not a replacement: run the tests before pushing,
+because CI only reports after the push.
 
 ## Writing
 
