@@ -9,4 +9,10 @@ struct TasteQuizSnapshotTests {
         let quiz = TasteQuizContent(selection: .constant([.crime, .fantasy]))
         try Snapshot.verify(quiz, named: "taste-quiz", look: look)
     }
+
+    @Test(arguments: Snapshot.Look.all)
+    func theLanguageStepOnThePhonesOwn(look: Snapshot.Look) throws {
+        let step = LanguageStepContent(language: .constant(.system))
+        try Snapshot.verify(step, named: "language-step", look: look)
+    }
 }
