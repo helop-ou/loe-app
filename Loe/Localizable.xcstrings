@@ -261,22 +261,22 @@
         }
       }
     },
-    "Books from abroad, and covers": {
+    "Books from abroad, and their covers": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Välismaal ilmunud raamatud ja kaaned"
+            "value": "Välismaal ilmunud raamatud ja nende kaaned"
           }
         }
       }
     },
-    "Books published abroad and the covers of books come from Open Library, an open catalogue run by the Internet Archive.": {
+    "Books published abroad and their covers come from Open Library, an open catalogue run by the Internet Archive.": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Välismaal ilmunud raamatud ja raamatute kaaned tulevad Open Libraryst, avatud kataloogist, mida peab Internet Archive."
+            "value": "Välismaal ilmunud raamatud ja nende kaaned tulevad Open Libraryst, avatud kataloogist, mida peab Internet Archive."
           }
         }
       }
@@ -471,12 +471,12 @@
         }
       }
     },
-    "Covers come from Open Library and the Internet Archive, which see which books' covers were asked for. Loe keeps the covers on your phone.": {
+    "Covers of books from abroad come from Open Library and the Internet Archive, which see which of those books' covers were asked for. Loe keeps the covers on your phone.": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kaaned tulevad Open Libraryst ja Internet Archive'ist, kes näevad, milliste raamatute kaasi küsiti. Loe hoiab kaasi sinu telefonis."
+            "value": "Välismaal ilmunud raamatute kaaned tulevad Open Libraryst ja Internet Archive'ist, kes näevad, milliste raamatute kaasi küsiti. Loe hoiab kaasi sinu telefonis."
           }
         }
       }

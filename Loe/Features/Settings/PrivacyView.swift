@@ -39,7 +39,7 @@ struct PrivacyContent: View {
             )
             Sent(
                 "Covers",
-                "Covers come from Open Library and the Internet Archive, which see which books' covers were asked for. Loe keeps the covers on your phone."
+                "Covers of books from abroad come from Open Library and the Internet Archive, which see which of those books' covers were asked for. Loe keeps the covers on your phone."
             )
             Sent(
                 "Links",
