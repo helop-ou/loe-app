@@ -14,15 +14,13 @@ struct BookView: View {
     @State private var enteredByHand = false
     @State private var coverArt: CoverArt?
     @State private var openLibraryCover: Covers.Loaded?
-    @Query private var shelved: [ShelvedBook]
+    @Query private var shelves: [ShelvedBook]
 
-    init(work: CatalogueWork) {
-        self.work = work
-        let key = work.id
-        _shelved = Query(filter: #Predicate<ShelvedBook> { $0.workKey == key })
+    /// The reader's copy of this book, found by its record before its title, which
+    /// may have been corrected since it was shelved. See `ShelvedIdentity`.
+    private var book: ShelvedBook? {
+        ShelvedBook.find(CatalogueWork(id: work.id, editions: work.editions + (details?.editions ?? [])), among: shelves)
     }
-
-    private var book: ShelvedBook? { shelved.first }
 
     /// A book entered by hand reads from what the reader entered, which they can
     /// change while the page is open.

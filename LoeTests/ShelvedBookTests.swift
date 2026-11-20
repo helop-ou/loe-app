@@ -89,4 +89,45 @@ struct ShelvedBookTests {
         let read = try context.fetch(FetchDescriptor<ShelvedBook>(predicate: #Predicate { $0.shelfName == name }))
         #expect(read.count == 1)
     }
+
+    @Test func aBookWhoseTitleTheCatalogueCorrectedIsMovedNotAddedAgain() throws {
+        let book = try ShelvedBook.shelve(work, edition: edition, on: .read, in: context, now: monday)
+        book.rate(5)
+        let corrected = CatalogueEdition(id: 1, erbID: "b10544215", title: "Keisri hull. Romaan", authors: "Kross, Jaan", pages: 352)
+        let correctedWork = CatalogueWork(id: CatalogueWork.key(for: corrected), editions: [corrected])
+        #expect(correctedWork.id != work.id)
+        let moved = try ShelvedBook.shelve(correctedWork, edition: corrected, on: .setAside, in: context, now: friday)
+        #expect(try all().count == 1)
+        #expect(moved.shelf == .setAside)
+        #expect(moved.rating == 5)
+        // It keeps the words it was shelved under.
+        #expect(moved.title == "Keisri hull")
+        #expect(moved.workKey == work.id)
+    }
+
+    @Test func ofTwoCopiesTheOneWithTheSameRecordIsTheReadersBook() throws {
+        let sameTitle = ShelvedBook(
+            edition: CatalogueEdition(id: 2, erbID: "b11453679", title: "Keisri hull", authors: "Jaan Kross"),
+            workKey: work.id, shelf: .wantToRead, now: monday
+        )
+        let sameRecord = ShelvedBook(edition: edition, workKey: "an older spelling|jaan kross", shelf: .read, now: friday)
+        context.insert(sameTitle)
+        context.insert(sameRecord)
+        #expect(try ShelvedBook.find(work, in: context) === sameRecord)
+    }
+
+    @Test func ofTwoCopiesThatMatchAlikeTheFirstShelvedIsTheReadersBook() throws {
+        let later = ShelvedBook(edition: edition, workKey: work.id, shelf: .read, now: friday)
+        let first = ShelvedBook(edition: edition, workKey: work.id, shelf: .wantToRead, now: monday)
+        context.insert(later)
+        context.insert(first)
+        #expect(try ShelvedBook.find(work, in: context) === first)
+        #expect(ShelvedBook.find(work, among: [first, later]) === first)
+    }
+
+    @Test func aBookThatIsNotOnAShelfIsNotFound() throws {
+        try ShelvedBook.shelve(work, edition: edition, on: .read, in: context)
+        let other = CatalogueEdition(id: 3, erbID: "b10000003", title: "Kolme katku vahel", authors: "Jaan Kross")
+        #expect(try ShelvedBook.find(CatalogueWork(id: CatalogueWork.key(for: other), editions: [other]), in: context) == nil)
+    }
 }

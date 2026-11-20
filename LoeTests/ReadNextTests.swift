@@ -250,6 +250,14 @@ struct ReadNextTests {
         #expect(!ReadNext.isOnShelf(Self.catalogueWork("Kevade ja suvi", by: "Oskar Luts"), kevade))
     }
 
+    @Test func aBookTheCatalogueRenamedIsStillOnTheShelf() {
+        let shelved = [ReadNext.Shelved(workKey: "an older spelling", erbID: "b7", title: "Kevade. Pildikesi koolipõlvest", leadAuthor: "O. Luts")]
+        let edition = CatalogueEdition(id: 7, erbID: "b7", title: "Kevade", authors: "Oskar Luts")
+        let other = CatalogueEdition(id: 8, erbID: "b8", title: "Kevade", authors: "Oskar Luts")
+        #expect(ReadNext.isOnShelf(CatalogueWork(id: CatalogueWork.key(for: edition), editions: [other, edition]), shelved))
+        #expect(!ReadNext.isOnShelf(CatalogueWork(id: CatalogueWork.key(for: other), editions: [other]), shelved))
+    }
+
     // MARK: From the shelves
 
     @Test @MainActor func favouritesAndSeriesBeingReadAreSourcesMostRecentFirst() throws {

@@ -98,4 +98,14 @@ struct ShelvedOpenLibraryBookTests {
         #expect(book.openLibraryRecord == nil)
         #expect(book.work.editions[0].openLibrary == nil)
     }
+
+    @Test func aBookOpenLibraryRenamedIsMovedNotAddedAgain() throws {
+        try ShelvedBook.shelve(halo.work, edition: halo.work.editions[0], on: .reading, in: context)
+        let renamed = OpenLibraryBook(record: halo.record, title: "The Fall of Reach", authors: ["Eric Nylund", "William C. Dietz"]).work
+        #expect(renamed.id != halo.work.id)
+        let book = try ShelvedBook.shelve(renamed, edition: renamed.editions[0], on: .read, in: context)
+        #expect(try all().count == 1)
+        #expect(book.shelf == .read)
+        #expect(book.title == "Halo: The Fall of Reach")
+    }
 }

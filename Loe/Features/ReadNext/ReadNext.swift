@@ -40,11 +40,7 @@ nonisolated enum ReadNext {
     }
 
     /// A shelved book, enough to tell whether a suggestion is already on a shelf.
-    struct Shelved: Hashable, Sendable {
-        let workKey: String
-        let title: String
-        let leadAuthor: String?
-    }
+    typealias Shelved = ShelvedIdentity
 
     struct Limits: Sendable {
         /// The favourites and series looked into, most recent first.
@@ -70,7 +66,7 @@ nonisolated enum ReadNext {
 
     @MainActor
     static func shelved(_ books: [ShelvedBook]) -> [Shelved] {
-        books.map { Shelved(workKey: $0.workKey, title: $0.title, leadAuthor: $0.work.editions[0].leadAuthor) }
+        books.map(\.identity)
     }
 
     static func suggestions(
@@ -190,7 +186,7 @@ nonisolated enum ReadNext {
     static func isOnShelf(_ work: CatalogueWork, _ shelved: [Shelved]) -> Bool {
         let author = work.editions[0].leadAuthor.map(CatalogueQuery.folded)
         return shelved.contains { book in
-            if book.workKey == work.id { return true }
+            if book.match(work) != nil { return true }
             guard book.leadAuthor.map(CatalogueQuery.folded) == author else { return false }
             return CatalogueQuery.folded(beforeFirstStop(book.title)) == CatalogueQuery.folded(work.title)
                 || CatalogueQuery.folded(beforeFirstStop(work.title)) == CatalogueQuery.folded(book.title)
