@@ -4,7 +4,8 @@ import Foundation
 /// Open Library see them.
 nonisolated enum LoeProject {
     static let repository = URL(string: "https://github.com/helop-ou/loe-app")!
-    static let issues = URL(string: "https://github.com/helop-ou/loe-app/issues")!
+    /// The forms a reader chooses from, not the bare list of issues.
+    static let issues = URL(string: "https://github.com/helop-ou/loe-app/issues/new/choose")!
     static let contact = "kontakt@helop.ee"
 
     static var version: String {
