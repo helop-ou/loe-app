@@ -37,8 +37,10 @@ enum Snapshot {
         .appending(path: "Snapshots/iOS-\(UIDevice.current.systemVersion)")
 
     static func verify(_ view: some View, named name: String, look: Look) throws {
-        let image = try #require(render(view, look: look))
-        let png = try #require(pngData(image))
+        let (image, png) = try #require(
+            firstSuccess(in: 3) { render(view, look: look).flatMap { image in pngData(image).map { (image, $0) } } },
+            "\(name)-\(look.name) could not be rendered and made into a PNG"
+        )
         Attachment.record(png, named: "\(name)-\(look.name).png")
 
         guard FileManager.default.fileExists(atPath: directory.path) else { return }
@@ -50,6 +52,15 @@ enum Snapshot {
         }
         let difference = try #require(differingShare(image, expected))
         #expect(difference <= tolerance, "\(Int(difference * 100))% of \(reference.lastPathComponent) differs")
+    }
+
+    /// The first answer `make` gives in this many goes. On a busy CI runner the
+    /// renderer now and then hands back an image no PNG can be made from.
+    static func firstSuccess<Value>(in attempts: Int, _ make: () -> Value?) -> Value? {
+        for _ in 0..<attempts {
+            if let value = make() { return value }
+        }
+        return nil
     }
 
     private static func render(_ view: some View, look: Look) -> CGImage? {
