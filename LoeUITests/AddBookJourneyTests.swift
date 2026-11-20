@@ -59,7 +59,18 @@ final class AddBookJourneyTests: XCTestCase {
         XCTAssertTrue(shelf.waitForExistence(timeout: 5))
         shelf.tap()
         app.buttons["Remove from shelves"].tap()
-        // The book was only on the shelves, so its page closes with it.
+        // A book entered by hand is the reader's own, so removing it asks first.
+        XCTAssertTrue(app.staticTexts["Remove this book?"].waitForExistence(timeout: 5))
+        // The dialog is a popover anchored to the button, closed by a tap outside it.
+        app.otherElements["PopoverDismissRegion"].tap()
+        XCTAssertTrue(app.staticTexts["Remove this book?"].waitForNonExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Shelf: Want to read"].exists)
+
+        app.buttons["Shelf: Want to read"].tap()
+        app.buttons["Remove from shelves"].tap()
+        XCTAssertTrue(app.staticTexts["Remove this book?"].waitForExistence(timeout: 5))
+        attach("remove-book", app)
+        app.buttons["Remove"].tap()
         XCTAssertTrue(app.staticTexts["Your shelves are empty"].waitForExistence(timeout: 5))
     }
 

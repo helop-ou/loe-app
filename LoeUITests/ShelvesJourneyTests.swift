@@ -67,6 +67,39 @@ final class ShelvesJourneyTests: XCTestCase {
         attach("shelves-read", app)
     }
 
+    /// A book that is only on a shelf has nothing of the reader's to lose, so
+    /// removing it does not ask.
+    @MainActor
+    func testRemovesABookThatIsOnlyOnAShelfWithoutAsking() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES", "-inMemoryLibrary", "YES", "-openLibraryStub", "YES"]
+        app.launch()
+
+        app.tabBars.buttons["Search"].tap()
+        if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {
+            throw XCTSkip("No catalogue on this simulator")
+        }
+        let field = app.searchFields.firstMatch
+        field.tap()
+        field.typeText("keisri hull")
+        let result = app.staticTexts["Keisri hull"].firstMatch
+        XCTAssertTrue(result.waitForExistence(timeout: 5))
+        result.tap()
+
+        let add = app.buttons["Add to shelf"]
+        XCTAssertTrue(add.waitForExistence(timeout: 5))
+        add.tap()
+        app.buttons["Want to read"].tap()
+
+        let shelf = app.buttons["Shelf: Want to read"]
+        XCTAssertTrue(shelf.waitForExistence(timeout: 5))
+        shelf.tap()
+        app.buttons["Remove from shelves"].tap()
+        XCTAssertTrue(app.buttons["Add to shelf"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["Remove this book?"].exists)
+    }
+
     /// Needs a cover photo as the newest picture in the simulator's Photos, added
     /// with `xcrun simctl addmedia <udid> cover.jpg`.
     @MainActor
