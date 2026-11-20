@@ -6,7 +6,7 @@ struct LoeApp: App {
     @AppStorage(LoeAppearance.storageKey) private var appearance = LoeAppearance.system
     @State private var catalogue = CatalogueStore()
     @State private var cloudSync = CloudSync()
-    private let library = LibraryStore.makeContainer()
+    @State private var library = Result { try LibraryStore.makeContainer() }
 
     init() {
         NavigationTitles.applyNewsreader()
@@ -14,13 +14,22 @@ struct LoeApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView()
-                .environment(catalogue)
-                .environment(cloudSync)
-                .task { await catalogue.updateIfDue() }
-                .task { await cloudSync.start() }
-                .preferredColorScheme(appearance.colorScheme)
+            Group {
+                switch library {
+                case .success(let container):
+                    RootView()
+                        .environment(catalogue)
+                        .environment(cloudSync)
+                        .task { await catalogue.updateIfDue() }
+                        .task { await cloudSync.start() }
+                        .modelContainer(container)
+                case .failure:
+                    LibraryUnavailableView {
+                        library = Result { try LibraryStore.makeContainer() }
+                    }
+                }
+            }
+            .preferredColorScheme(appearance.colorScheme)
         }
-        .modelContainer(library)
     }
 }
