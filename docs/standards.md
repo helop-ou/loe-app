@@ -41,7 +41,7 @@ Loe/
     ReadNext/
     Search/                    Search, and the catalogue download
     Book/                      A book's own page
-    Settings/                  Settings, About and credits, and the tastes quiz on first launch
+    Settings/                  Settings, About and credits, and the language and tastes asked on first launch
   Shared/
     Catalogue/                 The offline catalogue: SQLite access, search, works
     Places/                    The libraries and bookshops a reader can pick
@@ -85,9 +85,40 @@ same contract.
   `.loeBackground` and so on), never hex literals. Headings use
   `.loeHeading(_:)`. Every user-facing string is in `Localizable.xcstrings`
   with its Estonian translation.
+- Text follows the view's locale, because Loe can show another language than
+  the phone's (see [Language](#language)). A string built in code comes from
+  `locale.localized(_:)` and a screen's title from `loeNavigationTitle(_:)`.
 - The brand files (`Assets.xcassets/Loe`, `Loe.icon`, the fonts, and the
   tone values in `LoeTone.swift`) are generated in the private brand
   repository. Change them there and copy them over, so the two never drift.
+
+## Language
+
+iOS has no Estonian of its own, so a phone set to English would never show
+Loe's. Loe keeps its own choice,
+[`LoeLanguage`](../Loe/App/LoeLanguage.swift): the phone's language, Estonian
+or English, stored on the phone under `language`.
+
+- **Where it is chosen.** The first launch asks before the tastes quiz, with
+  the phone's own language chosen, and Settings offers the same three under a
+  heading in both languages. A language is named in itself, "Eesti" and
+  "English", so a reader finds theirs whatever is showing.
+- **How it is applied.** `LoeApp` puts the choice into the environment's
+  locale: the phone's locale with only its language changed, so dates, numbers
+  and the clock keep the reader's region. SwiftUI's own text follows that
+  locale at once, with no relaunch.
+- **What needs help.** `String(localized:)` answers in the phone's language
+  whatever the environment says, and the navigation bar keeps a title in the
+  language its screen first appeared in. So a string built in code comes from
+  `locale.localized(_:)`, with the locale read from the environment, and a
+  screen's title from `loeNavigationTitle(_:)`. `LoeLanguageTests` fails when
+  a file does either the other way.
+- **What stays the phone's.** Text iOS draws itself, such as the question
+  about the camera and the system's own buttons.
+- **Journeys.** Debug builds launched with `-forgetLanguage YES` drop the
+  stored choice, so a journey starts from the phone's language. The language
+  journeys forget it again when they end, because every other journey reads
+  Loe in English.
 
 ## State, concurrency, and boundaries
 
@@ -215,8 +246,9 @@ every file, whose review GitHub requests on each pull request.
   list of source or test folders, so `sonar-project.properties` leaves the
   tests out of coverage and out of the check for repeated code, keeps
   snapshots and fixtures out altogether, and leaves views out of coverage:
-  files named `*View`, `*Sheet`, `*Picker`, `*Row`, `*Section`, `*Menu` or
-  `*Controls`, `BarcodeScanner.swift`, `TasteQuiz.swift` and `Shared/UI`.
+  files named `*View`, `*Sheet`, `*Picker`, `*Row`, `*Section`, `*Menu`,
+  `*Controls` or `*Chip`, `BarcodeScanner.swift`, `TasteQuiz.swift` and
+  `Shared/UI`.
   Snapshots, journeys and the simulator check those. A view-only file with another name
   goes on that list. The catalogue's Python is tested but reports no
   coverage, which would need a package the build doesn't otherwise use.
