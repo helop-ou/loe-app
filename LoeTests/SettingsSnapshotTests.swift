@@ -18,4 +18,14 @@ struct SettingsSnapshotTests {
         .padding(20)
         try Snapshot.verify(rows, named: "icloud-status", look: look)
     }
+
+    @Test(arguments: Snapshot.Look.all)
+    func theAboutHeader(look: Snapshot.Look) throws {
+        try Snapshot.verify(AboutHeader(version: "0.1.0", build: "78").padding(20), named: "about-header", look: look)
+    }
+
+    @Test(arguments: Snapshot.Look.all)
+    func privacy(look: Snapshot.Look) throws {
+        try Snapshot.verify(PrivacyContent().padding(20), named: "privacy", look: look)
+    }
 }
