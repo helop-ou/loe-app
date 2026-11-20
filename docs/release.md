@@ -146,8 +146,9 @@ stays empty.
 Search asks Open Library about what the reader typed once they pause, over
 HTTPS with no cookies (see [Catalogue](catalogue.md#books-from-abroad)). Open
 Library, run by the Internet Archive, sees the search text from the phone's
-address. The `User-Agent` names the app and the developer's contact, never the
-reader. Loe keeps the answers in memory only, so the collected data stays
+address. An ISBN, typed or scanned, is sent only when the catalogue has no
+edition with it. The `User-Agent` names the app and the developer's contact,
+never the reader. Loe keeps the answers in memory only, so the collected data stays
 empty here too.
 
 Covers come from Open Library too (see [Library](library.md#covers)), but
