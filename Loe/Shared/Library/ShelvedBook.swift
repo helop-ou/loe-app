@@ -43,7 +43,7 @@ final class ShelvedBook {
 
     /// A book from the catalogue, from Open Library, or one the reader entered
     /// because neither has it.
-    enum Source: String {
+    nonisolated enum Source: String, Sendable {
         case catalogue
         case hand
         case openLibrary
@@ -163,9 +163,11 @@ final class ShelvedBook {
         ])
     }
 
-    /// Every way this book can be written. See `SameBook`.
-    var sameBookKeys: Set<String> {
-        SameBook.keys(title: title, subtitle: subtitle, leadAuthor: work.editions[0].leadAuthor)
+    var identity: ShelvedIdentity {
+        ShelvedIdentity(
+            workKey: workKey, source: source, erbID: erbID, openLibraryKey: openLibraryRecord?.workKey,
+            title: title, subtitle: subtitle, leadAuthor: work.editions[0].leadAuthor
+        )
     }
 
     var openLibraryRecord: OpenLibraryRecord? {
@@ -185,7 +187,7 @@ extension ShelvedBook {
         in context: ModelContext,
         now: Date = .now
     ) throws -> ShelvedBook {
-        if let existing = try find(work.id, in: context) ?? sameBook(as: edition, in: context) {
+        if let existing = try find(CatalogueWork(id: work.id, editions: [edition] + work.editions), in: context) {
             existing.move(to: shelf, now: now)
             return existing
         }
@@ -202,27 +204,16 @@ extension ShelvedBook {
         return book
     }
 
-    /// The same book already on a shelf from the other source: the catalogue's copy
-    /// of a book from Open Library, or the reverse, written differently enough that
-    /// their work keys differ. Books entered by hand never match.
-    static func sameBook(as edition: CatalogueEdition, in context: ModelContext) throws -> ShelvedBook? {
-        let other: Source
-        if edition.openLibrary != nil {
-            other = .catalogue
-        } else if !edition.erbID.isEmpty {
-            other = .openLibrary
-        } else {
-            return nil
-        }
-        let keys = SameBook.keys(title: edition.title, subtitle: edition.subtitle, leadAuthor: edition.leadAuthor)
-        return try context.fetch(FetchDescriptor<ShelvedBook>()).first {
-            $0.source == other && !keys.isDisjoint(with: $0.sameBookKeys)
-        }
+    /// The reader's copy of this book, however it is written now: by its record,
+    /// else its title and authors, else as the other source's copy, the first that
+    /// was shelved when two match alike. `work.editions[0]` is the edition on screen.
+    static func find(_ work: CatalogueWork, among books: [ShelvedBook]) -> ShelvedBook? {
+        let matches = books.compactMap { book in book.identity.match(work).map { (book: book, match: $0) } }
+        guard let surest = matches.map(\.match).max() else { return nil }
+        return matches.filter { $0.match == surest }.min { $0.book.addedAt < $1.book.addedAt }?.book
     }
 
-    static func find(_ workKey: String, in context: ModelContext) throws -> ShelvedBook? {
-        var descriptor = FetchDescriptor<ShelvedBook>(predicate: #Predicate { $0.workKey == workKey })
-        descriptor.fetchLimit = 1
-        return try context.fetch(descriptor).first
+    static func find(_ work: CatalogueWork, in context: ModelContext) throws -> ShelvedBook? {
+        find(work, among: try context.fetch(FetchDescriptor<ShelvedBook>()))
     }
 }
