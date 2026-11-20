@@ -339,7 +339,7 @@
 				INFOPLIST_FILE = LoeInfo.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Loe;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Loe reads the barcode on the back of a book to find it in the catalogue.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Loe reads the barcode on the back of a book to find it, and takes a photo of its cover when you ask.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -379,7 +379,7 @@
 				INFOPLIST_FILE = LoeInfo.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Loe;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Loe reads the barcode on the back of a book to find it in the catalogue.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Loe reads the barcode on the back of a book to find it, and takes a photo of its cover when you ask.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
