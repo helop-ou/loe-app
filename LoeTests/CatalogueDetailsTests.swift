@@ -87,6 +87,46 @@ struct CatalogueDetailsTests {
         #expect(try await catalogue.editions(of: work) == [edition])
     }
 
+    /// Translations as the bibliography records them: an original title with its
+    /// subtitle in one edition and without it in the next, and a series whose books
+    /// share the words before the colon.
+    private static let translated = """
+        (1, 'b1', 'Ave Maria', 'Andy Weir', 2021, 1, 0, 'Project Hail Mary', 'est', 'eng', NULL),
+        (2, 'b2', 'Sapiens', 'Yuval Noah Harari', 2016, 0, 0, 'Sapiens', 'est', 'eng', NULL),
+        (3, 'b3', 'Ajuvaba aju', 'Dean Burnett', 2016, 0, 0, 'The idiot brain: what your head is really up to', 'est', 'eng', NULL),
+        (4, 'b4', 'Kesköö raamatukogu', 'Matt Haig', 2021, 1, 0, 'The midnight library', 'est', 'eng', NULL),
+        (5, 'b5', 'Draakoni kolmnurk', 'Kay Wilkins', 2011, 1, 0, 'Ripley''s Bureau of Investigation: the dragon''s triangle', 'est', 'eng', NULL),
+        (6, 'b6', 'Projekt', 'Someone Else', 2020, 1, 0, 'Project Hail Mary', 'est', 'eng', NULL)
+        """
+
+    private func translations(of title: String, by author: String) async throws -> [String] {
+        let catalogue = try Catalogue(url: CatalogueFixture.make(books: Self.translated))
+        let abroad = OpenLibraryBook(record: .init(workKey: "/works/OL1W"), title: title, authors: [author], language: "eng")
+        return try await catalogue.details(for: abroad.work).translations.map(\.title)
+    }
+
+    @Test func aBookFromAbroadListsItsEstonianTranslation() async throws {
+        #expect(try await translations(of: "Project Hail Mary", by: "Andy Weir") == ["Ave Maria"])
+        // Open Library drops an article and adds a middle initial where the bibliography doesn't.
+        #expect(try await translations(of: "Midnight Library", by: "Matt J. Haig") == ["Kesköö raamatukogu"])
+    }
+
+    @Test func aBookFromAbroadWithNoTranslationListsNone() async throws {
+        #expect(try await translations(of: "Piranesi", by: "Susanna Clarke").isEmpty)
+        #expect(try await translations(of: "Project Hail Mary", by: "Susanna Clarke").isEmpty)
+    }
+
+    @Test func aSubtitleOnEitherSideDoesNotHideATranslation() async throws {
+        #expect(try await translations(of: "Sapiens: A Brief History of Humankind", by: "Yuval Noah Harari") == ["Sapiens"])
+        #expect(try await translations(of: "The Idiot Brain", by: "Dean Burnett") == ["Ajuvaba aju"])
+        #expect(try await translations(of: "The Idiot Brain: What Your Head Is Really Up To", by: "Dean Burnett") == ["Ajuvaba aju"])
+    }
+
+    @Test func anotherBookOfTheSeriesIsNotItsTranslation() async throws {
+        #expect(try await translations(of: "Ripley's Bureau of Investigation: A Scaly Tale", by: "Kay Wilkins").isEmpty)
+        #expect(try await translations(of: "Ripley's Bureau of Investigation: The Dragon's Triangle", by: "Kay Wilkins") == ["Draakoni kolmnurk"])
+    }
+
     @Test func aBookWithNoAuthorOpenedFromAShelfShowsWhatTheShelfKept() async throws {
         let books = Self.books + ",\n(9, 'b9', 'Eesti muinasjutud', NULL, 1990, 0, 0, NULL, 'est', NULL, NULL)"
         let catalogue = try Catalogue(url: CatalogueFixture.make(books: books))
