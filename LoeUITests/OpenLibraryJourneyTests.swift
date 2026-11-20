@@ -91,6 +91,40 @@ final class OpenLibraryJourneyTests: XCTestCase {
         attach("openlibrary-isbn-nobody-has", app)
     }
 
+    /// The catalogue has Project Hail Mary in Estonian, as „Ave Maria“.
+    @MainActor
+    func testABookFromAbroadLinksToItsEstonianTranslation() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES",
+                                "-inMemoryLibrary", "YES", "-openLibraryStub", "YES"]
+        app.launch()
+        app.tabBars.buttons["Search"].tap()
+        if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {
+            throw XCTSkip("No catalogue on this simulator")
+        }
+        let field = app.searchFields.firstMatch
+        field.tap()
+        field.typeText("Project Hail Mary")
+        let result = app.buttons.matching(NSPredicate(format: "label CONTAINS 'Project Hail Mary'")).firstMatch
+        XCTAssertTrue(result.waitForExistence(timeout: 5))
+        result.tap()
+
+        XCTAssertTrue(app.staticTexts["Andy Weir"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Translations"].waitForExistence(timeout: 5))
+        let translation = app.buttons.matching(NSPredicate(format: "label CONTAINS 'Ave Maria'")).firstMatch
+        XCTAssertTrue(translation.waitForExistence(timeout: 2))
+        attach("openlibrary-book-translations", app)
+        translation.tap()
+
+        // The Estonian edition is the catalogue's, with its libraries and its ESTER record.
+        XCTAssertTrue(app.staticTexts["Translated from English"].waitForExistence(timeout: 5))
+        attach("openlibrary-translation", app)
+        app.swipeUp()
+        XCTAssertTrue(app.staticTexts["Where to get it"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.links.matching(NSPredicate(format: "label CONTAINS 'ESTER'")).firstMatch.exists)
+    }
+
     @MainActor
     func testSaysSoWhenOpenLibraryCantBeReached() throws {
         continueAfterFailure = false

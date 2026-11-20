@@ -25,14 +25,16 @@ actor OpenLibrary {
     static let live: OpenLibrary = {
         #if DEBUG
         // Journeys never touch the network: a search with "halo" or Halo's ISBN in it
-        // finds Halo, one with "offline" fails as with no network, and any other
-        // finds nothing.
+        // finds Halo, one with "hail mary" finds Project Hail Mary, which the
+        // catalogue has in Estonian, one with "offline" fails as with no network,
+        // and any other finds nothing.
         if UserDefaults.standard.bool(forKey: "openLibraryStub") {
             return OpenLibrary { request in
                 let query = request.url?.query(percentEncoded: false)?.lowercased() ?? ""
                 if query.contains("offline") { throw URLError(.notConnectedToInternet) }
                 let halo = query.contains("halo") || query.contains("isbn:9780345451323")
-                return Data((halo ? stubAnswer : #"{"docs": []}"#).utf8)
+                let docs = halo ? stubHalo : query.contains("hail mary") ? stubHailMary : ""
+                return Data(#"{"docs": [\#(docs)]}"#.utf8)
             }
         }
         #endif
@@ -97,9 +99,15 @@ actor OpenLibrary {
 }
 
 #if DEBUG
-nonisolated private let stubAnswer = """
-{"docs": [{"key": "/works/OL18626W", "title": "Halo", "author_name": ["Eric S. Nylund"], "first_publish_year": 2001,
+nonisolated private let stubHalo = """
+{"key": "/works/OL18626W", "title": "Halo", "author_name": ["Eric S. Nylund"], "first_publish_year": 2001,
   "number_of_pages_median": 339, "cover_i": 210551,
-  "editions": {"docs": [{"title": "Halo", "subtitle": "The Fall of Reach", "language": ["eng"], "isbn": ["9780345451323", "0345451325"]}]}}]}
+  "editions": {"docs": [{"title": "Halo", "subtitle": "The Fall of Reach", "language": ["eng"], "isbn": ["9780345451323", "0345451325"]}]}}
+"""
+
+nonisolated private let stubHailMary = """
+{"key": "/works/OL21745884W", "title": "Project Hail Mary", "author_name": ["Andy Weir"], "first_publish_year": 2021,
+  "number_of_pages_median": 496, "cover_i": 11200092,
+  "editions": {"docs": [{"title": "Project Hail Mary", "language": ["eng"], "isbn": ["9780593135204", "0593135202"]}]}}
 """
 #endif
