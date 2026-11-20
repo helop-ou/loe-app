@@ -288,15 +288,33 @@ still opens ESTER. `AvailabilityTests` reads two holdings pages saved in
 - Ratings are one to five stars, or none. The page stays between zero and the
   page count.
 
-Two devices that shelve the same book while offline can each make a record for
-it. Nothing merges those yet.
+Two devices that shelve the same book while apart each make a record for it,
+and CloudKit keeps both.
+[`ShelvedBook.mergeDuplicates`](../Loe/Shared/Library/ShelvedBook+Merging.swift)
+makes them one when the app opens and after each sync:
+
+- **Which records.** Those that share a catalogue record, an Open Library work
+  or a work key. The looser `SameBook` match is for shelving and merges
+  nothing, and a book entered by hand is never merged.
+- **Which stays.** The one shelved first, with the title and authors it was
+  shelved under. Every device orders the records the same way, so two devices
+  merging at once delete the same record.
+- **What it keeps.** The shelf of the record changed last, the latest rating
+  and cover photo, the furthest page with its own page count, the earliest
+  start and the latest finish.
+
+A change made to the other record on a device that has not synced yet is lost
+when that record is deleted.
 
 ## Testing
 
 `ShelvedBookTests`, `ShelvedEnteredBookTests`, `ShelvedOpenLibraryBookTests`
 and `TasteTests` cover the rules on an in-memory store, `CloudSyncTests` the
 iCloud status, and
-`AddBookJourneyTests` adds, edits and removes a book by hand in the app. In
+`AddBookJourneyTests` adds, edits and removes a book by hand in the app.
+`ShelvedBookMergingTests` covers merging, and `DuplicateBooksJourneyTests`
+launches with `-duplicateBooks YES`, which puts two records of one book in an
+empty in-memory library, to see them open as one. In
 debug builds the `-inMemoryLibrary YES` launch argument opens an empty
 in-memory library, which the journeys use so they start from empty shelves and
 leave nothing behind. They pass `-tasteQuizSeen YES` so the quiz stays away,
