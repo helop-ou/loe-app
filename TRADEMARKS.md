@@ -7,9 +7,9 @@ give you.
 **The Loe name, the „Loe“ marks, the wordmark, the app icon and the other brand
 artwork are not part of the grant.** MPL-2.0 covers every file in a repository
 by default, so this is an explicit carve-out. It applies to `Loe/Loe.icon`, the
-colour sets in `Loe/Assets.xcassets/Loe`, the images in `.github/readme`, and
-the brand sources, which are kept in a separate repository and are not
-published.
+colour sets and the title wordmark in `Loe/Assets.xcassets/Loe`, the images in
+`.github/readme`, and the brand sources, which are kept in a separate
+repository and are not published.
 
 ## What you may do
 

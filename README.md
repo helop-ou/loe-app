@@ -41,4 +41,5 @@
 
 Loe's code is [MPL-2.0](LICENSE). The name and brand artwork are not part of
 that grant, see [TRADEMARKS.md](TRADEMARKS.md). Newsreader is under the SIL
-Open Font License, in [`Loe/Resources/Licenses`](Loe/Resources/Licenses).
+Open Font License, in [`Loe/Resources/Licenses`](Loe/Resources/Licenses), and
+the app's About page shows every credit and licence.
