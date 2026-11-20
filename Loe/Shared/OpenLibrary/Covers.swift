@@ -74,12 +74,7 @@ actor Covers {
             }
         }
         #endif
-        let configuration = URLSessionConfiguration.ephemeral
-        configuration.httpCookieAcceptPolicy = .never
-        configuration.httpShouldSetCookies = false
-        configuration.urlCache = nil
-        configuration.timeoutIntervalForRequest = 15
-        let session = URLSession(configuration: configuration)
+        let session = PrivateSession.make(timeout: 15)
         let directory = URL.cachesDirectory.appending(path: "OpenLibraryCovers")
         return Covers(directory: directory) { request in
             let (data, response) = try await session.data(for: request)
@@ -135,10 +130,7 @@ actor Covers {
             guard isbnLookups.count < limits.isbnLookups else { return nil }
             isbnLookups.append(now())
         }
-        var request = URLRequest(url: art.url)
-        request.setValue(OpenLibrary.userAgent, forHTTPHeaderField: "User-Agent")
-        request.setValue("en", forHTTPHeaderField: "Accept-Language")
-        guard let (data, status) = try? await fetch(request) else { return nil }
+        guard let (data, status) = try? await fetch(URLRequest(url: art.url)) else { return nil }
         switch status {
         case 200:
             guard let loaded = Self.loaded(from: data) else {

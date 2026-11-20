@@ -14,9 +14,6 @@ actor OpenLibrary {
         "editions", "editions.title", "editions.subtitle", "editions.language", "editions.isbn", "editions.cover_i",
     ].joined(separator: ",")
 
-    /// Open Library asks apps to name themselves and give a contact.
-    static let userAgent = "Loe/\(LoeProject.version) (\(LoeProject.repository.absoluteString); \(LoeProject.contact))"
-
     private let fetch: @Sendable (URLRequest) async throws -> Data
     private var answers: [String: [OpenLibraryBook]] = [:]
 
@@ -37,12 +34,7 @@ actor OpenLibrary {
             }
         }
         #endif
-        let configuration = URLSessionConfiguration.ephemeral
-        configuration.httpCookieAcceptPolicy = .never
-        configuration.httpShouldSetCookies = false
-        configuration.urlCache = nil
-        configuration.timeoutIntervalForRequest = 10
-        let session = URLSession(configuration: configuration)
+        let session = PrivateSession.make(timeout: 10)
         return OpenLibrary { request in
             let (data, response) = try await session.data(for: request)
             guard (response as? HTTPURLResponse)?.statusCode == 200 else { throw URLError(.badServerResponse) }
@@ -67,11 +59,7 @@ actor OpenLibrary {
             URLQueryItem(name: "fields", value: fields),
         ]
         guard let url = components.url else { return nil }
-        var request = URLRequest(url: url)
-        request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
-        // Otherwise the system sends the reader's own preferred languages.
-        request.setValue("en", forHTTPHeaderField: "Accept-Language")
-        return request
+        return URLRequest(url: url)
     }
 
     /// Asks once typing has paused. Nil when the reader typed on, which cancels the

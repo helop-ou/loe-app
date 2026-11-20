@@ -106,7 +106,7 @@ struct OpenLibraryTests {
         #expect(OpenLibraryBook.unseen(online, besides: catalogue).map(\.title) == ["Halo: First Strike"])
     }
 
-    @Test func theRequestAsksForEnglishEditionsAndNamesTheApp() throws {
+    @Test func theRequestAsksForEnglishEditions() throws {
         let request = try #require(OpenLibrary.searchRequest(for: "  halo  "))
         let items = URLComponents(url: try #require(request.url), resolvingAgainstBaseURL: false)?.queryItems ?? []
         let value = { (name: String) in items.first { $0.name == name }?.value }
@@ -115,11 +115,6 @@ struct OpenLibraryTests {
         #expect(value("q") == "halo")
         #expect(value("lang") == "en")
         #expect(value("fields")?.contains("editions.isbn") == true)
-        // The system would otherwise send the reader's own languages.
-        #expect(request.value(forHTTPHeaderField: "Accept-Language") == "en")
-        let agent = try #require(request.value(forHTTPHeaderField: "User-Agent"))
-        #expect(agent.contains("kontakt@helop.ee"))
-        #expect(agent.contains("https://github.com/helop-ou/loe-app"))
     }
 
     @Test func onlyRealSearchesAreSent() {

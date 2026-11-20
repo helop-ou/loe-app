@@ -29,12 +29,7 @@ actor AvailabilityChecker {
 
     /// The app's checker, on a session that keeps no cookies, cache or credentials.
     static let live: AvailabilityChecker = {
-        let configuration = URLSessionConfiguration.ephemeral
-        configuration.httpCookieAcceptPolicy = .never
-        configuration.httpShouldSetCookies = false
-        configuration.urlCache = nil
-        configuration.timeoutIntervalForRequest = Limits.standard.timeout
-        let session = URLSession(configuration: configuration)
+        let session = PrivateSession.make(timeout: Limits.standard.timeout)
         return AvailabilityChecker { url in
             let (data, response) = try await session.data(from: url)
             guard (response as? HTTPURLResponse)?.statusCode == 200 else { throw URLError(.badServerResponse) }
