@@ -313,9 +313,12 @@ one.
 
 `ShelvedBookTests`, `ShelvedEnteredBookTests`, `ShelvedOpenLibraryBookTests`
 and `TasteTests` cover the rules on an in-memory store, `CloudSyncTests` the
-iCloud status, and
-`AddBookJourneyTests` adds, edits and removes a book by hand in the app. In
-debug builds the `-inMemoryLibrary YES` launch argument opens an empty
+iCloud status, and `AddBookJourneyTests` adds, edits and removes a book by
+hand in the app. `StoredNamesTests` pins every stored name and raw value of
+the synced models and reads them back from a store on disk, so a rename fails
+a test instead of reaching iCloud.
+
+In debug builds the `-inMemoryLibrary YES` launch argument opens an empty
 in-memory library, which the journeys use so they start from empty shelves and
 leave nothing behind. They pass `-tasteQuizSeen YES` so the quiz stays away,
 and `TasteQuizJourneyTests` passes `NO` to see it. Its cover journey picks the newest photo in the simulator's
