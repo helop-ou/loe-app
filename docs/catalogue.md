@@ -74,7 +74,10 @@ editions ranks a little higher.
 
 A book's page asks `Catalogue.details(for:)` for the rest of what it shows:
 
-- **Editions**: every edition with the work's title and lead author.
+- **Editions**: every edition with the work's title and lead author. A book
+  opened from a shelf may carry a title or authors the catalogue has since
+  corrected. When nothing matches them, the work is found by its record number
+  and its page shows what the catalogue says now.
 - **The original**, for a translation: the work whose title is the edition's
   original title, by the same lead author.
 - **Translations**, for an original: the works whose original title is this
