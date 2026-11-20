@@ -87,6 +87,27 @@ class CleaningTests(unittest.TestCase):
         self.assertEqual(build.isbn13("9789949445707(vale)"), "9789949445707")
         self.assertIsNone(build.isbn13("9789949445708"))
 
+    def test_an_x_anywhere_but_last_in_an_isbn_10_is_not_an_isbn(self):
+        self.assertIsNone(build.isbn13("0X00000009"))
+        self.assertIsNone(build.isbn13("X306406152"))
+
+    def test_a_dirty_isbn_does_not_stop_the_build(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = os.path.join(directory, "erb.xml")
+            dirty = record(
+                "b40000001",
+                field("020", ("a", "0X00000009")),
+                field("020", ("a", "9789916099896")),
+                field("245", ("a", "Raamat")),
+            )
+            with open(source, "w", encoding="utf-8") as f:
+                f.write(collection(dirty))
+            out = os.path.join(directory, "catalogue.sqlite")
+            build.build(out, [source], log=lambda _: None, allow_small=True)
+            db = sqlite3.connect(out)
+            self.assertEqual(db.execute("SELECT isbn13 FROM isbn").fetchall(), [("9789916099896",)])
+            db.close()
+
     def test_page_counts(self):
         self.assertEqual(build.pages("189, [3] lk. :"), 189)
         self.assertEqual(build.pages("320 lehekülge :"), 320)

@@ -151,6 +151,8 @@ def isbn13(raw):
     """A valid ISBN-13 for an ISBN-10 or ISBN-13 in any punctuation, or None."""
     digits = re.sub(r"[^0-9Xx]", "", raw.strip().split(" ")[0].split("(")[0]).upper()
     if len(digits) == 10:
+        if not digits[:9].isdigit():
+            return None
         if sum((10 - i) * (10 if c == "X" else int(c)) for i, c in enumerate(digits)) % 11:
             return None
         core = "978" + digits[:9]
