@@ -30,11 +30,10 @@ struct PrivateSessionTests {
     @Test func everyClientAsksThroughIt() throws {
         let root = URL(filePath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
         let source = root.appending(path: "Loe")
-        let allowed = source.appending(path: "Shared/Network/PrivateSession.swift").path
         let enumerator = try #require(FileManager.default.enumerator(at: source, includingPropertiesForKeys: nil))
         let files = enumerator.compactMap { $0 as? URL }.filter { $0.pathExtension == "swift" }
         #expect(files.count > 50)
-        for file in files where file.path != allowed {
+        for file in files where !file.path.hasSuffix("/Shared/Network/PrivateSession.swift") {
             let text = try String(contentsOf: file, encoding: .utf8)
             for forbidden in ["URLSession.shared", "session: .shared", "URLSession(", "URLSessionConfiguration"] {
                 #expect(!text.contains(forbidden), "\(file.path) builds its own session with \(forbidden)")
