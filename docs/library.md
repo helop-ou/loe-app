@@ -54,8 +54,11 @@ JPEG (tens of kilobytes) so it syncs quickly, and reads its colour once, which
 `ShelvedBook` keeps beside it. The book's page and the card for the book being
 read take a wash of that colour, and Sinu toon will read the same values.
 
-Without a photo, a book shows Open Library's cover when it has one, and the
-plain card with its title otherwise. The reader's photo always wins, and
+Without a photo, a book found on Open Library shows Open Library's cover when
+it has one, and the plain card with its title otherwise. A catalogue book and
+one entered by hand always show the plain card: Open Library has next to no
+covers for books published in Estonia, so Loe doesn't ask, and doesn't tell it
+which of them the reader has. The reader's photo always wins, and
 removing it brings Open Library's cover back. The cover is credited under it
 on the book's page, and its colour gives the wash until there is a photo.
 [`Covers`](../Loe/Shared/OpenLibrary/Covers.swift) loads them:
@@ -64,16 +67,11 @@ on the book's page, and its colour gives the wash until there is a photo.
   search answer carries and which Open Library does not rate limit, else its
   ISBN. The id is the cover of the English edition Loe shows, else the work's:
   a work can wear another book's cover, as *Halo: First Strike* wears *The
-  Fall of Reach*'s. A catalogue book by `Catalogue.coverISBN`: the print ISBN of the
-  edition on the shelf, else of the newest edition that has one, so the
-  shelves and the book's page show the same cover. E-book editions and PDF,
-  e-book, series and wrongly printed (`vale`, also after `köites`) ISBNs
-  would find another book's cover, so they are not used. A book entered by
-  hand has none.
-- **Where.** Search results ask only by cover id. Lookups by ISBN wait for a
-  book's own page and the shelves: Open Library allows 100 every five minutes
-  from one address and had few catalogue books' covers, so lists would spend
-  that, and tell it about every book scrolled past, for little.
+  Fall of Reach*'s. A catalogue book and a book entered by hand have none.
+- **Where.** Search results ask only by cover id. Lookups by ISBN, for a book
+  from Open Library with no cover id, wait for a book's own page and the
+  shelves: Open Library allows 100 every five minutes from one address, so
+  lists would spend that, and tell it about every book scrolled past.
 - **How often.** Only covers on screen are asked for (the shelf rails are
   lazy), four at a time, and one scrolled past while it waited is dropped
   before it is sent. Lookups by ISBN are counted as they are sent and stop
@@ -81,11 +79,12 @@ on the book's page, and its colour gives the wash until there is a photo.
   in the caches folder, and the 200 most recent in memory. A book with none
   (404) is not asked about again for 30 days. A failure, a rate limit or an
   answer that is not an image is not remembered past the session.
-- **What is sent.** The cover id or ISBN to `covers.openlibrary.org`, with the
-  same `User-Agent` as search and no cookies. Open Library redirects to the
-  Internet Archive (`archive.org`), which serves the image and so sees the
-  same request. Debug builds launched with `-openLibraryStub YES` give every
-  cover id a plain green cover and no ISBN one, from memory only.
+- **What is sent.** The cover id or ISBN of a book from Open Library, to
+  `covers.openlibrary.org`, with the same `User-Agent` as search and no
+  cookies. Open Library redirects to the Internet Archive (`archive.org`),
+  which serves the image and so sees the same request. Debug builds launched
+  with `-openLibraryStub YES` give every cover id a plain green cover and no
+  ISBN one, from memory only.
 
 ## Books entered by hand
 
