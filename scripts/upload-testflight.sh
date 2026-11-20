@@ -17,6 +17,13 @@ dry_run=false
 
 fail() { echo "✘ $*" >&2; exit 1; }
 
+# TestFlight builds sync through CloudKit's Production environment, which has
+# to know every synced field first. See docs/release.md.
+if ! cmp -s scripts/synced-models.txt scripts/synced-models.deployed.txt; then
+    diff scripts/synced-models.deployed.txt scripts/synced-models.txt | grep '^[<>]' >&2 || true
+    fail "The synced models changed since the CloudKit schema was last deployed. Deploy it to Production, then copy scripts/synced-models.txt over scripts/synced-models.deployed.txt in a pull request"
+fi
+
 # Read only the three keys from .env, without running it as shell.
 if [[ -f .env ]]; then
     while IFS='=' read -r name value; do
