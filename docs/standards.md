@@ -85,12 +85,12 @@ same contract.
   `.loeBackground` and so on), never hex literals. Headings use
   `.loeHeading(_:)`. Every user-facing string is in `Localizable.xcstrings`
   with its Estonian translation.
-- Text follows the view's locale, because Loe can show another language than
-  the phone's (see [Language](#language)). A string built in code comes from
-  `locale.localized(_:)` and a screen's title from `loeNavigationTitle(_:)`.
 - The brand files (`Assets.xcassets/Loe`, `Loe.icon`, the fonts, and the
   tone values in `LoeTone.swift`) are generated in the private brand
   repository. Change them there and copy them over, so the two never drift.
+- Text follows the view's locale, because Loe can show another language than
+  the phone's (see [Language](#language)). A string built in code comes from
+  `locale.localized(_:)` and a screen's title from `loeNavigationTitle(_:)`.
 
 ## Language
 
