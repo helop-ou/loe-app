@@ -191,16 +191,16 @@ SHA-256, its size and its schema version.
 
 1. Rebuild it as above, then `xz -9 -k` it.
 2. Create a release for it and never change it afterwards. Replacing an asset
-   in place can leave a release broken:
+   in place can leave a release broken. Its notes name the source files and
+   the SHA-256 of each, which the build recorded in `meta` (`source_1`,
+   `source_1_sha256` and so on):
 
    ```sh
    gh release create catalogue-2026-12 /tmp/erb/catalogue.sqlite.xz --latest=false \
      --title "Catalogue 2026-12" --notes "…"
    ```
 
-3. Put the source files' SHA-256 hashes, which the build recorded in `meta`
-   (`source_1_sha256`, `source_2_sha256`), into the release notes. Update
-   `manifest.json` with the new `version`, `url`, `sha256`
+3. Update `manifest.json` with the new `version`, `url`, `sha256`
    (`shasum -a 256`), `size` and `editions`, in a pull request. Apps pick it up
    within a week of it reaching `main`. `CatalogueDownloadTests` checks that the
    manifest is one this app can read.
