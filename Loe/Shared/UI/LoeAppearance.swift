@@ -8,6 +8,14 @@ enum LoeAppearance: String, CaseIterable, Sendable {
 
     static let storageKey = "appearance"
 
+    var name: LocalizedStringKey {
+        switch self {
+        case .system: "Same as the phone"
+        case .light: "Light"
+        case .dark: "Dark"
+        }
+    }
+
     var colorScheme: ColorScheme? {
         switch self {
         case .system: nil

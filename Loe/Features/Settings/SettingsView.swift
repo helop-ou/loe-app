@@ -1,12 +1,16 @@
 import SwiftData
 import SwiftUI
 
-/// The reader's own settings: what they like to read, and where they get books.
+/// The reader's own settings: what they like to read, where they get books, how
+/// Loe looks, iCloud and the catalogue, with the About page at the end.
 struct SettingsView: View {
     @Environment(\.modelContext) private var context
+    @Environment(CloudSync.self) private var cloudSync
+    @AppStorage(LoeAppearance.storageKey) private var appearance = LoeAppearance.system
     @Query private var tastes: [Taste]
     @Query private var chosen: [ChosenPlace]
     @State private var choosingPlaces = false
+    @State private var retakingQuiz = false
     // The system's Edit button and Delete action have no Estonian, as iOS has no
     // Estonian system language, so Loe brings its own.
     @State private var editMode = EditMode.inactive
@@ -27,6 +31,9 @@ struct SettingsView: View {
                     Text("Read next suggests books from these. They stay on your phone and in your iCloud.")
                         .font(.footnote)
                         .foregroundStyle(.loeSecondary)
+                        .padding(.horizontal, 4)
+                    Button("Take the quiz again") { retakingQuiz = true }
+                        .tint(.loeAccent)
                         .padding(.horizontal, 4)
                 }
                 // The section still clips to a rounded card, so keep the text clear of its corners.
@@ -60,6 +67,37 @@ struct SettingsView: View {
             } footer: {
                 Text("A book's page lists these, in this order. With none chosen, it shows ESTER, Rahva Raamat and Apollo.")
             }
+
+            Section {
+                Picker("Appearance", selection: $appearance) {
+                    ForEach(LoeAppearance.allCases, id: \.self) { choice in
+                        Text(choice.name).tag(choice)
+                    }
+                }
+                .pickerStyle(.inline)
+                .labelsHidden()
+                .tint(.loeAccent)
+                .listRowBackground(Color.loeCard)
+            } header: {
+                SettingsHeading("Appearance")
+            }
+
+            Section {
+                CloudSyncRow(status: cloudSync.status)
+                    .listRowBackground(Color.loeCard)
+            } header: {
+                SettingsHeading("iCloud")
+            } footer: {
+                Text("There's no Loe account. Your shelves, ratings, tastes and libraries go to your own iCloud and nowhere else.")
+            }
+
+            CatalogueSection()
+
+            Section {
+                NavigationLink("About Loe") { AboutView() }
+                    .foregroundStyle(.loeInk)
+                    .listRowBackground(Color.loeCard)
+            }
         }
         .scrollContentBackground(.hidden)
         .background(.loeBackground)
@@ -75,6 +113,10 @@ struct SettingsView: View {
         .sheet(isPresented: $choosingPlaces) {
             PlacePicker()
         }
+        .sheet(isPresented: $retakingQuiz) {
+            TasteQuiz()
+        }
+        .task { await cloudSync.refreshAccount() }
     }
 }
 
@@ -120,5 +162,7 @@ struct PlaceRow: View {
     NavigationStack {
         SettingsView()
     }
+    .environment(CatalogueStore())
+    .environment(CloudSync())
     .modelContainer(for: [ShelvedBook.self, Taste.self, ChosenPlace.self], inMemory: true)
 }
