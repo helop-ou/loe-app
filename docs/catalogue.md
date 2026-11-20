@@ -42,9 +42,18 @@ python3 -I tools/catalogue/build.py /tmp/erb/catalogue.sqlite /tmp/erb/ERB_*.zip
 xz -9 -k /tmp/erb/catalogue.sqlite
 ```
 
-A build takes about a minute. It prints how many records it kept and why it
-skipped the rest. Run the tests with
-`python3 -I -m unittest discover -s tools/catalogue`.
+A build takes about a minute. It prints how many records it kept, why it
+skipped the rest and how many ISBN values it dropped as invalid. Run the tests
+with `python3 -I -m unittest discover -s tools/catalogue`.
+
+The build fails, with a message on stderr, a non-zero exit status and no output
+file, when it kept nothing or fewer than 90% of the `editions` in
+`manifest.json`, the last published count. It also fails when SQLite's
+integrity check does not pass, and it records the name and SHA-256 of each
+source file in `meta`. To try the tool on a sample, add `--allow-small`, which
+turns the 90% check off. Set `SOURCE_DATE_EPOCH` to make a build repeatable:
+it replaces the build time in `meta`, and two builds of the same files with the
+same value are byte-identical.
 
 The November 2026 build kept 312,349 editions. It is 123 MB, or 31 MB as xz,
 which the app can unpack with Apple's Compression framework.
@@ -189,7 +198,9 @@ SHA-256, its size and its schema version.
      --title "Catalogue 2026-12" --notes "…"
    ```
 
-3. Update `manifest.json` with the new `version`, `url`, `sha256`
+3. Put the source files' SHA-256 hashes, which the build recorded in `meta`
+   (`source_1_sha256`, `source_2_sha256`), into the release notes. Update
+   `manifest.json` with the new `version`, `url`, `sha256`
    (`shasum -a 256`), `size` and `editions`, in a pull request. Apps pick it up
    within a week of it reaching `main`. `CatalogueDownloadTests` checks that the
    manifest is one this app can read.
@@ -274,8 +285,9 @@ touch the network.
 ## What is kept
 
 Skipped: records that are not text (maps, music), doctoral theses (a 502
-note), and the digital copies the library now creates automatically beside a
-print record (a 588 note starting "Digikoopia").
+note), the digital copies the library now creates automatically beside a
+print record (a 588 note starting "Digikoopia"), and records with no title
+proper (a 245 with no `$a`, which would otherwise start with a part number).
 
 Each remaining record is one row in `edition`, read like this:
 
@@ -299,6 +311,8 @@ Each remaining record is one row in `edition`, read like this:
 `isbn` holds every valid ISBN as 13 digits with its qualifier (`pdf`,
 `köites`, `vale` for a wrong ISBN printed on the book). Keep `vale`: it is
 what a barcode scan of that book returns. Volumes of a set can share one ISBN.
+An ISBN written with spaces, such as `978 9949 633 28 9`, is read, and text
+after it is never joined into the number.
 
 `heading` holds subject headings (650, from the Estonian Subject Thesaurus,
 with its EMS id) and genres (655), and `edition_heading` links them.
