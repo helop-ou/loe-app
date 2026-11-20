@@ -35,6 +35,9 @@
 
 - [Documentation](docs/README.md): standards, the catalogue, the library and releasing
 - [AGENTS.md](AGENTS.md): how to build, test and ship changes
+- [Contributing](CONTRIBUTING.md): what you need, and the rules a change is checked against
+- [Security policy](SECURITY.md): how to report a vulnerability privately
+- [Code of Conduct](CODE_OF_CONDUCT.md)
 - Catalogue data: Eesti rahvusbibliograafia, published by Eesti Rahvusraamatukogu (the National Library of Estonia) as open data. See [docs/catalogue.md](docs/catalogue.md).
 
 ## Licence
