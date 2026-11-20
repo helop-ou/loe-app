@@ -172,6 +172,12 @@ final class ShelvedBook {
         guard source == .openLibrary, let openLibraryKey else { return nil }
         return OpenLibraryRecord(workKey: openLibraryKey, isbn: isbn, coverID: coverID)
     }
+
+    /// Open Library's cover for a book found there. A catalogue book and one
+    /// entered by hand have none, so nothing is asked about them.
+    var coverArt: CoverArt? {
+        openLibraryRecord.flatMap(CoverArt.init)
+    }
 }
 
 extension ShelvedBook {
