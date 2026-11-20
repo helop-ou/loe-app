@@ -62,7 +62,9 @@ on the book's page, and its colour gives the wash until there is a photo.
 
 - **Which cover.** A book from Open Library by its cover id, which every
   search answer carries and which Open Library does not rate limit, else its
-  ISBN. A catalogue book by `Catalogue.coverISBN`: the print ISBN of the
+  ISBN. The id is the cover of the English edition Loe shows, else the work's:
+  a work can wear another book's cover, as *Halo: First Strike* wears *The
+  Fall of Reach*'s. A catalogue book by `Catalogue.coverISBN`: the print ISBN of the
   edition on the shelf, else of the newest edition that has one, so the
   shelves and the book's page show the same cover. E-book editions and PDF,
   e-book, series and wrongly printed (`vale`, also after `köites`) ISBNs

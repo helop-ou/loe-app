@@ -22,6 +22,20 @@ struct OpenLibraryTests {
         #expect(halo.language == "eng")
     }
 
+    @Test func theCoverIsTheShownEditionsOwn() throws {
+        // Open Library's First Strike work wears the cover of The Fall of Reach,
+        // while its English edition has the right one.
+        let json = #"""
+            {"docs": [{"key": "/works/OL18628W", "title": "Halo", "subtitle": "First Strike",
+              "author_name": ["Eric S. Nylund"], "cover_i": 886338,
+              "editions": {"docs": [{"title": "Halo", "cover_i": 886340, "language": ["eng"], "isbn": ["9781841494227"]}]}},
+             {"key": "/works/OL1W", "title": "Halo", "subtitle": "Ghosts of Onyx", "author_name": ["Eric S. Nylund"],
+              "cover_i": 123, "editions": {"docs": [{"title": "Halo", "language": ["eng"]}]}}]}
+            """#
+        let books = OpenLibraryBook.books(in: try JSONDecoder().decode(OpenLibrarySearchResponse.self, from: Data(json.utf8)))
+        #expect(books.map(\.record.coverID) == [886_340, 123])
+    }
+
     /// Open Library has the book as several works, with and without a middle initial.
     @Test func oneBookIsListedOnce() throws {
         let books = try Self.books("halo-fall-of-reach")
