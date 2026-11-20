@@ -17,29 +17,11 @@ struct GenrePicker: View {
 
     private func chip(_ genre: Genre) -> some View {
         let chosen = selection.contains(genre)
-        return Button {
+        return ChoiceChip(chosen: chosen) {
             if chosen { selection.remove(genre) } else { selection.insert(genre) }
         } label: {
-            HStack(spacing: 6) {
-                Image(systemName: chosen ? "checkmark" : "plus")
-                    .font(.footnote.weight(.bold))
-                    .accessibilityHidden(true)
-                Text(genre.name)
-                    .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
-                Spacer(minLength: 0)
-            }
-            .font(.callout.weight(.medium))
-            .foregroundStyle(chosen ? Color.loeOnAccent : Color.loeInk)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 12)
-            .frame(maxWidth: .infinity, minHeight: 48, maxHeight: .infinity)
-            .background(chosen ? Color.loeAccent : Color.loeCard, in: .rect(cornerRadius: 14))
-            .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(chosen ? Color.clear : Color.loeHairline))
-            .contentShape(.rect)
+            Text(genre.name)
         }
-        .buttonStyle(.plain)
-        .accessibilityAddTraits(chosen ? .isSelected : [])
     }
 }
 
