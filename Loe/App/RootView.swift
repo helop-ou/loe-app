@@ -22,7 +22,7 @@ struct RootView: View {
         }
         .tint(.loeAccent)
         .sheet(isPresented: $showsQuiz, onDismiss: { quizSeen = true }) {
-            TasteQuiz()
+            TasteQuiz(asksLanguage: true)
         }
         .onAppear {
             // Tastes synced from another device mean the reader has answered already.

@@ -841,6 +841,16 @@
         }
       }
     },
+    "Language · Keel": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keel · Language"
+          }
+        }
+      }
+    },
     "Last synced %@": {
       "localizations": {
         "et": {
@@ -907,6 +917,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Raamatu lehel olevad lingid avanevad sinu brauseris nagu iga teine link."
+          }
+        }
+      }
+    },
+    "Loe follows your phone's language unless you pick one. You can change it in Settings.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loe kasutab sinu telefoni keelt, kui sa ise teist ei vali. Seda saab muuta seadetes."
           }
         }
       }
@@ -997,6 +1017,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Newsreader"
+          }
+        }
+      }
+    },
+    "Next": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edasi"
           }
         }
       }
@@ -1807,6 +1837,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Uusim väljaanne vajab Loe uuemat versiooni."
+          }
+        }
+      }
+    },
+    "The phone's language: %@": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Telefoni keel: %@"
           }
         }
       }

@@ -1,12 +1,13 @@
 import SwiftData
 import SwiftUI
 
-/// The reader's own settings: what they like to read, where they get books, how
-/// Loe looks, iCloud and the catalogue, with the About page at the end.
+/// The reader's own settings: what they like to read, where they get books, Loe's
+/// language and how it looks, iCloud and the catalogue, with the About page at the end.
 struct SettingsView: View {
     @Environment(\.modelContext) private var context
     @Environment(CloudSync.self) private var cloudSync
     @AppStorage(LoeAppearance.storageKey) private var appearance = LoeAppearance.system
+    @AppStorage(LoeLanguage.storageKey) private var language = LoeLanguage.system
     @Query private var tastes: [Taste]
     @Query private var chosen: [ChosenPlace]
     @State private var choosingPlaces = false
@@ -66,6 +67,21 @@ struct SettingsView: View {
                 SettingsHeading("Where to get it")
             } footer: {
                 Text("A book's page lists these, in this order. With none chosen, it shows ESTER, Rahva Raamat and Apollo.")
+            }
+
+            // Named in both languages, so it can be found whichever is showing.
+            Section {
+                Picker("Language", selection: $language) {
+                    ForEach(LoeLanguage.allCases, id: \.self) { choice in
+                        LanguageLabel(language: choice).tag(choice)
+                    }
+                }
+                .pickerStyle(.inline)
+                .labelsHidden()
+                .tint(.loeAccent)
+                .listRowBackground(Color.loeCard)
+            } header: {
+                SettingsHeading("Language · Keel")
             }
 
             Section {

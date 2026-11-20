@@ -4,8 +4,14 @@ import SwiftUI
 /// Asked once, on first launch: which kinds of book the reader likes. Skipping keeps
 /// nothing, and Settings can change the answers later.
 struct TasteQuiz: View {
+    /// On first launch the language comes before the tastes. Settings has its own
+    /// selector, so the quiz taken again starts at the tastes.
+    var asksLanguage = false
+
+    @AppStorage(LoeLanguage.storageKey) private var language = LoeLanguage.system
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @State private var languageAsked = false
     @State private var selection: Set<Genre> = []
 
     /// Set once the quiz has been shown, so it is not asked again.
@@ -13,23 +19,54 @@ struct TasteQuiz: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                TasteQuizContent(selection: $selection)
-            }
-            .background(.loeBackground)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Skip") { dismiss() }
+            if asksLanguage && !languageAsked {
+                ScrollView {
+                    LanguageStepContent(language: $language)
                 }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") {
-                        try? Taste.set(selection, in: context)
-                        dismiss()
+                .background(.loeBackground)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Next") { languageAsked = true }
                     }
-                    .disabled(selection.isEmpty)
+                }
+            } else {
+                ScrollView {
+                    TasteQuizContent(selection: $selection)
+                }
+                .background(.loeBackground)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Skip") { dismiss() }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") {
+                            try? Taste.set(selection, in: context)
+                            dismiss()
+                        }
+                        .disabled(selection.isEmpty)
+                    }
                 }
             }
         }
+    }
+}
+
+/// The first thing a new reader sees: which language Loe speaks. The heading is
+/// the same in both, so it reads right whatever the phone is set to.
+struct LanguageStepContent: View {
+    @Binding var language: LoeLanguage
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(verbatim: "Eesti või English?")
+                .loeHeading(.largeTitle)
+                .foregroundStyle(.loeInk)
+            Text("Loe follows your phone's language unless you pick one. You can change it in Settings.")
+                .foregroundStyle(.loeSecondary)
+                .padding(.bottom, 8)
+            LanguagePicker(selection: $language)
+        }
+        .padding(20)
     }
 }
 

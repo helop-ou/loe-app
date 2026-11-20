@@ -1,7 +1,8 @@
 import XCTest
 
-/// The quiz on first launch, its answers in Read next, and changing them in Settings,
-/// on an in-memory library. Read next needs the catalogue on the simulator.
+/// The quiz on first launch, after its language step, its answers in Read next, and
+/// changing them in Settings, on an in-memory library. Read next needs the catalogue
+/// on the simulator.
 final class TasteQuizJourneyTests: XCTestCase {
     @MainActor
     private func launch(firstTime: Bool) -> XCUIApplication {
@@ -9,14 +10,22 @@ final class TasteQuizJourneyTests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-inMemoryLibrary", "YES", "-openLibraryStub", "YES"]
         // Launch arguments win over what the app saved, so only pass one to start fresh.
-        if firstTime { app.launchArguments += ["-tasteQuizSeen", "NO"] }
+        if firstTime { app.launchArguments += ["-tasteQuizSeen", "NO", "-forgetLanguage", "YES"] }
         app.launch()
         return app
+    }
+
+    /// The first launch asks for the language before the tastes.
+    @MainActor
+    private func leaveTheLanguageAsItIs(_ app: XCUIApplication) {
+        XCTAssertTrue(app.staticTexts["Eesti või English?"].waitForExistence(timeout: 5))
+        app.buttons["Next"].tap()
     }
 
     @MainActor
     func testSkippingTheQuizKeepsNothingAndItIsNotAskedAgain() {
         let app = launch(firstTime: true)
+        leaveTheLanguageAsItIs(app)
         XCTAssertTrue(app.staticTexts["What do you like to read?"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["Done"].isEnabled)
         app.buttons["Skip"].tap()
@@ -36,6 +45,7 @@ final class TasteQuizJourneyTests: XCTestCase {
     @MainActor
     func testTastesFromTheQuizShapeReadNextAndChangeInSettings() throws {
         let app = launch(firstTime: true)
+        leaveTheLanguageAsItIs(app)
         XCTAssertTrue(app.staticTexts["What do you like to read?"].waitForExistence(timeout: 5))
         app.buttons["Crime and mystery"].tap()
         app.buttons["Fantasy"].tap()
