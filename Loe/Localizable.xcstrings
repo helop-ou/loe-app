@@ -221,6 +221,16 @@
         }
       }
     },
+    "Appearance": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Välimus"
+          }
+        }
+      }
+    },
     "Author": {
       "localizations": {
         "et": {
@@ -487,6 +497,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Krimi"
+          }
+        }
+      }
+    },
+    "Dark": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tume"
           }
         }
       }
@@ -847,6 +867,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Raamatukogu"
+          }
+        }
+      }
+    },
+    "Light": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hele"
           }
         }
       }
@@ -1381,6 +1411,16 @@
         }
       }
     },
+    "Same as the phone": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nagu telefonis"
+          }
+        }
+      }
+    },
     "Save": {
       "localizations": {
         "et": {
@@ -1621,6 +1661,16 @@
         }
       }
     },
+    "Take the quiz again": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vasta küsimustikule uuesti"
+          }
+        }
+      }
+    },
     "That barcode isn't an ISBN. Look for the one that starts with 978 or 979.": {
       "localizations": {
         "et": {
@@ -1727,6 +1777,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pealkirjade kirjatüüp"
+          }
+        }
+      }
+    },
+    "There's no Loe account. Your shelves, ratings, tastes and libraries go to your own iCloud and nowhere else.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loel pole kontot. Sinu riiulid, hinnangud, maitsed ja raamatukogud lähevad sinu enda iCloudi ega kuhugi mujale."
           }
         }
       }
@@ -2127,6 +2187,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sinu maitse"
+          }
+        }
+      }
+    },
+    "iCloud": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud"
           }
         }
       }
