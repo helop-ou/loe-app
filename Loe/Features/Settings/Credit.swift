@@ -25,7 +25,7 @@ struct Credit: Identifiable {
             id: "national-library",
             name: "National Library of Estonia",
             role: "The catalogue",
-            about: "Loe's catalogue is built from the Estonian National Bibliography, the National Library's record of the books published in Estonia. It is open data under CC0 1.0.",
+            about: "Loe's catalogue is built from the Estonian National Bibliography (Eesti rahvusbibliograafia) by the National Library of Estonia. Loe keeps the fields it needs and groups editions into works. The National Library publishes it as open data under CC0 1.0. One of its pages gives [CC BY-SA 3.0 EE](https://creativecommons.org/licenses/by-sa/3.0/ee/) instead, so this credit follows that licence too.",
             link: URL(string: "https://www.rara.ee")!,
             licence: Licence(name: "CC0 1.0 Universal", file: "CC0-1.0")
         ),

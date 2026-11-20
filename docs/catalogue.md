@@ -22,8 +22,10 @@ replaces the whole file. There is no incremental update.
 
 **Licence.** Zenodo, the RaRa Digilab and andmed.eesti.ee publish the
 bibliography as CC0 1.0. One page on data.digar.ee says CC BY-SA 3.0 EE
-instead. Loe credits the National Library of Estonia either way, in
-Settings, under the catalogue and on the About page with CC0 1.0's text.
+instead. Until the National Library says which applies, Loe's credit meets
+both: the About page names the National Library and the bibliography, says
+what Loe changed (the fields it keeps, editions grouped into works), and links
+CC BY-SA 3.0 EE beside CC0 1.0's text.
 
 The bibliography holds books published in Estonia, and some published elsewhere
 by Estonian authors or about Estonia, such as Jaan Kross in English from London
