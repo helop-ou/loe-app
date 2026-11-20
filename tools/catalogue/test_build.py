@@ -237,6 +237,22 @@ class BuildTests(unittest.TestCase):
             self.assertIn("dropped 2 ISBN values that were not valid", lines)
 
 
+class ConvertTests(unittest.TestCase):
+    def convert(self, *fields, fixed=FIXED):
+        with tempfile.TemporaryDirectory() as directory:
+            path = os.path.join(directory, "erb.xml")
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(collection(record("b40000004", *fields, fixed=fixed)))
+            return build.convert(next(build.read(path)), 2026)
+
+    def test_a_language_code_that_is_not_a_language_is_stored_as_none(self):
+        title = field("245", ("a", "Raamat"))
+        for code in ("|||", "   ", ""):
+            self.assertIsNone(self.convert(title, fixed=FIXED[:35] + code + FIXED[38:]).language, repr(code))
+        self.assertIsNone(self.convert(title, fixed=FIXED[:30]).language)
+        self.assertEqual(self.convert(title, fixed=FIXED[:35] + "eng" + FIXED[38:]).language, "eng")
+
+
 class RefusalTests(unittest.TestCase):
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
