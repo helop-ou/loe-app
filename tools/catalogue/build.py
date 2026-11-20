@@ -221,6 +221,11 @@ TRANSLATOR_ROLE = re.compile(r"(?i)tõlkija|translator")
 TRANSLATED_FROM = re.compile(r"Tõlgitud(?: \w+)?(?: raamatust| väljaandest| teosest)?:\s*([^.]+)")
 
 
+def main_title(record):
+    """The cleaned 245 $a, None for a record that has none."""
+    return clean(" ".join(subfields(record.fields("245")[0], "a")))
+
+
 def skip_reason(record):
     if record.leader[6:7] != "a":
         return "not text"
@@ -230,6 +235,8 @@ def skip_reason(record):
         return "digital copy of a print record"
     if not record.control.get("001") or not record.fields("245"):
         return "no id or title"
+    if not main_title(record):
+        return "no title proper"
     return None
 
 
@@ -257,7 +264,7 @@ def series(record):
 
 def convert(record, latest_year):
     title_field = record.fields("245")[0]
-    title = clean(" ".join(subfields(title_field, "a"))) or ""
+    title = main_title(record)
     parts = [clean(p) for p in subfields(title_field, "n") + subfields(title_field, "p")]
     title = ". ".join([title] + [p for p in parts if p])
 
