@@ -26,6 +26,24 @@ keeps working locally. A device build
 needs the container and push notifications registered for the team, which
 Xcode does on the first signed build with automatic signing.
 
+### What Settings says about iCloud
+
+[`CloudSync`](../Loe/Shared/Library/CloudSync.swift) tells the reader whether
+their shelves reach iCloud. It starts with the app and works from two things:
+
+- **The account**, from `CKContainer.accountStatus()`, asked at launch, when
+  Settings opens and on `CKAccountChanged`. No account, a restricted one or one
+  that can't be reached comes first, whatever the last sync did.
+- **The last sync**, from `NSPersistentCloudKitContainer.eventChangedNotification`,
+  which SwiftData posts for every setup, import and export. A sync that worked
+  says when. A failed one is read for its CloudKit reason, which Core Data
+  wraps and a batch reports per record: a full iCloud wins over other reasons,
+  because the reader can do something about it. A network error says it is
+  waiting, and anything else says Loe tries again.
+
+Loe can't open iCloud's own settings, so each status says where to look in the
+Settings app instead. There is nothing to sign in to in Loe.
+
 ## Covers
 
 A cover is the reader's own photo, taken or chosen from the book's page once
@@ -258,7 +276,8 @@ it. Nothing merges those yet.
 ## Testing
 
 `ShelvedBookTests`, `ShelvedEnteredBookTests`, `ShelvedOpenLibraryBookTests`
-and `TasteTests` cover the rules on an in-memory store, and
+and `TasteTests` cover the rules on an in-memory store, `CloudSyncTests` the
+iCloud status, and
 `AddBookJourneyTests` adds, edits and removes a book by hand in the app. In
 debug builds the `-inMemoryLibrary YES` launch argument opens an empty
 in-memory library, which the journeys use so they start from empty shelves and

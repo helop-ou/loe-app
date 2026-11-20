@@ -133,6 +133,15 @@ book shows, which redirects to the Internet Archive (`archive.org`) for the
 image, so both see which books' covers were asked for. The images are kept in
 the caches folder on the phone, and nothing else.
 
+The Privacy page, under About in Settings (`PrivacyView`), tells the reader
+all of this in plain words. Change it with this section, so the two never
+disagree.
+
+The About page credits every source and ships the licence text of what Loe
+copies: Newsreader's OFL and the catalogue's CC0 1.0, in
+`Loe/Resources/Licenses`. `CreditTests` fails when a licence file is added
+there without a credit, or a credit names a file that isn't shipped.
+
 ## Before the App Store
 
 - Ask ELNET (ester@elnet.ee) for permission to show ESTER's availability in

@@ -41,7 +41,7 @@ Loe/
     ReadNext/
     Search/                    Search, and the catalogue download
     Book/                      A book's own page
-    Settings/                  Settings, and the tastes quiz on first launch
+    Settings/                  Settings, About and credits, and the tastes quiz on first launch
   Shared/
     Catalogue/                 The offline catalogue: SQLite access, search, works
     Places/                    The libraries and bookshops a reader can pick

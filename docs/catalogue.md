@@ -22,7 +22,8 @@ replaces the whole file. There is no incremental update.
 
 **Licence.** Zenodo, the RaRa Digilab and andmed.eesti.ee publish the
 bibliography as CC0 1.0. One page on data.digar.ee says CC BY-SA 3.0 EE
-instead. Loe credits the National Library of Estonia in the app either way.
+instead. Loe credits the National Library of Estonia either way, in
+Settings, under the catalogue and on the About page with CC0 1.0's text.
 
 The bibliography holds books published in Estonia, and some published elsewhere
 by Estonian authors or about Estonia, such as Jaan Kross in English from London
@@ -163,7 +164,15 @@ SHA-256, its size and its schema version.
   since it can be downloaded again.
 - Updates are checked at launch, at most once a week, and download only over
   Wi-Fi, without asking. The catalogue in use stays until the new one is in
-  place.
+  place. A check that can't reach the manifest doesn't count, so the next
+  launch asks again.
+- Settings shows the edition (its version, `2026-11`, as a month), its size
+  on the phone, the number of editions and when Loe last heard which edition
+  is the newest. "Check for a new edition" asks straight away, may use mobile
+  data, since the reader asked, and says what came of it. Removing the
+  catalogue deletes the file and forgets its version, and Search offers the
+  download again. Neither runs while a download or update is replacing the
+  file.
 - A manifest whose `schema_version` the app does not know is ignored, and
   nothing is downloaded. Apps that old keep their catalogue until they update.
 
