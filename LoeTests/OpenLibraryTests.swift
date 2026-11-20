@@ -104,7 +104,7 @@ struct OpenLibraryTests {
         // The system would otherwise send the reader's own languages.
         #expect(request.value(forHTTPHeaderField: "Accept-Language") == "en")
         let agent = try #require(request.value(forHTTPHeaderField: "User-Agent"))
-        #expect(agent.contains("support@helop.dev"))
+        #expect(agent.contains("kontakt@helop.ee"))
         #expect(agent.contains("https://github.com/helop-ou/loe-app"))
     }
 
