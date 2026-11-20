@@ -117,6 +117,9 @@ actor Catalogue {
         let sameLead = try byLeadAuthor(author)
 
         let editions = sameLead.filter { CatalogueWork.key(for: $0) == work.id }
+        if editions.isEmpty, let corrected = try corrected(work) {
+            return try details(for: corrected, similarity: limits)
+        }
         let translated = try matching(CatalogueQuery.phrase(work.title, in: "original_title"), limit: 500).filter {
             Self.sameTitle($0.originalTitle, work.title) && Self.sameAuthor($0.leadAuthor, author)
                 && CatalogueWork.key(for: $0) != work.id
@@ -153,7 +156,24 @@ actor Catalogue {
         let found = try first.leadAuthor.map { try byLeadAuthor($0) }
             ?? matching(CatalogueQuery.phrase(first.title, in: "title"), limit: 3000)
         let editions = found.filter { CatalogueWork.key(for: $0) == work.id }
+        if editions.isEmpty, let corrected = try corrected(work) {
+            return try self.editions(of: corrected)
+        }
         return (editions.isEmpty ? work.editions : editions).sorted { ($0.year ?? 0) > ($1.year ?? 0) }
+    }
+
+    /// The work as the catalogue writes it now, when its title or authors have been
+    /// corrected since the reader shelved it. Its record number stays the same.
+    private func corrected(_ work: CatalogueWork) throws -> CatalogueWork? {
+        let records = Array(work.editions.map(\.erbID).filter { !$0.isEmpty }.prefix(12))
+        guard !records.isEmpty else { return nil }
+        let found = try database.rows(
+            "SELECT \(Self.columns) FROM edition e WHERE e.erb_id IN (\(Self.placeholders(records.count))) LIMIT 1",
+            records.map { .text($0) },
+            map: Self.edition
+        )
+        guard let edition = found.first, CatalogueWork.key(for: edition) != work.id else { return nil }
+        return CatalogueWork(id: CatalogueWork.key(for: edition), editions: [edition])
     }
 
     /// Fiction in one language under any of these genre or subject headings, the most
