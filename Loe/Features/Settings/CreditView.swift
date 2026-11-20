@@ -14,6 +14,7 @@ struct CreditView: View {
                 Text(credit.role)
                     .foregroundStyle(.loeSecondary)
                 Text(credit.about)
+                    .tint(.loeAccent)
                 Link(destination: credit.link) {
                     Label {
                         Text(verbatim: credit.link.host() ?? credit.link.absoluteString)

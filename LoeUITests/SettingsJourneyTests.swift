@@ -69,6 +69,13 @@ final class SettingsJourneyTests: XCTestCase {
         attach("credit-newsreader", app)
         app.navigationBars.buttons.firstMatch.tap()
 
+        // The catalogue's credit meets both licences it is published under.
+        app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'National Library of Estonia'")).firstMatch.tap()
+        XCTAssertTrue(app.links["CC BY-SA 3.0 EE"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["CC0 1.0 Universal"].exists)
+        attach("credit-national-library", app)
+        app.navigationBars.buttons.firstMatch.tap()
+
         scroll(app, to: app.links["See the code on GitHub"])
         XCTAssertTrue(app.links["Report a problem on GitHub"].exists)
     }
