@@ -1481,6 +1481,16 @@
         }
       }
     },
+    "Search your libraries for it": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otsi seda oma raamatukogudest"
+          }
+        }
+      }
+    },
     "Searching": {
       "localizations": {
         "et": {

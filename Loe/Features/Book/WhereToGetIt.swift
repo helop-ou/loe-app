@@ -3,7 +3,8 @@ import SwiftUI
 
 /// The reader's libraries and bookshops, in their order, or ESTER and two bookshops
 /// when they have picked none. Each library says whether it has the book, asked of
-/// ESTER as the page opens. See docs/library.md, "Availability".
+/// ESTER as the page opens. A book ESTER has no record of gets one ESTER search in
+/// place of the libraries. See docs/library.md, "Where to get it".
 struct WhereToGetIt: View {
     /// The work with all its editions, newest first.
     let work: CatalogueWork
@@ -28,7 +29,7 @@ struct WhereToGetIt: View {
     var body: some View {
         let places = ChosenPlace.places(chosen)
         let asksESTER = Self.asksESTER(places: places, editions: work.editions)
-        let rows = rows(places)
+        let rows = Self.rows(places: places, work: work, edition: edition, status: status(at:))
         if !rows.isEmpty {
             WhereToGetItCard(rows: rows, namesESTER: asksESTER)
                 .task(id: Request(editions: work.editions.map(\.erbID), asks: asksESTER)) {
@@ -47,25 +48,37 @@ struct WhereToGetIt: View {
         places.contains { $0.kind == .library } && editions.contains { BookLinks.ester($0.erbID) != nil }
     }
 
-    private func rows(_ places: [Place]) -> [WhereToGetItCard.Row] {
+    static func rows(
+        places: [Place], work: CatalogueWork, edition: CatalogueEdition,
+        status: (Place) -> WhereToGetItCard.Status
+    ) -> [WhereToGetItCard.Row] {
         let query = BookLinks.query(for: work)
         let ester = BookLinks.ester(edition.erbID)
         guard !places.isEmpty else {
             return [
-                ester.map { .init(id: "ester", name: "ESTER", detail: Text("See if your library has it"), url: $0) },
+                (ester ?? BookLinks.esterSearch(query)).map { .init(id: "ester", name: "ESTER", detail: Text("See if your library has it"), url: $0) },
                 BookLinks.rahvaRaamat(query).map { .init(id: Place.rahvaRaamat.id, name: Place.rahvaRaamat.name, detail: Text("Bookshop"), url: $0) },
                 BookLinks.apollo(query).map { .init(id: Place.apollo.id, name: Place.apollo.name, detail: Text("Bookshop"), url: $0) },
             ].compactMap { $0 }
         }
-        return places.compactMap { place in
+        // Without a record there is nothing to ask about each library, so one search
+        // stands where the first of them would be.
+        let firstLibrary = places.firstIndex { $0.kind == .library }
+        return places.enumerated().compactMap { index, place in
             switch place.kind {
             case .library:
-                ester.map { url in
+                if let ester {
                     WhereToGetItCard.Row(
                         id: place.id, name: place.name,
                         detail: place.group.map { Text(verbatim: $0) } ?? Text("Library"),
-                        url: url, status: status(at: place)
+                        url: ester, status: status(place)
                     )
+                } else if index == firstLibrary {
+                    BookLinks.esterSearch(query).map {
+                        .init(id: "ester", name: "ESTER", detail: Text("Search your libraries for it"), url: $0)
+                    }
+                } else {
+                    nil
                 }
             case .shop:
                 BookLinks.shop(place, query: query).map { .init(id: place.id, name: place.name, detail: Text("Bookshop"), url: $0) }

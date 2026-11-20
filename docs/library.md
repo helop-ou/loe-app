@@ -201,6 +201,12 @@ picked in Settings, in their order, or ESTER, Rahva Raamat and Apollo when
 they have picked none. A library row opens the book's ESTER record and a shop
 row the shop's search for the title and author.
 
+A book ESTER has no record of, from Open Library or entered by hand, can still
+be in a library, but there is nothing to ask about each one. One ESTER row
+then stands where the first library would be and opens ESTER's keyword search
+for the title and author. Without it, a reader who picked only libraries would
+see no "Where to get it" at all. `WhereToGetItTests` pins both cases.
+
 [`Place`](../Loe/Shared/Places/Place.swift) holds every place that can be
 picked:
 
