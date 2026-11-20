@@ -1,0 +1,69 @@
+name: A book is missing or wrong
+description: Loe can't find a book, or shows it with the wrong title, author, editions or cover.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Write in English or Estonian, whichever is easier. Võid vabalt kirjutada eesti keeles.
+
+        Loe makes none of its book data. Books published in Estonia come from the National Library's bibliography (Eesti rahvusbibliograafia), the same records ESTER shows. Books from abroad come from [Open Library](https://openlibrary.org), which anyone can correct there.
+
+        When the record is wrong at its source, Loe can only pass the report on. When the source is right and Loe shows the book wrongly, or can't find it, that is ours to fix. Not sure which it is? Report it anyway.
+
+  - type: dropdown
+    id: what
+    attributes:
+      label: What is wrong
+      options:
+        - Loe can't find the book
+        - The title or the author is wrong
+        - Editions are missing or mixed up
+        - One book shows as two, or two books as one
+        - The cover is wrong or missing
+        - A library's status is wrong
+        - Something else
+    validations:
+      required: true
+
+  - type: input
+    id: book
+    attributes:
+      label: Title and author
+      placeholder: Kevade, Oskar Luts
+    validations:
+      required: true
+
+  - type: input
+    id: isbn
+    attributes:
+      label: ISBN
+      description: The number under the barcode on the back of the book, if you have it.
+      placeholder: 978-9949-633-28-9
+
+  - type: dropdown
+    id: source
+    attributes:
+      label: Where Loe showed the book
+      options:
+        - Among the first results in Search
+        - Under "From Open Library" in Search
+        - I couldn't find it at all
+        - I added it myself
+        - Somewhere else
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: What Loe shows, and what it should show
+      description: A screenshot helps, and so does a link to the book in ESTER or on Open Library.
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version and build of Loe
+      description: Settings → About Loe shows both under the name.
+      placeholder: 0.1.0 (139)

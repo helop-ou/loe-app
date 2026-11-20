@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security or privacy report
+    url: https://github.com/helop-ou/loe-app/blob/main/SECURITY.md
+    about: Report a vulnerability privately, not in an issue.
+  - name: Contributing and building Loe
+    url: https://github.com/helop-ou/loe-app/blob/main/CONTRIBUTING.md
+    about: What you need to build Loe, and the rules a change is checked against.

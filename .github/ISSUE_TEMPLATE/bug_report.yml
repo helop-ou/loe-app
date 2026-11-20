@@ -1,0 +1,76 @@
+name: Something isn't working
+description: Loe does something wrong, or doesn't do what it says it does.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for telling us. Write in English or Estonian, whichever is easier. Võid vabalt kirjutada eesti keeles.
+
+        Leave out anything private: nobody needs your name, email or account to look into a problem. If you would rather write an email, the address is kontakt@helop.ee. Anything with security or privacy impact goes to [SECURITY.md](https://github.com/helop-ou/loe-app/blob/main/SECURITY.md), not into an issue.
+
+        Is a book missing, or shown with the wrong title, author or cover? Use the "A book is missing or wrong" form.
+
+  - type: input
+    id: version
+    attributes:
+      label: Version and build of Loe
+      description: Settings → About Loe shows both under the name.
+      placeholder: 0.1.0 (139)
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: iPhone and iOS version
+      placeholder: iPhone 17, iOS 26.1
+    validations:
+      required: true
+
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where in Loe
+      options:
+        - Search or scanning a barcode
+        - Shelves
+        - A book's page
+        - Libraries and where to get a book
+        - Read next
+        - Covers and photos
+        - iCloud and syncing between devices
+        - Settings
+        - Somewhere else
+    validations:
+      required: true
+
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened
+      description: A screenshot helps.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: How to make it happen again
+      placeholder: |
+        1. Search for "kevade"
+        2. Open the first book
+        3. Put it on a shelf
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: How often it happens, and when it started.

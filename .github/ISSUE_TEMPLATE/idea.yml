@@ -1,0 +1,32 @@
+name: An idea
+description: Something Loe could do, or do better.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea. Write in English or Estonian, whichever is easier. Võid vabalt kirjutada eesti keeles.
+
+        Loe aims to stay small and private: no account, no ads, no tracking and no server of its own. Not every idea will fit that, but every one is read.
+
+  - type: textarea
+    id: situation
+    attributes:
+      label: What are you trying to do?
+      description: The situation, before the solution.
+      placeholder: I lend books to friends and forget who has which one.
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What could Loe do?
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: How another app does it, or a sketch.
