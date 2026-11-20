@@ -33,7 +33,9 @@ their shelves reach iCloud. It starts with the app and works from two things:
 
 - **The account**, from `CKContainer.accountStatus()`, asked at launch, when
   Settings opens and on `CKAccountChanged`. No account, a restricted one or one
-  that can't be reached comes first, whatever the last sync did.
+  that can't be reached comes first, whatever the last sync did. iCloud can
+  leave the question unanswered, as it does on CI's simulator, so after five
+  seconds the account counts as unreachable rather than still being checked.
 - **The last sync**, from `NSPersistentCloudKitContainer.eventChangedNotification`,
   which SwiftData posts for every setup, import and export. A sync that worked
   says when. A failed one is read for its CloudKit reason, which Core Data
