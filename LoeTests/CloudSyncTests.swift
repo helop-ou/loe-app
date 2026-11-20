@@ -56,6 +56,16 @@ struct CloudSyncTests {
         #expect(sync.status == .off)
     }
 
+    @Test func anAccountThatNeverAnswersStopsBeingChecked() async {
+        let silent = await CloudSync.answer(within: .milliseconds(50)) {
+            try? await Task.sleep(for: .seconds(30))
+            return .available
+        }
+        #expect(silent == .couldNotDetermine)
+        let quick = await CloudSync.answer(within: .seconds(5)) { .noAccount }
+        #expect(quick == .noAccount)
+    }
+
     @Test func aFullICloudIsFoundInsideWhatCoreDataReports() {
         let quota = CKError(.quotaExceeded) as NSError
         let other = CKError(.serverRecordChanged) as NSError

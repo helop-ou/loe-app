@@ -1,6 +1,7 @@
 import CloudKit
 import CoreData
 import Observation
+import Synchronization
 
 /// Whether the shelves are reaching the reader's iCloud, worked out from their
 /// account and the last sync SwiftData reported. Loe has no account of its own,
@@ -107,6 +108,32 @@ final class CloudSync {
     }
 
     nonisolated static let liveAccountStatus: @Sendable () async -> CKAccountStatus = {
-        (try? await CKContainer(identifier: LibraryStore.cloudKitContainer).accountStatus()) ?? .couldNotDetermine
+        await answer(within: .seconds(5)) {
+            (try? await CKContainer(identifier: LibraryStore.cloudKitContainer).accountStatus()) ?? .couldNotDetermine
+        }
+    }
+
+    /// The account's status, or "could not determine" once `limit` passes. iCloud
+    /// can leave the question unanswered, and Settings must not say "Checking"
+    /// for ever. A late answer is dropped, and the next refresh asks again.
+    nonisolated static func answer(
+        within limit: Duration,
+        _ ask: @escaping @Sendable () async -> CKAccountStatus
+    ) async -> CKAccountStatus {
+        await withCheckedContinuation { continuation in
+            let answered = Mutex(false)
+            let finish: @Sendable (CKAccountStatus) -> Void = { status in
+                let first = answered.withLock { done in
+                    defer { done = true }
+                    return !done
+                }
+                if first { continuation.resume(returning: status) }
+            }
+            Task { finish(await ask()) }
+            Task {
+                try? await Task.sleep(for: limit)
+                finish(.couldNotDetermine)
+            }
+        }
     }
 }
