@@ -59,5 +59,20 @@ enum LibraryStore {
         }
         try? FileManager.default.removeItem(at: url)
     }
+
+    /// Two records of one book, as two devices leave them when each shelves it
+    /// while apart, for the journey that sees them become one.
+    static func insertDuplicatesIfAsked(into context: ModelContext) {
+        guard UserDefaults.standard.bool(forKey: "duplicateBooks"),
+              (try? context.fetchCount(FetchDescriptor<ShelvedBook>())) == 0
+        else { return }
+        let edition = CatalogueEdition(id: 0, erbID: "b10544215", title: "Keisri hull", authors: "Jaan Kross", pages: 352)
+        let shelved = Date(timeIntervalSince1970: 1_800_000_000)
+        let later = shelved.addingTimeInterval(86_400)
+        context.insert(ShelvedBook(edition: edition, workKey: CatalogueWork.key(for: edition), shelf: .wantToRead, now: shelved))
+        let read = ShelvedBook(edition: edition, workKey: CatalogueWork.key(for: edition), shelf: .read, now: later)
+        read.rate(5, now: later)
+        context.insert(read)
+    }
     #endif
 }
