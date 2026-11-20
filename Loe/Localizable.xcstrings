@@ -301,6 +301,16 @@
         }
       }
     },
+    "Checking iCloud…": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vaatan iCloudi…"
+          }
+        }
+      }
+    },
     "Checking…": {
       "localizations": {
         "et": {
@@ -591,6 +601,16 @@
         }
       }
     },
+    "Last synced %@": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Viimati sünkroonitud %@"
+          }
+        }
+      }
+    },
     "Libraries and bookshops": {
       "localizations": {
         "et": {
@@ -637,6 +657,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Veel %@ autorilt"
+          }
+        }
+      }
+    },
+    "New changes stay on this phone until there's room. Free up space or get more in the Settings app, under your name and iCloud.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uued muudatused jäävad selles telefonis ootele, kuni ruumi tuleb. Vabasta ruumi või hangi seda juurde rakenduses Seaded, oma nime ja iCloudi alt."
           }
         }
       }
@@ -1241,6 +1271,26 @@
         }
       }
     },
+    "The last sync didn't finish": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Viimane sünkroonimine jäi pooleli"
+          }
+        }
+      }
+    },
+    "They're on every device signed in to your iCloud that has Loe.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Need on igas seadmes, kus on Loe ja mis on sinu iCloudi sisse logitud."
+          }
+        }
+      }
+    },
     "This book comes from Open Library, which Loe asked about it.": {
       "localizations": {
         "et": {
@@ -1341,6 +1391,16 @@
         }
       }
     },
+    "Waiting for a connection": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ootan ühendust"
+          }
+        }
+      }
+    },
     "Want to read": {
       "localizations": {
         "et": {
@@ -1411,6 +1471,26 @@
         }
       }
     },
+    "Your changes are safe on this phone and sync once it's online.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sinu muudatused on selles telefonis alles ja sünkroonitakse, kui telefon on taas võrgus."
+          }
+        }
+      }
+    },
+    "Your iCloud is full": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sinu iCloud on täis"
+          }
+        }
+      }
+    },
     "Your shelves are empty": {
       "localizations": {
         "et": {
@@ -1421,12 +1501,92 @@
         }
       }
     },
+    "Your shelves are only on this phone. Screen Time or a profile on this phone keeps apps out of iCloud.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sinu riiulid on ainult selles telefonis. Ekraaniaeg või selle telefoni profiil ei lase rakendustel iCloudi kasutada."
+          }
+        }
+      }
+    },
+    "Your shelves are only on this phone. To keep them safe and on your other devices, sign in to iCloud in the Settings app.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sinu riiulid on ainult selles telefonis. Et need oleksid kaitstud ja ka su teistes seadmetes, logi rakenduses Seaded iCloudi sisse."
+          }
+        }
+      }
+    },
+    "Your shelves are safe on this phone. In the Settings app, check that you're signed in to your Apple Account.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sinu riiulid on selles telefonis alles. Vaata rakenduses Seaded, kas oled oma Apple'i kontosse sisse logitud."
+          }
+        }
+      }
+    },
+    "Your shelves are safe on this phone. Loe tries again by itself.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sinu riiulid on selles telefonis alles. Loe proovib ise uuesti."
+          }
+        }
+      }
+    },
+    "Your shelves sync with iCloud": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sinu riiulid sünkroonitakse iCloudiga"
+          }
+        }
+      }
+    },
     "Your tastes": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Sinu maitse"
+          }
+        }
+      }
+    },
+    "iCloud is off": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud on välja lülitatud"
+          }
+        }
+      }
+    },
+    "iCloud isn't allowed on this phone": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Selles telefonis pole iCloud lubatud"
+          }
+        }
+      }
+    },
+    "iCloud isn't available right now": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud pole praegu kättesaadav"
           }
         }
       }

@@ -32,5 +32,6 @@ struct RootView: View {
 #Preview {
     RootView()
         .environment(CatalogueStore())
+        .environment(CloudSync())
         .modelContainer(for: [ShelvedBook.self, Taste.self, ChosenPlace.self], inMemory: true)
 }

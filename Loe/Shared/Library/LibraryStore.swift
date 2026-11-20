@@ -6,6 +6,8 @@ import SwiftData
 /// signed for it.
 enum LibraryStore {
     static let models: [any PersistentModel.Type] = [ShelvedBook.self, Taste.self, ChosenPlace.self]
+    /// The container in Loe.entitlements, which SwiftData picks for `.automatic`.
+    static let cloudKitContainer = "iCloud.ee.helop.loe"
 
     static func makeContainer() -> ModelContainer {
         #if DEBUG
@@ -35,7 +37,7 @@ enum LibraryStore {
     private static func initializeCloudKitSchema() {
         let url = FileManager.default.temporaryDirectory.appending(path: "schema-\(UUID().uuidString).store")
         let description = NSPersistentStoreDescription(url: url)
-        description.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: "iCloud.ee.helop.loe")
+        description.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: cloudKitContainer)
         description.shouldAddStoreAsynchronously = false
         guard let model = NSManagedObjectModel.makeManagedObjectModel(for: models) else {
             print("CloudKit schema: the model could not be built")
