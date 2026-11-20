@@ -25,6 +25,16 @@
 				<string>CA92.1</string>
 			</array>
 		</dict>
+		<!-- When a book was last found to have no cover, kept as the date of a
+		     file in the app's own caches folder. -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>C617.1</string>
+			</array>
+		</dict>
 	</array>
 </dict>
 </plist>
