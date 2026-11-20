@@ -73,6 +73,45 @@ struct OpenLibraryTests {
         #expect(onyx == "Onyx Storm")
     }
 
+    /// Open Library keeps an edition of The Fall of Reach under First Strike's work.
+    @Test func anEditionFiledUnderAnotherBookKeepsItsOwnName() {
+        let misfiled = OpenLibraryBook.displayTitle(work: ("Halo", "First Strike"), edition: ("Halo", "the fall of Reach"))
+        #expect(misfiled == "Halo: the fall of Reach")
+        // An edition that only spells its work's subtitle another way is that work's.
+        let own = OpenLibraryBook.displayTitle(work: ("Halo", "First Strike"), edition: ("Halo", "first strike."))
+        #expect(own == "Halo: First Strike")
+        // An edition with no subtitle says nothing against its work, and nor does a blurb.
+        #expect(OpenLibraryBook.displayTitle(work: ("Halo", "First Strike"), edition: ("Halo", nil)) == "Halo: First Strike")
+        #expect(OpenLibraryBook.displayTitle(work: ("Halo", "First Strike"), edition: ("Halo", "")) == "Halo: First Strike")
+        let blurb = OpenLibraryBook.displayTitle(
+            work: ("Halo", "First Strike"),
+            edition: ("Halo", "The Thrilling Second Novel Set in the Universe of the Hit Game")
+        )
+        #expect(blurb == "Halo: First Strike")
+    }
+
+    /// The saved answer for the ISBN of The Fall of Reach holds two works: First
+    /// Strike's, which that edition is filed under, and then the book's own.
+    @Test func anISBNFindsTheBookItNamesOnce() throws {
+        let books = try Self.books("isbn-halo-fall-of-reach")
+        #expect(books.map(\.title) == ["Halo: The Fall of Reach"])
+        #expect(books.first?.record == OpenLibraryRecord(workKey: "/works/OL8048395W", isbn: "9780345451323", coverID: 210_551))
+        #expect(books.first?.authors == ["Eric S. Nylund"])
+    }
+
+    @Test func aMisfiledBookStaysWhenItsOwnWorkDidNotAnswer() throws {
+        let json = #"""
+            {"docs": [{"key": "/works/OL18628W", "title": "Halo", "subtitle": "First Strike", "author_name": ["Eric S. Nylund"],
+              "editions": {"docs": [{"title": "Halo", "subtitle": "the fall of Reach", "isbn": ["0345451325"]}]}},
+             {"key": "/works/OL1W", "title": "Halo", "subtitle": "Ghosts of Onyx", "author_name": ["Eric S. Nylund"],
+              "editions": {"docs": [{"title": "Halo", "subtitle": "The Fall Of Reach"}]}}]}
+            """#
+        let books = OpenLibraryBook.books(in: try JSONDecoder().decode(OpenLibrarySearchResponse.self, from: Data(json.utf8)))
+        #expect(books.map(\.record.workKey) == ["/works/OL18628W"])
+        #expect(books.first?.title == "Halo: the fall of Reach")
+        #expect(books.first?.record.isbn == "9780345451323")
+    }
+
     @Test func aBrokenAnswerLosesOnlyTheBrokenPart() throws {
         let json = #"{"docs": [42, {"title": "No key"}, {"key": "/authors/OL1A", "title": "An author"}, {"key": "/works/OL1W", "title": " Piranesi ", "author_name": ["Susanna Clarke"], "cover_i": "big"}]}"#
         let books = OpenLibraryBook.books(in: try JSONDecoder().decode(OpenLibrarySearchResponse.self, from: Data(json.utf8)))

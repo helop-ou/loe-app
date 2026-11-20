@@ -41,14 +41,20 @@ nonisolated struct OpenLibraryBook: Hashable, Sendable, Identifiable {
     }
 
     /// The books in an answer, each once. Open Library often has one book as several
-    /// works, so a book already seen is left out.
+    /// works, so a book already seen is left out. A book filed under another book's
+    /// work gives way to the work that is its own.
     static func books(in response: OpenLibrarySearchResponse) -> [OpenLibraryBook] {
-        var seen: Set<String> = []
-        return (response.docs ?? []).compactMap(book).filter { book in
-            let keys = book.sameBookKeys
-            defer { seen.formUnion(keys) }
-            return seen.isDisjoint(with: keys)
+        var found: [(book: OpenLibraryBook, misfiled: Bool)] = []
+        for doc in response.docs ?? [] {
+            guard let next = read(doc) else { continue }
+            let keys = next.book.sameBookKeys
+            if let index = found.firstIndex(where: { !$0.book.sameBookKeys.isDisjoint(with: keys) }) {
+                if found[index].misfiled && !next.misfiled { found[index] = next }
+            } else {
+                found.append(next)
+            }
         }
+        return found.map(\.book)
     }
 
     /// Books the catalogue's results don't already show.
@@ -60,41 +66,58 @@ nonisolated struct OpenLibraryBook: Hashable, Sendable, Identifiable {
         return books.filter { shown.isDisjoint(with: $0.sameBookKeys) }
     }
 
-    static func book(_ doc: OpenLibrarySearchResponse.Doc) -> OpenLibraryBook? {
+    private static func read(_ doc: OpenLibrarySearchResponse.Doc) -> (book: OpenLibraryBook, misfiled: Bool)? {
         guard let key = doc.key, key.hasPrefix("/works/"), let workTitle = doc.title?.trimmed, !workTitle.isEmpty else { return nil }
         let edition = doc.editions?.docs?.first
-        let title = displayTitle(work: (workTitle, doc.subtitle?.trimmed), edition: edition.map { ($0.title?.trimmed ?? "", $0.subtitle?.trimmed) })
+        let work = (title: workTitle, subtitle: doc.subtitle?.trimmed)
+        let shown = edition.map { (title: $0.title?.trimmed ?? "", subtitle: $0.subtitle?.trimmed) }
         let isbn = edition?.isbn?.lazy.compactMap { CatalogueQuery.isbn13($0) }.first
         let languages = edition?.language ?? []
-        return OpenLibraryBook(
+        let book = OpenLibraryBook(
             // The work's own cover can be another book's, so the edition shown comes first.
             record: OpenLibraryRecord(workKey: key, isbn: isbn, coverID: edition?.coverID ?? doc.coverID),
-            title: title,
+            title: displayTitle(work: work, edition: shown),
             authors: (doc.authors ?? []).map(\.trimmed).filter { !$0.isEmpty },
             year: doc.firstPublishYear,
             pages: doc.pages.flatMap { $0 > 0 ? $0 : nil },
             language: languages.contains("eng") ? "eng" : languages.first
         )
+        return (book, isFiledUnderAnother(work: work, edition: shown))
     }
 
     /// The work's title, which is the book's own, unless the English edition shows
     /// it better. A work with no subtitle takes its edition's ("Halo" and "The Fall
-    /// of Reach") when it is short enough to be one. A translated book is filed under its original, so when the two
-    /// titles share nothing the edition's English one is shown.
+    /// of Reach") when it is short enough to be one, and so does an edition filed
+    /// under another book's work. A translated book is filed under its original, so
+    /// when the two titles share nothing the edition's English one is shown.
     static func displayTitle(work: (title: String, subtitle: String?), edition: (title: String, subtitle: String?)?) -> String {
         let workTitle = joined(work.title, work.subtitle)
         guard let edition, !edition.title.isEmpty else { return workTitle }
         let foldedWork = CatalogueQuery.folded(work.title)
         let foldedEdition = CatalogueQuery.folded(edition.title)
         if foldedWork == foldedEdition {
-            // A long subtitle on an edition is a publisher's blurb, not part of the title.
-            let short = edition.subtitle.map { $0.split(separator: " ").count <= 7 } ?? false
-            return work.subtitle == nil && short ? joined(work.title, edition.subtitle) : workTitle
+            let takesEditions = work.subtitle == nil || isFiledUnderAnother(work: work, edition: edition)
+            return takesEditions ? joined(work.title, subtitle(of: edition)) : workTitle
         }
         if foldedEdition.contains(foldedWork) || foldedWork.contains(foldedEdition) {
             return workTitle
         }
         return joined(edition.title, edition.subtitle)
+    }
+
+    /// Whether the edition found is another book than the work it sits under: the
+    /// same title with another subtitle, as an edition of "Halo: The Fall of Reach"
+    /// sits under "Halo: First Strike". The edition is the book that was found.
+    static func isFiledUnderAnother(work: (title: String, subtitle: String?), edition: (title: String, subtitle: String?)?) -> Bool {
+        guard let edition, let found = subtitle(of: edition), let own = work.subtitle, !own.isEmpty else { return false }
+        return CatalogueQuery.folded(work.title) == CatalogueQuery.folded(edition.title)
+            && CatalogueQuery.folded(own) != CatalogueQuery.folded(found)
+    }
+
+    /// A long subtitle on an edition is a publisher's blurb, not part of the title.
+    private static func subtitle(of edition: (title: String, subtitle: String?)) -> String? {
+        guard let subtitle = edition.subtitle, !subtitle.isEmpty, subtitle.split(separator: " ").count <= 7 else { return nil }
+        return subtitle
     }
 
     private static func joined(_ title: String, _ subtitle: String?) -> String {
