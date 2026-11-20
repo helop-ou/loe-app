@@ -130,6 +130,8 @@ same contract.
   version, so a runtime without a folder only renders and attaches. A missing
   reference is recorded and fails the test once: look at it before committing
   it. To record again, delete the PNG, or create the folder for a new runtime.
+  A busy CI runner now and then renders an image no PNG can be made from, so
+  a render that fails is tried up to three times before the test fails.
   `ImageRenderer` cannot draw a `NavigationStack`, and a `NavigationLink`
   outside one draws as disabled, so a view meant for a snapshot takes what
   opens a book as an action and its screen pushes it onto a path.
