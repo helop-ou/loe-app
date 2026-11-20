@@ -17,7 +17,7 @@ struct SettingsView: View {
             // The chips fill the width, so the heading and note go in the row to line up with them.
             Section {
                 VStack(alignment: .leading, spacing: 12) {
-                    SectionHeading("Your tastes")
+                    SettingsHeading("Your tastes")
                         .padding(.horizontal, 4)
                     GenrePicker(selection: Binding {
                         Set(Taste.genres(tastes))
@@ -56,7 +56,7 @@ struct SettingsView: View {
                     .tint(.loeAccent)
                     .listRowBackground(Color.loeCard)
             } header: {
-                SectionHeading("Where to get it")
+                SettingsHeading("Where to get it")
             } footer: {
                 Text("A book's page lists these, in this order. With none chosen, it shows ESTER, Rahva Raamat and Apollo.")
             }
@@ -78,7 +78,8 @@ struct SettingsView: View {
     }
 }
 
-private struct SectionHeading: View {
+/// A section's heading in Newsreader, as Settings and About set them.
+struct SettingsHeading: View {
     let title: LocalizedStringKey
 
     init(_ title: LocalizedStringKey) {
