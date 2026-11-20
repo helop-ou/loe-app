@@ -131,6 +131,12 @@ code doesn't call. The catalogue download sends nothing about the reader.
 The camera is asked for once, with one text for both of its uses: reading a
 barcode in Search and photographing a cover on a book's page.
 
+Every request goes through
+[`PrivateSession`](../Loe/Shared/Network/PrivateSession.swift): no cookies,
+cache or credentials, a `User-Agent` that names the app, its repository and the
+developer's contact, and `Accept-Language: en`, so the reader's own languages
+are never sent.
+
 When a reader has picked libraries, a book's page asks ESTER about that book
 as it opens, over HTTPS with no cookies (see [Library](library.md#availability)).
 ESTER sees which book records were asked about, from the phone's address, as

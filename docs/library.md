@@ -233,10 +233,11 @@ they have as soon as it opens, with no button to tap, and each library's row
 says what it found. [`AvailabilityChecker`](../Loe/Shared/Places/AvailabilityChecker.swift)
 fetches each edition's holdings page from the web catalogue over HTTPS, at most
 four at a time, for the twelve newest editions. Its session keeps no cookies,
-cache or credentials, so ESTER learns which records were asked about and the
-phone's address, and nothing else. Answers are reused for ten minutes, in
-memory only. With no library picked, nothing is asked. ESTER is named under
-the list, as its statutes ask of anything that shows its data.
+cache or credentials, so ESTER learns which records were asked about, that Loe
+is asking (the `User-Agent`) and the phone's address, and nothing else.
+Answers are reused for ten minutes, in memory only. With no library picked,
+nothing is asked. ESTER is named under the list, as its statutes ask of
+anything that shows its data.
 
 [`ESTERHoldings`](../Loe/Shared/Places/Availability.swift) reads each row of a
 holdings page by the comment that starts each cell (`field 1` is the location,
