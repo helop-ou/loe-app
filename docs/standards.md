@@ -84,7 +84,9 @@ same contract.
 - Brand colours come from the generated asset symbols (`.loeInk`,
   `.loeBackground` and so on), never hex literals. Headings use
   `.loeHeading(_:)`. Every user-facing string is in `Localizable.xcstrings`
-  with its Estonian translation.
+  with its Estonian translation. `TranslationTests` fails when a string there
+  has none, or one still marked for review. It cannot see a string the
+  catalogue doesn't hold, so add each new string to it with the code.
 - The brand files (`Assets.xcassets/Loe`, `Loe.icon`, the fonts, and the
   tone values in `LoeTone.swift`) are generated in the private brand
   repository. Change them there and copy them over, so the two never drift.
