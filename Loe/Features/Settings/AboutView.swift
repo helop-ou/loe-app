@@ -55,7 +55,7 @@ struct AboutView: View {
         }
         .scrollContentBackground(.hidden)
         .background(.loeBackground)
-        .navigationTitle("About Loe")
+        .loeNavigationTitle("About Loe")
         .navigationBarTitleDisplayMode(.inline)
     }
 }

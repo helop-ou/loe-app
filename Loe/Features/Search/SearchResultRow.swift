@@ -3,6 +3,8 @@ import SwiftUI
 struct SearchResultRow: View {
     let work: CatalogueWork
 
+    @Environment(\.locale) private var locale
+
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
             BookCover(title: work.title, art: Self.art(for: work), width: 56)
@@ -32,7 +34,7 @@ struct SearchResultRow: View {
 
     private var details: String {
         let count = work.editions.count
-        let editions = String(localized: "\(count) editions")
+        let editions = locale.localized("\(count) editions")
         switch (work.firstYear, work.latestYear) {
         case let (first?, latest?) where first != latest:
             return "\(first)–\(latest) · \(editions)"

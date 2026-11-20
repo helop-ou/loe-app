@@ -96,12 +96,14 @@ struct ReadingProgress: View {
     let book: ShelvedBook
     var onUpdate: (() -> Void)?
 
+    @Environment(\.locale) private var locale
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             ProgressView(value: book.progress ?? 0)
                 .tint(.loeAccent)
             HStack {
-                Text(Self.pageText(book))
+                Text(Self.pageText(book, in: locale))
                     .font(.subheadline.monospacedDigit())
                     .foregroundStyle(.loeSecondary)
                 Spacer()
@@ -114,11 +116,11 @@ struct ReadingProgress: View {
         }
     }
 
-    static func pageText(_ book: ShelvedBook) -> String {
+    static func pageText(_ book: ShelvedBook, in locale: Locale) -> String {
         switch (book.currentPage, book.pageCount) {
-        case let (page?, pages?): String(localized: "p. \(page) of \(pages)")
-        case let (page?, nil): String(localized: "p. \(page)")
-        default: String(localized: "Not started")
+        case let (page?, pages?): locale.localized("p. \(page) of \(pages)")
+        case let (page?, nil): locale.localized("p. \(page)")
+        default: locale.localized("Not started")
         }
     }
 }
@@ -135,7 +137,7 @@ private struct PageSheet: View {
                 number("Page you're on", $page)
                 number("Pages in the book", $pages)
             }
-            .navigationTitle("Update page")
+            .loeNavigationTitle("Update page")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

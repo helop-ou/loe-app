@@ -9,6 +9,7 @@ struct BookView: View {
     @Environment(CatalogueStore.self) private var catalogue
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.locale) private var locale
     @State private var details: Catalogue.Details?
     @State private var editing = false
     @State private var enteredByHand = false
@@ -64,7 +65,7 @@ struct BookView: View {
                     // With no author, a title alone would match unrelated books.
                     if !details.translations.isEmpty && (shown.authors != nil || fromCatalogue) {
                         WorkRail(title: "Translations", works: details.translations) { work in
-                            LanguageName.of(work.language).map { String(localized: "In \($0)") }
+                            LanguageName.of(work.language, in: locale).map { locale.localized("In \($0)") }
                         }
                     }
                     if fromCatalogue {
@@ -215,10 +216,12 @@ private struct OriginalCard: View {
     let edition: CatalogueEdition
     let original: CatalogueWork?
 
+    @Environment(\.locale) private var locale
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Group {
-                if let language = LanguageName.of(edition.originalLanguage) {
+                if let language = LanguageName.of(edition.originalLanguage, in: locale) {
                     Text("Translated from \(language)")
                 } else {
                     Text("Translated")
@@ -294,6 +297,8 @@ private struct EditionsSection: View {
 private struct EditionRow: View {
     let edition: CatalogueEdition
 
+    @Environment(\.locale) private var locale
+
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
             HStack(alignment: .firstTextBaseline) {
@@ -305,7 +310,7 @@ private struct EditionRow: View {
                         .foregroundStyle(.loeInk)
                 }
             }
-            let details = [edition.editionStatement, edition.pages.map { String(localized: "\($0) pages") }]
+            let details = [edition.editionStatement, edition.pages.map { locale.localized("\($0) pages") }]
                 .compactMap { $0 }
             if !details.isEmpty {
                 Text(details.joined(separator: " · "))

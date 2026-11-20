@@ -42,7 +42,7 @@ struct ReadNextView: View {
                     )
                 }
             }
-            .navigationTitle("Read next")
+            .loeNavigationTitle("Read next")
             .navigationDestination(for: CatalogueWork.self) { BookView(work: $0) }
         }
         .task(id: input) {

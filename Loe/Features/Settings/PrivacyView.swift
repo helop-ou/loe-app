@@ -9,7 +9,7 @@ struct PrivacyView: View {
                 .padding(20)
         }
         .background(.loeBackground)
-        .navigationTitle("Privacy")
+        .loeNavigationTitle("Privacy")
         .navigationBarTitleDisplayMode(.inline)
     }
 }

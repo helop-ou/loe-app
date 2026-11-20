@@ -20,7 +20,7 @@ struct PlacePicker: View {
             .scrollContentBackground(.hidden)
             .background(.loeBackground)
             .searchable(text: $search, prompt: Text("Find a library"))
-            .navigationTitle("Libraries and bookshops")
+            .loeNavigationTitle("Libraries and bookshops")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
