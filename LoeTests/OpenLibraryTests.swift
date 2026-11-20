@@ -156,11 +156,41 @@ struct OpenLibraryTests {
         #expect(value("fields")?.contains("editions.isbn") == true)
     }
 
-    @Test func onlyRealSearchesAreSent() {
-        #expect(!OpenLibrary.asksAbout("ha"))
-        #expect(!OpenLibrary.asksAbout("978-0-306-40615-7"))
-        #expect(OpenLibrary.asksAbout("1984"))
-        #expect(OpenLibrary.asksAbout("halo"))
+    @Test(arguments: [true, false])
+    func onlyRealSearchesAreSent(catalogueFound: Bool) {
+        #expect(OpenLibrary.question(for: "ha", catalogueFound: catalogueFound) == nil)
+        #expect(OpenLibrary.question(for: "1984", catalogueFound: catalogueFound) == "1984")
+        #expect(OpenLibrary.question(for: " halo ", catalogueFound: catalogueFound) == "halo")
+    }
+
+    @Test func anISBNIsTheCataloguesToAnswerFirst() {
+        #expect(OpenLibrary.question(for: "978-0-306-40615-7", catalogueFound: true) == nil)
+        #expect(OpenLibrary.question(for: "978-0-306-40615-7", catalogueFound: false) == "isbn:9780306406157")
+        // Ten digits are asked about as thirteen, the way the catalogue keeps them.
+        #expect(OpenLibrary.question(for: " 0-306-40615-2 ", catalogueFound: false) == "isbn:9780306406157")
+    }
+
+    @Test func anISBNTheCatalogueLacksIsAskedByItsNumber() async throws {
+        let asked = Asked()
+        let saved = try Data(contentsOf: Self.fixtures.appending(path: "openlibrary-isbn-halo-fall-of-reach.json"))
+        let client = OpenLibrary { request in
+            await asked.add(request)
+            return saved
+        }
+        let question = try #require(OpenLibrary.question(for: "9780345451323", catalogueFound: false))
+        let books = try await client.search(question)
+        #expect(books.map(\.title) == ["Halo: The Fall of Reach"])
+        let url = try #require(await asked.requests.first?.url)
+        let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
+        #expect(items.first { $0.name == "q" }?.value == "isbn:9780345451323")
+        #expect(url.path() == "/search.json")
+    }
+
+    /// What Open Library answered for an ISBN it has no edition of.
+    @Test func anISBNNobodyHasFindsNothing() async throws {
+        let nothing = #"{"numFound": 0, "start": 0, "numFoundExact": true, "num_found": 0, "q": "isbn:9789949000000", "offset": null, "docs": []}"#
+        let client = OpenLibrary { _ in Data(nothing.utf8) }
+        #expect(try await client.search("isbn:9789949000000").isEmpty)
     }
 
     @Test func nothingIsSentUntilTypingPauses() async throws {
@@ -195,4 +225,9 @@ struct OpenLibraryTests {
 private actor Calls {
     private(set) var count = 0
     func add() { count += 1 }
+}
+
+private actor Asked {
+    private(set) var requests: [URLRequest] = []
+    func add(_ request: URLRequest) { requests.append(request) }
 }

@@ -16,6 +16,20 @@ struct SearchView: View {
         case failed
     }
 
+    /// What a search came to when neither the catalogue nor Open Library has
+    /// anything for it.
+    enum NothingFound: Equatable {
+        case isbn
+        case text
+    }
+
+    /// Nil while there is something to list: a book, or the line that says Open
+    /// Library is still being asked or can't be reached.
+    static func nothingFound(for text: String, inCatalogue results: [CatalogueWork], online: Online) -> NothingFound? {
+        guard results.isEmpty, online == .notAsked || online == .found([]) else { return nil }
+        return CatalogueQuery.isbn13(text) == nil ? .text : .isbn
+    }
+
     var openLibrary = OpenLibrary.live
 
     @Environment(CatalogueStore.self) private var catalogue
@@ -72,21 +86,24 @@ struct SearchView: View {
                     systemImage: "magnifyingglass",
                     description: "Search by title, author or ISBN."
                 )
-            } else if results.isEmpty && resultsQuery == trimmed && CatalogueQuery.isbn13(trimmed) != nil {
-                EmptyState(
-                    title: "No book with this ISBN",
-                    systemImage: "barcode",
-                    description: "The catalogue has the books published in Estonia. Try the title, or add the book yourself."
-                ) {
-                    addButton(trimmed)
-                }
-            } else if results.isEmpty && resultsQuery == trimmed && (online == .notAsked || online == .found([])) {
-                EmptyState(
-                    title: "No books found",
-                    systemImage: "magnifyingglass",
-                    description: "Check the spelling, try the author's name, or add the book yourself."
-                ) {
-                    addButton(trimmed)
+            } else if resultsQuery == trimmed, let nothing = Self.nothingFound(for: trimmed, inCatalogue: results, online: online) {
+                switch nothing {
+                case .isbn:
+                    EmptyState(
+                        title: "No book with this ISBN",
+                        systemImage: "barcode",
+                        description: "It isn't in the catalogue or on Open Library. Try the title, or add the book yourself."
+                    ) {
+                        addButton(trimmed)
+                    }
+                case .text:
+                    EmptyState(
+                        title: "No books found",
+                        systemImage: "magnifyingglass",
+                        description: "Check the spelling, try the author's name, or add the book yourself."
+                    ) {
+                        addButton(trimmed)
+                    }
                 }
             } else {
                 resultsList(trimmed)
@@ -194,20 +211,26 @@ struct SearchView: View {
         guard !Task.isCancelled else { return }
         let found = (try? await catalogue.search(trimmed)) ?? []
         guard !Task.isCancelled else { return }
+        let question = OpenLibrary.question(for: trimmed, catalogueFound: !found.isEmpty)
+        // Back from a book's page, the answer is already known.
+        var known: [OpenLibraryBook]?
+        if let question { known = await openLibrary.known(question) }
+        guard !Task.isCancelled else { return }
+        // Set together, so an empty catalogue answer never shows as nothing found
+        // before Open Library has been asked.
         results = found
         resultsQuery = trimmed
-        guard OpenLibrary.asksAbout(trimmed) else {
+        guard let question else {
             online = .notAsked
             return
         }
-        // Back from a book's page, the answer is already known.
-        if let known = await openLibrary.known(trimmed) {
+        if let known {
             online = .found(OpenLibraryBook.unseen(known, besides: found))
             return
         }
         online = .searching
         do {
-            guard let books = try await openLibrary.search(for: trimmed), !Task.isCancelled else { return }
+            guard let books = try await openLibrary.search(for: question), !Task.isCancelled else { return }
             online = .found(OpenLibraryBook.unseen(books, besides: found))
         } catch {
             if !Task.isCancelled { online = .failed }

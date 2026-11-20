@@ -24,13 +24,15 @@ actor OpenLibrary {
     /// The app's client, on a session that keeps no cookies, cache or credentials.
     static let live: OpenLibrary = {
         #if DEBUG
-        // Journeys never touch the network: a search with "halo" in it finds Halo,
-        // one with "offline" fails as with no network, and any other finds nothing.
+        // Journeys never touch the network: a search with "halo" or Halo's ISBN in it
+        // finds Halo, one with "offline" fails as with no network, and any other
+        // finds nothing.
         if UserDefaults.standard.bool(forKey: "openLibraryStub") {
             return OpenLibrary { request in
-                let query = request.url?.query()?.lowercased() ?? ""
+                let query = request.url?.query(percentEncoded: false)?.lowercased() ?? ""
                 if query.contains("offline") { throw URLError(.notConnectedToInternet) }
-                return Data((query.contains("halo") ? stubAnswer : #"{"docs": []}"#).utf8)
+                let halo = query.contains("halo") || query.contains("isbn:9780345451323")
+                return Data((halo ? stubAnswer : #"{"docs": []}"#).utf8)
             }
         }
         #endif
@@ -42,11 +44,15 @@ actor OpenLibrary {
         }
     }()
 
-    /// Whether this is worth asking Open Library about: a few characters, not an
-    /// ISBN, which is a barcode's job.
-    static func asksAbout(_ text: String) -> Bool {
+    /// What Open Library is asked about a search, or nil when it isn't asked. An
+    /// ISBN is the catalogue's to answer first, so Open Library hears of one only
+    /// when the catalogue doesn't have it. Any other text needs a few characters.
+    static func question(for text: String, catalogueFound: Bool) -> String? {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.count >= 3 && CatalogueQuery.isbn13(trimmed) == nil
+        if let isbn = CatalogueQuery.isbn13(trimmed) {
+            return catalogueFound ? nil : "isbn:\(isbn)"
+        }
+        return trimmed.count >= 3 ? trimmed : nil
     }
 
     static func searchRequest(for text: String) -> URLRequest? {

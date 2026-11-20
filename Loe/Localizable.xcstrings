@@ -811,6 +811,16 @@
         }
       }
     },
+    "It isn't in the catalogue or on Open Library. Try the title, or add the book yourself.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seda pole kataloogis ega Open Librarys. Proovi pealkirja järgi või lisa raamat ise."
+          }
+        }
+      }
+    },
     "It may be from a newer version of Loe.": {
       "localizations": {
         "et": {
@@ -1761,16 +1771,6 @@
         }
       }
     },
-    "The catalogue has the books published in Estonia. Try the title, or add the book yourself.": {
-      "localizations": {
-        "et": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kataloogis on Eestis ilmunud raamatud. Proovi pealkirja järgi või lisa raamat ise."
-          }
-        }
-      }
-    },
     "The catalogue isn't here yet": {
       "localizations": {
         "et": {
@@ -2041,12 +2041,12 @@
         }
       }
     },
-    "When you stop typing, Loe asks Open Library about what you typed. Open Library, run by the Internet Archive, sees what you searched for.": {
+    "When you stop typing, Loe asks Open Library about what you typed. It asks about an ISBN, typed or scanned, only when the catalogue doesn't have the book. Open Library, run by the Internet Archive, sees what you searched for.": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kui lõpetad trükkimise, küsib Loe Open Library käest, mida sa kirjutasid. Open Library, mida peab Internet Archive, näeb, mida otsisid."
+            "value": "Kui lõpetad trükkimise, küsib Loe Open Library käest, mida sa kirjutasid. Trükitud või skannitud ISBN-i kohta küsib Loe ainult siis, kui seda raamatut kataloogis pole. Open Library, mida peab Internet Archive, näeb, mida otsisid."
           }
         }
       }
