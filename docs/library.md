@@ -21,6 +21,11 @@ CloudKit sets the rules for the model:
 - The shelf is stored as its raw name in `shelfName`, so queries can filter on
   it. Read `shelf`.
 
+When the store can't be opened, Loe shows
+[a screen saying so](../Loe/App/LibraryUnavailableView.swift) instead of
+crashing on every launch. It offers trying again and writing to the developer.
+Nothing is ever deleted or replaced to get past the failure.
+
 The simulator, with no iCloud account, reports `CKAccountStatusNoAccount` and
 keeps working locally. A device build
 needs the container and push notifications registered for the team, which
@@ -294,3 +299,8 @@ in-memory library, which the journeys use so they start from empty shelves and
 leave nothing behind. They pass `-tasteQuizSeen YES` so the quiz stays away,
 and `TasteQuizJourneyTests` passes `NO` to see it. Its cover journey picks the newest photo in the simulator's
 Photos, so add a cover image first with `xcrun simctl addmedia <udid> cover.jpg`.
+
+`LibraryStoreTests` opens a store that can't be opened, and
+`LibraryUnavailableJourneyTests` launches with `-libraryCannotOpen YES`, which
+makes opening the library fail in a debug build, to see the screen a reader
+gets.
