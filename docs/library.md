@@ -107,7 +107,7 @@ Its page shows what the reader entered, with Edit to change it. Editions, the
 ESTER link and library availability need a catalogue record and are left out,
 and the bookshops are searched by title and author. Translations and books by
 the same author still come from the catalogue when it has them. Removing the
-book from the shelves deletes it, so its page closes.
+book from the shelves asks first, then deletes it, so its page closes.
 
 `sourceName`, `year` and `language` are new fields on `ShelvedBook`, so deploy
 the CloudKit schema to production after the first debug run, as for `Taste`.
@@ -279,6 +279,9 @@ still opens ESTER. `AvailabilityTests` reads two holdings pages saved in
   it finished and turns to the last page.
 - Ratings are one to five stars, or none. The page stays between zero and the
   page count.
+- Removing a book asks first when it keeps something of the reader's: a
+  rating, a page, a cover photo, when it was read, or a book entered by hand.
+  A book that is only on a shelf has nothing to lose, so it is removed at once.
 
 Two devices that shelve the same book while offline can each make a record for
 it. Nothing merges those yet.
