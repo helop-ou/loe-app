@@ -1,11 +1,14 @@
 """Builds Loe's offline catalogue from the Estonian National Bibliography.
 
-    python3 -I tools/catalogue/build.py OUT.sqlite ERB_eestikeelne_raamat.zip ERB_muukeelne_raamat.zip
+    python3 -I tools/catalogue/build.py [--allow-small] OUT.sqlite ERB_eestikeelne_raamat.zip ERB_muukeelne_raamat.zip
 
 Inputs are the National Library's MARC21XML exports, as a ZIP or plain XML.
 docs/catalogue.md says where they come from and how each field is read.
+A build that kept nothing, or under 90% of the editions in manifest.json, fails
+and leaves no file. --allow-small turns the 90% check off for a sample.
 """
 import datetime
+import json
 import os
 import re
 import sqlite3
@@ -17,8 +20,14 @@ from dataclasses import dataclass, field
 
 SCHEMA_VERSION = 1
 SCHEMA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "schema.sql")
+MANIFEST = os.path.join(os.path.dirname(os.path.abspath(__file__)), "manifest.json")
+MINIMUM_SHARE = 0.9
 MARC = "{http://www.loc.gov/MARC21/slim}"
 SUBJECT, GENRE = 1, 2
+
+
+class BuildError(Exception):
+    """A build that must not be published."""
 
 
 @dataclass
@@ -69,28 +78,34 @@ def read(path):
     """Yields every MARC record in a ZIP or XML file, streaming."""
     if path.endswith(".zip"):
         archive = zipfile.ZipFile(path)
-        source = archive.open(next(n for n in archive.namelist() if n.endswith(".xml")))
+        name = next((n for n in archive.namelist() if n.endswith(".xml")), None)
+        if name is None:
+            raise BuildError(f"{os.path.basename(path)} holds no XML file")
+        source = archive.open(name)
     else:
         source = open(path, "rb")
     with source:
         root = None
-        for event, element in ET.iterparse(source, events=("start", "end")):
-            if root is None:
-                root = element
-            if event != "end" or element.tag != MARC + "record":
-                continue
-            leader, control, data = "", {}, []
-            for child in element:
-                kind = child.tag.rsplit("}", 1)[-1]
-                if kind == "leader":
-                    leader = child.text or ""
-                elif kind == "controlfield":
-                    control[child.get("tag")] = child.text or ""
-                elif kind == "datafield":
-                    subs = [(s.get("code"), s.text or "") for s in child]
-                    data.append((child.get("tag"), child.get("ind1") or " ", child.get("ind2") or " ", subs))
-            yield Record(leader, control, data)
-            root.clear()
+        try:
+            for event, element in ET.iterparse(source, events=("start", "end")):
+                if root is None:
+                    root = element
+                if event != "end" or element.tag != MARC + "record":
+                    continue
+                leader, control, data = "", {}, []
+                for child in element:
+                    kind = child.tag.rsplit("}", 1)[-1]
+                    if kind == "leader":
+                        leader = child.text or ""
+                    elif kind == "controlfield":
+                        control[child.get("tag")] = child.text or ""
+                    elif kind == "datafield":
+                        subs = [(s.get("code"), s.text or "") for s in child]
+                        data.append((child.get("tag"), child.get("ind1") or " ", child.get("ind2") or " ", subs))
+                yield Record(leader, control, data)
+                root.clear()
+        except ET.ParseError as error:
+            raise BuildError(f"{os.path.basename(path)} is not readable XML: {error}") from error
 
 
 # Cleaning
@@ -301,10 +316,47 @@ EDITION_COLUMNS = [
 ]
 
 
-def build(out, inputs, latest_year=None, log=print):
-    latest_year = latest_year or datetime.date.today().year + 1
+def check_integrity(db):
+    """Fails unless SQLite says the file is sound."""
+    try:
+        answer = [row[0] for row in db.execute("PRAGMA integrity_check")]
+    except sqlite3.DatabaseError as error:
+        raise BuildError(f"the catalogue file is damaged: {error}") from error
+    if answer != ["ok"]:
+        raise BuildError("the catalogue file failed its integrity check: " + "; ".join(answer[:5]))
+
+
+def check_size(kept, allow_small):
+    """Fails a build that kept nothing, or far fewer editions than the published one."""
+    if not kept:
+        raise BuildError("kept no records: the input is empty or is not MARC21 XML")
+    if allow_small:
+        return
+    with open(MANIFEST, encoding="utf-8") as manifest:
+        published = json.load(manifest)["editions"]
+    if kept < published * MINIMUM_SHARE:
+        raise BuildError(
+            f"kept {kept} records, under {MINIMUM_SHARE:.0%} of the {published} last published "
+            "(--allow-small skips this check for a sample)"
+        )
+
+
+def build(out, inputs, latest_year=None, log=print, allow_small=False):
+    """Writes the catalogue to out and raises BuildError, leaving no file, if it is not fit to publish."""
     if os.path.exists(out):
         os.remove(out)
+    try:
+        kept, skipped = write(out, inputs, latest_year, log)
+        check_size(kept, allow_small)
+    except BaseException:
+        if os.path.exists(out):
+            os.remove(out)
+        raise
+    return kept, skipped
+
+
+def write(out, inputs, latest_year, log):
+    latest_year = latest_year or datetime.date.today().year + 1
     db = sqlite3.connect(out)
     with open(SCHEMA, encoding="utf-8") as schema:
         db.executescript(schema.read())
@@ -346,6 +398,7 @@ def build(out, inputs, latest_year=None, log=print):
     db.executemany("INSERT INTO meta VALUES (?, ?)", meta.items())
     db.commit()
     db.execute("VACUUM")
+    check_integrity(db)
     db.close()
     log(f"kept {kept}")
     for reason, count in sorted(skipped.items()):
@@ -354,6 +407,10 @@ def build(out, inputs, latest_year=None, log=print):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
+    arguments = [a for a in sys.argv[1:] if a != "--allow-small"]
+    if len(arguments) < 2:
         sys.exit(__doc__)
-    build(sys.argv[1], sys.argv[2:])
+    try:
+        build(arguments[0], arguments[1:], allow_small="--allow-small" in sys.argv)
+    except BuildError as error:
+        sys.exit(f"error: {error}")
