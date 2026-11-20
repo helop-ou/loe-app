@@ -9,6 +9,14 @@ nonisolated enum BookLinks {
         return URL(string: "https://www.ester.ee/record=\(erbID.dropLast())")
     }
 
+    /// ESTER's keyword search across every library, for a book it has no record of
+    /// that a library may still have.
+    static func esterSearch(_ query: String) -> URL? {
+        var components = URLComponents(string: "https://www.ester.ee/search*est/X")
+        components?.queryItems = [URLQueryItem(name: "SEARCH", value: query)]
+        return components?.url
+    }
+
     static func rahvaRaamat(_ query: String) -> URL? {
         search("https://www.rahvaraamat.ee/otsing", query)
     }
