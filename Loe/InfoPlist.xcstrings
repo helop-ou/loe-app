@@ -8,13 +8,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Loe reads the barcode on the back of a book to find it in the catalogue."
+            "value": "Loe reads the barcode on the back of a book to find it, and takes a photo of its cover when you ask."
           }
         },
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Loe loeb raamatu tagakaanelt triipkoodi, et see kataloogist üles leida."
+            "value": "Loe loeb raamatu tagakaanelt triipkoodi, et raamat üles leida, ja pildistab kaane, kui seda soovid."
           }
         }
       }
