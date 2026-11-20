@@ -304,17 +304,17 @@ makes them one when the app opens and after each sync:
   start and the latest finish.
 
 A change made to the other record on a device that has not synced yet is lost
-when that record is deleted.
+when that record is deleted. `ShelvedBookMergingTests` covers these rules, and
+`DuplicateBooksJourneyTests` launches with `-duplicateBooks YES`, which puts
+two records of one book in an empty in-memory library, to see them open as
+one.
 
 ## Testing
 
 `ShelvedBookTests`, `ShelvedEnteredBookTests`, `ShelvedOpenLibraryBookTests`
 and `TasteTests` cover the rules on an in-memory store, `CloudSyncTests` the
 iCloud status, and
-`AddBookJourneyTests` adds, edits and removes a book by hand in the app.
-`ShelvedBookMergingTests` covers merging, and `DuplicateBooksJourneyTests`
-launches with `-duplicateBooks YES`, which puts two records of one book in an
-empty in-memory library, to see them open as one. In
+`AddBookJourneyTests` adds, edits and removes a book by hand in the app. In
 debug builds the `-inMemoryLibrary YES` launch argument opens an empty
 in-memory library, which the journeys use so they start from empty shelves and
 leave nothing behind. They pass `-tasteQuizSeen YES` so the quiz stays away,
