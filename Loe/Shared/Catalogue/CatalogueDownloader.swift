@@ -16,6 +16,8 @@ nonisolated struct CatalogueDownloader: Sendable {
     let manifestURL: URL
     let session: URLSession
 
+    private static let liveSession = PrivateSession.make(timeout: 60)
+
     static var live: CatalogueDownloader {
         var url = manifestURL
         #if DEBUG
@@ -24,7 +26,7 @@ nonisolated struct CatalogueDownloader: Sendable {
             url = local
         }
         #endif
-        return CatalogueDownloader(manifestURL: url, session: .shared)
+        return CatalogueDownloader(manifestURL: url, session: liveSession)
     }
 
     func manifest() async throws -> CatalogueManifest {
