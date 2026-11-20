@@ -87,6 +87,17 @@ class CleaningTests(unittest.TestCase):
         self.assertEqual(build.isbn13("9789949445707(vale)"), "9789949445707")
         self.assertIsNone(build.isbn13("9789949445708"))
 
+    def test_an_isbn_written_with_spaces_is_read(self):
+        self.assertEqual(build.isbn13("978 9949 633 28 9"), "9789949633289")
+        self.assertEqual(build.isbn13("978-9949-633 28 9 (köites)"), "9789949633289")
+        self.assertEqual(build.isbn13("0 306 40615 2"), "9780306406157")
+
+    def test_text_after_an_isbn_is_never_joined_into_it(self):
+        self.assertEqual(build.isbn13("9789949633289 5 (köites)"), "9789949633289")
+        self.assertEqual(build.isbn13("9789949633289 hind 12 eurot"), "9789949633289")
+        self.assertIsNone(build.isbn13("978 9949 633 28 hind 9"))
+        self.assertIsNone(build.isbn13("978 9949 633 28 9 5.50"))
+
     def test_an_x_anywhere_but_last_in_an_isbn_10_is_not_an_isbn(self):
         self.assertIsNone(build.isbn13("0X00000009"))
         self.assertIsNone(build.isbn13("X306406152"))
@@ -106,6 +117,18 @@ class CleaningTests(unittest.TestCase):
             build.build(out, [source], log=lambda _: None, allow_small=True)
             db = sqlite3.connect(out)
             self.assertEqual(db.execute("SELECT isbn13 FROM isbn").fetchall(), [("9789916099896",)])
+            db.close()
+
+    def test_a_spaced_isbn_is_kept_in_the_catalogue(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = os.path.join(directory, "erb.xml")
+            spaced = record("b40000002", field("020", ("a", "978 9949 633 28 9"), ("q", "(köites)")), field("245", ("a", "Raamat")))
+            with open(source, "w", encoding="utf-8") as f:
+                f.write(collection(spaced))
+            out = os.path.join(directory, "catalogue.sqlite")
+            build.build(out, [source], log=lambda _: None, allow_small=True)
+            db = sqlite3.connect(out)
+            self.assertEqual(db.execute("SELECT isbn13, qualifier FROM isbn").fetchall(), [("9789949633289", "köites")])
             db.close()
 
     def test_page_counts(self):
@@ -196,6 +219,22 @@ class BuildTests(unittest.TestCase):
     def test_records_its_schema_version(self):
         version = self.db.execute("SELECT value FROM meta WHERE key = 'schema_version'").fetchone()[0]
         self.assertEqual(version, str(build.SCHEMA_VERSION))
+
+    def test_the_summary_counts_isbn_values_that_held_no_valid_isbn(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = os.path.join(directory, "erb.xml")
+            book = record(
+                "b40000003",
+                field("020", ("a", "9789916099896")),
+                field("020", ("a", "0X00000009"), ("a", "5440013611")),
+                field("020", ("a", "9789916099896")),
+                field("245", ("a", "Raamat")),
+            )
+            with open(source, "w", encoding="utf-8") as f:
+                f.write(collection(book, TODE_JA_OIGUS))
+            lines = []
+            build.build(os.path.join(directory, "catalogue.sqlite"), [source], log=lines.append, allow_small=True)
+            self.assertIn("dropped 2 ISBN values that were not valid", lines)
 
 
 class RefusalTests(unittest.TestCase):

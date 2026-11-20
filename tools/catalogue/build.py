@@ -67,6 +67,7 @@ class Edition:
     fiction: int = 0
     electronic: int = 0
     isbns: list = field(default_factory=list)  # (isbn13, qualifier)
+    isbns_dropped: int = 0  # 020 $a values that held no valid ISBN
     headings: list = field(default_factory=list)  # (kind, name, ems_id)
 
 
@@ -147,9 +148,25 @@ def person(name):
     return name
 
 
+SPACED_ISBN = re.compile(r"[0-9Xx\- ]+")
+
+
 def isbn13(raw):
-    """A valid ISBN-13 for an ISBN-10 or ISBN-13 in any punctuation, or None."""
-    digits = re.sub(r"[^0-9Xx]", "", raw.strip().split(" ")[0].split("(")[0]).upper()
+    """A valid ISBN-13 for an ISBN-10 or ISBN-13 in any punctuation, or None.
+
+    The first token is read first. Only when it is no ISBN is the whole text before
+    a "(" read, for a number written with spaces. Trailing text is never joined in.
+    """
+    text = raw.strip()
+    number = checked_isbn13(text.split(" ")[0].split("(")[0])
+    before = text.split("(")[0]
+    if number is None and SPACED_ISBN.fullmatch(before):
+        number = checked_isbn13(before)
+    return number
+
+
+def checked_isbn13(text):
+    digits = re.sub(r"[^0-9Xx]", "", text).upper()
     if len(digits) == 10:
         if not digits[:9].isdigit():
             return None
@@ -284,7 +301,9 @@ def convert(record, latest_year):
         qualifier = clean(" ".join(subfields(d, "q")).strip("()"))
         for raw in subfields(d, "a"):
             number = isbn13(raw)
-            if number and number not in seen:
+            if not number:
+                edition.isbns_dropped += 1
+            elif number not in seen:
                 seen.add(number)
                 inline = re.search(r"\(([^)]*)\)", raw)
                 edition.isbns.append((number, qualifier or (clean(inline.group(1)) if inline else None)))
@@ -364,7 +383,7 @@ def write(out, inputs, latest_year, log):
         db.executescript(schema.read())
     insert = f"INSERT OR IGNORE INTO edition ({','.join(EDITION_COLUMNS)}) VALUES ({','.join('?' * len(EDITION_COLUMNS))})"
     headings = {}
-    kept, skipped = 0, {}
+    kept, skipped, isbns_dropped = 0, {}, 0
     for path in inputs:
         for record in read(path):
             reason = skip_reason(record)
@@ -378,6 +397,7 @@ def write(out, inputs, latest_year, log):
                 continue
             edition_id = cursor.lastrowid
             kept += 1
+            isbns_dropped += edition.isbns_dropped
             db.executemany("INSERT INTO isbn VALUES (?, ?, ?)", [(n, edition_id, q) for n, q in edition.isbns])
             for kind, name, ems in edition.headings:
                 key = (kind, name)
@@ -405,6 +425,7 @@ def write(out, inputs, latest_year, log):
     log(f"kept {kept}")
     for reason, count in sorted(skipped.items()):
         log(f"skipped {count} ({reason})")
+    log(f"dropped {isbns_dropped} ISBN values that were not valid")
     return kept, skipped
 
 
