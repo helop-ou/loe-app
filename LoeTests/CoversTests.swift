@@ -52,7 +52,7 @@ struct CoversTests {
         #expect(await covers(200).cover(.id(1)) == loaded)
         #expect(await asked.count == 1)
         let request = try #require(await asked.requests.first)
-        #expect(request.value(forHTTPHeaderField: "User-Agent")?.contains("support@helop.dev") == true)
+        #expect(request.value(forHTTPHeaderField: "User-Agent")?.contains("kontakt@helop.ee") == true)
         #expect(request.value(forHTTPHeaderField: "Accept-Language") == "en")
     }
 

@@ -238,7 +238,7 @@ results as "From Open Library".
 - **What it sends.** `https://openlibrary.org/search.json` with the search
   text, `lang=en`, a limit of 20 and the fields Loe reads, over a session with
   no cookies, cache or credentials. The `User-Agent` names the app, the
-  repository and `support@helop.dev`: Open Library asks apps to identify
+  repository and `kontakt@helop.ee`: Open Library asks apps to identify
   themselves, and allows three requests a second for those that do.
   `Accept-Language` is set to `en`, so the reader's own languages are not sent.
 - **Translations.** Open Library files a translated book under its original
