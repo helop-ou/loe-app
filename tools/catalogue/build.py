@@ -282,7 +282,8 @@ def convert(record, latest_year):
     edition.publisher = known(record.first("264", "b", "1") or record.first("260", "b"))
     edition.place = known(record.first("264", "a", "1") or record.first("260", "a"))
     fixed = record.control.get("008", "")
-    edition.language = fixed[35:38].strip() or None if len(fixed) >= 38 else None
+    code = fixed[35:38].strip() if len(fixed) >= 38 else ""
+    edition.language = None if code in ("", "|||") else code
     edition.fiction = int(len(fixed) > 33 and fixed[33] in FICTION_FORMS)
     edition.original_title = original_title(record)
     source_language = record.first("041", "h")
