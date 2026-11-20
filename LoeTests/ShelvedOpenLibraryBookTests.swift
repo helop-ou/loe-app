@@ -34,6 +34,22 @@ struct ShelvedOpenLibraryBookTests {
         #expect(book.work.id == work.id)
     }
 
+    @Test func aBookFromOpenLibraryHasItsCover() throws {
+        let book = try ShelvedBook.shelve(halo.work, edition: halo.work.editions[0], on: .read, in: context)
+        #expect(book.coverArt == .id(210_551))
+    }
+
+    @Test func aCatalogueBookHasNoCover() throws {
+        let kross = CatalogueEdition(id: 1, erbID: "b10544215", title: "Keisri hull", authors: "Jaan Kross")
+        let book = try ShelvedBook.shelve(CatalogueWork(id: CatalogueWork.key(for: kross), editions: [kross]), edition: kross, on: .read, in: context)
+        #expect(book.coverArt == nil)
+    }
+
+    @Test func aBookEnteredByHandHasNoCover() {
+        let book = ShelvedBook.add(EnteredBook(title: "Recipes", authors: "Mari Maasikas"), on: .read, in: context)
+        #expect(book.coverArt == nil)
+    }
+
     @Test func itIsTheSameBookAsTheCataloguesWithTheSameTitleAndAuthors() throws {
         let fromAbroad = OpenLibraryBook(record: .init(workKey: "/works/OL1W"), title: "The czar's madman", authors: ["Jaan Kross"])
         let kross = CatalogueEdition(id: 1, erbID: "b10544215", title: "The czar's madman", authors: "Jaan Kross")

@@ -4,25 +4,27 @@ import Testing
 
 /// Which cover a book's page asks Open Library for.
 struct BookCoverArtTests {
-    private func catalogue() throws -> Catalogue {
-        try Catalogue(url: CatalogueFixture.make(headings: """
-            INSERT INTO isbn SELECT '9789985000001', id, 'pdf' FROM edition WHERE erb_id = 'b1';
-            INSERT INTO isbn SELECT '9789985000002', id, NULL FROM edition WHERE erb_id = 'b2';
-            """))
+    @Test func aBookFromOpenLibraryAsksByCoverID() {
+        let halo = OpenLibraryBook(record: .init(workKey: "/works/OL1W", isbn: "9780345451323", coverID: 7), title: "Halo", authors: [])
+        #expect(BookView.coverArt(for: halo.work) == .id(7))
     }
 
-    @MainActor
-    @Test func aBooksPageAsksForTheRightCover() async throws {
-        let catalogue = try catalogue()
-        let halo = OpenLibraryBook(record: .init(workKey: "/works/OL1W", isbn: "9780345451323", coverID: 7), title: "Halo", authors: [])
-        #expect(await BookView.coverArt(for: halo.work, in: catalogue) == .id(7))
+    @Test func aBookFromOpenLibraryWithNoCoverIDAsksByISBN() {
+        let halo = OpenLibraryBook(record: .init(workKey: "/works/OL1W", isbn: "9780345451323"), title: "Halo", authors: [])
+        #expect(BookView.coverArt(for: halo.work) == .isbn("9780345451323"))
+    }
+
+    @Test func aCatalogueBookAsksForNothing() {
         let tode = CatalogueWork(id: "tode", editions: [
             CatalogueEdition(id: 1, erbID: "b1", title: "Tõde ja õigus"),
             CatalogueEdition(id: 2, erbID: "b2", title: "Tõde ja õigus"),
         ])
-        #expect(await BookView.coverArt(for: tode, in: catalogue) == .isbn("9789985000002"))
+        #expect(BookView.coverArt(for: tode) == nil)
+    }
+
+    @Test func aBookEnteredByHandAsksForNothing() {
         let byHand = CatalogueWork(id: "hand:1", editions: [CatalogueEdition(id: 0, erbID: "", title: "Recipes")])
-        #expect(await BookView.coverArt(for: byHand, in: catalogue) == nil)
+        #expect(BookView.coverArt(for: byHand) == nil)
     }
 
     @Test func searchResultsAskOnlyByCoverID() {

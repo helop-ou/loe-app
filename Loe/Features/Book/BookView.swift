@@ -12,7 +12,6 @@ struct BookView: View {
     @State private var details: Catalogue.Details?
     @State private var editing = false
     @State private var enteredByHand = false
-    @State private var coverArt: CoverArt?
     @State private var openLibraryCover: Covers.Loaded?
     @Query private var shelves: [ShelvedBook]
 
@@ -42,21 +41,16 @@ struct BookView: View {
     /// Library has no editions, ESTER record or library copies to show.
     private var fromCatalogue: Bool { shown.editions.contains { !$0.erbID.isEmpty } }
 
-    /// Open Library's cover for the book: a book from there by its own cover, a
-    /// catalogue book by its cover ISBN (`Catalogue.coverISBN`), as the shelves ask.
-    static func coverArt(for work: CatalogueWork, shelved erbID: String? = nil, in catalogue: Catalogue) async -> CoverArt? {
-        if let record = work.editions[0].openLibrary { return CoverArt(record) }
-        guard work.editions.contains(where: { !$0.erbID.isEmpty }),
-              let isbn = try? await catalogue.coverISBN(for: work, preferring: erbID)
-        else { return nil }
-        return .isbn(isbn)
+    /// Open Library's cover, for a book found there. A catalogue book has none.
+    static func coverArt(for work: CatalogueWork) -> CoverArt? {
+        work.editions[0].openLibrary.flatMap(CoverArt.init)
     }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 32) {
                 BookHeader(
-                    work: shown, edition: newest, book: book, art: coverArt,
+                    work: shown, edition: newest, book: book, art: Self.coverArt(for: base),
                     credit: book?.coverPhoto == nil && openLibraryCover != nil
                 ) { openLibraryCover = $0 }
                 // A book entered by hand that was just removed is on its way off screen.
@@ -129,12 +123,8 @@ struct BookView: View {
             if removed && enteredByHand { dismiss() }
         }
         .task(id: base) {
-            guard case .ready(let catalogue) = catalogue.state else {
-                coverArt = base.editions[0].openLibrary.flatMap(CoverArt.init)
-                return
-            }
+            guard case .ready(let catalogue) = catalogue.state else { return }
             details = try? await catalogue.details(for: base)
-            coverArt = await Self.coverArt(for: shown, shelved: book?.erbID, in: catalogue)
         }
     }
 }
