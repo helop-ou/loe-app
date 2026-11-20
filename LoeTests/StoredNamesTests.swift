@@ -1,0 +1,162 @@
+import Foundation
+import SwiftData
+import Testing
+@testable import Loe
+
+struct StoredNamesTests {
+    private static let monday = Date(timeIntervalSince1970: 1_800_000_000)
+    private static let rule: Comment = "Records in iCloud use these names. Never rename or remove a stored property, only add one. See docs/library.md."
+
+    private func attributes(of entity: String, in schema: Schema) throws -> [String] {
+        let entity = try #require(schema.entities.first { $0.name == entity })
+        return entity.attributes.map { "\($0.name): \(String(describing: $0.valueType))" }.sorted()
+    }
+
+    @Test func theSyncedModelsAreThreeEntities() {
+        let names = Schema(LibraryStore.models).entities.map(\.name).sorted()
+        #expect(names == ["ChosenPlace", "ShelvedBook", "Taste"])
+    }
+
+    @Test func aShelvedBookKeepsTheseAttributes() throws {
+        #expect(try attributes(of: "ShelvedBook", in: Schema(LibraryStore.models)) == [
+            "addedAt: Date",
+            "authors: Optional<String>",
+            "coverHue: Optional<Double>",
+            "coverID: Optional<Int>",
+            "coverPhoto: Optional<Data>",
+            "coverSaturation: Optional<Double>",
+            "currentPage: Optional<Int>",
+            "erbID: String",
+            "finishedAt: Optional<Date>",
+            "isbn: Optional<String>",
+            "language: Optional<String>",
+            "openLibraryKey: Optional<String>",
+            "pageCount: Optional<Int>",
+            "rating: Optional<Int>",
+            "shelfName: String",
+            "sourceName: Optional<String>",
+            "startedAt: Optional<Date>",
+            "subtitle: Optional<String>",
+            "title: String",
+            "updatedAt: Date",
+            "workKey: String",
+            "year: Optional<Int>",
+        ], Self.rule)
+    }
+
+    @Test func aTasteKeepsTheseAttributes() throws {
+        #expect(try attributes(of: "Taste", in: Schema(LibraryStore.models)) == [
+            "addedAt: Date",
+            "genreName: String",
+        ], Self.rule)
+    }
+
+    @Test func aChosenPlaceKeepsTheseAttributes() throws {
+        #expect(try attributes(of: "ChosenPlace", in: Schema(LibraryStore.models)) == [
+            "addedAt: Date",
+            "placeID: String",
+            "position: Double",
+        ], Self.rule)
+    }
+
+    @Test func rawValuesStayAsShipped() {
+        #expect(Shelf.allCases.map(\.rawValue) == ["reading", "wantToRead", "read", "setAside", "didNotFinish"])
+        #expect(ShelvedBook.Source.catalogue.rawValue == "catalogue")
+        #expect(ShelvedBook.Source.hand.rawValue == "hand")
+        #expect(ShelvedBook.Source.openLibrary.rawValue == "openLibrary")
+        #expect(Genre.allCases.map(\.rawValue) == [
+            "crime", "thriller", "psychological", "romance", "drama", "historical",
+            "fantasy", "scienceFiction", "horror", "humour", "poetry", "youngAdult",
+        ])
+    }
+
+    @Test func aShelfNoVersionKnowsReadsAsWantToRead() {
+        let book = ShelvedBook(entered: EnteredBook(title: "Kevade"), shelf: .reading)
+        book.shelfName = "lent"
+        #expect(book.shelf == .wantToRead)
+    }
+
+    @Test func aSourceNoVersionKnowsOrNoneReadsAsTheCatalogue() {
+        let book = ShelvedBook(entered: EnteredBook(title: "Kevade"), shelf: .reading)
+        book.sourceName = "audiobook"
+        #expect(book.source == .catalogue)
+        book.sourceName = nil
+        #expect(book.source == .catalogue)
+    }
+
+    @Test func everyStoredPropertyReadsBackFromDisk() throws {
+        let directory = FileManager.default.temporaryDirectory.appending(path: "stored-names-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let file = directory.appending(path: "Library.store")
+        let photo = Data([0xFF, 0xD8, 0xFF, 0xE0, 0x01, 0x02, 0x03])
+        let schema = Schema(LibraryStore.models)
+
+        do {
+            let container = try ModelContainer(for: schema, configurations: ModelConfiguration(schema: schema, url: file, cloudKitDatabase: .none))
+            let context = ModelContext(container)
+            let book = ShelvedBook(entered: EnteredBook(title: "Kevade"), shelf: .reading)
+            book.workKey = "work-7"
+            book.erbID = "erb-8"
+            book.title = "Kevade"
+            book.subtitle = "Pildikesi lapsepõlvest"
+            book.authors = "Oskar Luts"
+            book.shelfName = "didNotFinish"
+            book.rating = 4
+            book.currentPage = 120
+            book.pageCount = 260
+            book.addedAt = Self.monday
+            book.startedAt = Self.monday.addingTimeInterval(86_400)
+            book.finishedAt = Self.monday.addingTimeInterval(172_800)
+            book.updatedAt = Self.monday.addingTimeInterval(259_200)
+            book.coverPhoto = photo
+            book.coverHue = 0.37
+            book.coverSaturation = 0.62
+            book.sourceName = "openLibrary"
+            book.year = 1912
+            book.language = "est"
+            book.openLibraryKey = "/works/OL18626W"
+            book.isbn = "9789985000000"
+            book.coverID = 4242
+            context.insert(book)
+            context.insert(Taste(genre: .poetry, now: Self.monday.addingTimeInterval(1)))
+            context.insert(ChosenPlace(place: .apollo, position: 2.5, now: Self.monday.addingTimeInterval(2)))
+            try context.save()
+        }
+
+        let container = try ModelContainer(for: schema, configurations: ModelConfiguration(schema: schema, url: file, cloudKitDatabase: .none))
+        let context = ModelContext(container)
+        let book = try #require(try context.fetch(FetchDescriptor<ShelvedBook>()).first)
+        #expect(book.workKey == "work-7")
+        #expect(book.erbID == "erb-8")
+        #expect(book.title == "Kevade")
+        #expect(book.subtitle == "Pildikesi lapsepõlvest")
+        #expect(book.authors == "Oskar Luts")
+        #expect(book.shelfName == "didNotFinish")
+        #expect(book.rating == 4)
+        #expect(book.currentPage == 120)
+        #expect(book.pageCount == 260)
+        #expect(book.addedAt == Self.monday)
+        #expect(book.startedAt == Self.monday.addingTimeInterval(86_400))
+        #expect(book.finishedAt == Self.monday.addingTimeInterval(172_800))
+        #expect(book.updatedAt == Self.monday.addingTimeInterval(259_200))
+        #expect(book.coverPhoto == photo)
+        #expect(book.coverHue == 0.37)
+        #expect(book.coverSaturation == 0.62)
+        #expect(book.sourceName == "openLibrary")
+        #expect(book.year == 1912)
+        #expect(book.language == "est")
+        #expect(book.openLibraryKey == "/works/OL18626W")
+        #expect(book.isbn == "9789985000000")
+        #expect(book.coverID == 4242)
+
+        let taste = try #require(try context.fetch(FetchDescriptor<Taste>()).first)
+        #expect(taste.genreName == "poetry")
+        #expect(taste.addedAt == Self.monday.addingTimeInterval(1))
+
+        let chosen = try #require(try context.fetch(FetchDescriptor<ChosenPlace>()).first)
+        #expect(chosen.placeID == "shop.apollo")
+        #expect(chosen.position == 2.5)
+        #expect(chosen.addedAt == Self.monday.addingTimeInterval(2))
+    }
+}

@@ -18,6 +18,33 @@ struct PlaceTests {
         #expect(Place.withID("ester.nowhere") == nil)
     }
 
+    /// A place's id is kept in the reader's iCloud, so every one stays as it is.
+    @Test func everyPlaceIDStaysAsShipped() {
+        #expect(Place.all.map(\.id).sorted() == [
+            "ester.apk", "ester.bdc", "ester.ekar",
+            "ester.ekmr", "ester.eks", "ester.emtar",
+            "ester.emür", "ester.epr", "ester.erm",
+            "ester.etl", "ester.fuar", "ester.kmar",
+            "ester.kv", "ester.lus", "ester.pallas",
+            "ester.ra", "ester.rr", "ester.saam",
+            "ester.si", "ester.ska", "ester.t2mk",
+            "ester.taltech", "ester.tartulr.annelinna", "ester.tartulr.ilmatsalu",
+            "ester.tartulr.karlova", "ester.tartulr.peamaja", "ester.tartulr.tammelinna",
+            "ester.tba", "ester.tkm", "ester.tla",
+            "ester.tlm", "ester.tlnrk.buss", "ester.tlnrk.kadrioru",
+            "ester.tlnrk.kalamaja", "ester.tlnrk.kannukuke", "ester.tlnrk.laagna",
+            "ester.tlnrk.liivalaia", "ester.tlnrk.manni", "ester.tlnrk.manniku",
+            "ester.tlnrk.nomme", "ester.tlnrk.nurmenuku", "ester.tlnrk.paaskula",
+            "ester.tlnrk.paepealse", "ester.tlnrk.pelguranna", "ester.tlnrk.pirita",
+            "ester.tlnrk.rocca-al-mare", "ester.tlnrk.saase", "ester.tlnrk.sole",
+            "ester.tlnrk.sudalinna", "ester.tlnrk.tondi", "ester.tlnrk.tondiraba",
+            "ester.tlnrk.torupilli", "ester.tlnrk.ulemiste", "ester.tlnrk.vaike-oismae",
+            "ester.tlüar", "ester.tthk", "ester.ttkr",
+            "ester.tür", "ester.zoo", "shop.apollo",
+            "shop.rahvaraamat",
+        ])
+    }
+
     // Holdings rows as ESTER showed them for „Kevade“ in November 2026.
     @Test(arguments: [
         ("TlnRK Kännukuke lastekirjandus", "ester.tlnrk.kannukuke"),
