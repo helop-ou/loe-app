@@ -91,10 +91,7 @@ actor Catalogue {
         if editions.isEmpty, let corrected = try corrected(work) {
             return try details(for: corrected, similarity: limits)
         }
-        let translated = try matching(CatalogueQuery.phrase(work.title, in: "original_title"), limit: 500).filter {
-            Self.sameTitle($0.originalTitle, work.title) && Self.sameAuthor($0.leadAuthor, author)
-                && CatalogueWork.key(for: $0) != work.id
-        }
+        let translated = try translations(of: work, by: author)
 
         var original: CatalogueWork?
         if let originalTitle = work.editions.lazy.compactMap(\.originalTitle).first {
@@ -118,6 +115,32 @@ actor Catalogue {
             sameAuthor: Array(CatalogueWork.grouped(others).prefix(12)),
             similar: try similar(to: CatalogueWork(id: work.id, editions: allEditions), limits: limits)
         )
+    }
+
+    /// Editions that name this book as their original, by the same lead author, as
+    /// `SameBook` compares them. The bibliography writes an original title with or
+    /// without its subtitle, and a book from Open Library carries its subtitle in its
+    /// title, so either side may drop what follows its colon.
+    private func translations(of work: CatalogueWork, by author: String?) throws -> [CatalogueEdition] {
+        let short = Self.withoutSubtitle(work.title)
+        let own = SameBook.keys(title: work.title, leadAuthor: author)
+        let ownShort = short.map { SameBook.keys(title: $0, leadAuthor: author) } ?? []
+        var seen: Set<Int> = []
+        return try ([work.title] + (short.map { [$0] } ?? []))
+            .flatMap { try matching(CatalogueQuery.phrase($0, in: "original_title"), limit: 500) }
+            .filter { edition in
+                guard let original = edition.originalTitle, seen.insert(edition.id).inserted,
+                      CatalogueWork.key(for: edition) != work.id else { return false }
+                let theirs = SameBook.keys(title: original, leadAuthor: edition.leadAuthor)
+                let theirsShort = Self.withoutSubtitle(original).map { SameBook.keys(title: $0, leadAuthor: edition.leadAuthor) } ?? []
+                // Never both shortened: the books of a series share what comes before the colon.
+                return !theirs.isDisjoint(with: own.union(ownShort)) || !theirsShort.isDisjoint(with: own)
+            }
+    }
+
+    private static func withoutSubtitle(_ title: String) -> String? {
+        let parts = title.split(separator: ":", maxSplits: 1)
+        return parts.count == 2 ? String(parts[0]) : nil
     }
 
     /// Every edition of the work, newest first. A book opened from a shelf starts with
