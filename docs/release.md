@@ -144,11 +144,13 @@ address. The `User-Agent` names the app and the developer's contact, never the
 reader. Loe keeps the answers in memory only, so the collected data stays
 empty here too.
 
-Covers come from Open Library too (see [Library](library.md#covers)): a
-book's cover id or print ISBN is sent to `covers.openlibrary.org` when the
-book shows, which redirects to the Internet Archive (`archive.org`) for the
-image, so both see which books' covers were asked for. The images are kept in
-the caches folder on the phone, and nothing else.
+Covers come from Open Library too (see [Library](library.md#covers)), but
+only for a book found on Open Library: its cover id, or its ISBN when it has
+none, is sent to `covers.openlibrary.org` when the book shows, which
+redirects to the Internet Archive (`archive.org`) for the image, so both see
+which of those books' covers were asked for. Books from the catalogue and
+books entered by hand ask for none. The images are kept in the caches folder
+on the phone, and nothing else.
 
 The Privacy page, under About in Settings (`PrivacyView`), tells the reader
 all of this in plain words. Change it with this section, so the two never
