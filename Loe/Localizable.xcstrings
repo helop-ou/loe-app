@@ -1071,6 +1071,16 @@
         }
       }
     },
+    "Nothing has been deleted. Your shelves are still on this phone, and in your iCloud when it is on. Try again, or write to us if it keeps happening.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Midagi pole kustutatud. Sinu riiulid on endiselt selles telefonis ja sinu iCloudis, kui see on sisse lülitatud. Proovi uuesti või kirjuta meile, kui see kordub."
+          }
+        }
+      }
+    },
     "Nothing to suggest yet": {
       "localizations": {
         "et": {
@@ -2167,6 +2177,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sinu riiulid on selles telefonis alles. Loe proovib ise uuesti."
+          }
+        }
+      }
+    },
+    "Your shelves can't be opened": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sinu riiuleid ei saa avada"
           }
         }
       }

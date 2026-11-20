@@ -9,25 +9,25 @@ enum LibraryStore {
     /// The container in Loe.entitlements, which SwiftData picks for `.automatic`.
     static let cloudKitContainer = "iCloud.ee.helop.loe"
 
-    static func makeContainer() -> ModelContainer {
+    static func makeContainer() throws -> ModelContainer {
         #if DEBUG
         if UserDefaults.standard.bool(forKey: "initializeCloudKitSchema") {
             initializeCloudKitSchema()
         }
+        // Lets a journey see what a reader sees when the library can't be opened.
+        if UserDefaults.standard.bool(forKey: "libraryCannotOpen") {
+            throw CocoaError(.fileReadCorruptFile)
+        }
         // Journeys start from empty shelves and leave nothing behind.
         if UserDefaults.standard.bool(forKey: "inMemoryLibrary") {
-            return open(ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none))
+            return try open(ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none))
         }
         #endif
-        return open(ModelConfiguration(cloudKitDatabase: .automatic))
+        return try open(ModelConfiguration(cloudKitDatabase: .automatic))
     }
 
-    private static func open(_ configuration: ModelConfiguration) -> ModelContainer {
-        do {
-            return try ModelContainer(for: Schema(models), configurations: configuration)
-        } catch {
-            fatalError("The library could not be opened: \(error)")
-        }
+    static func open(_ configuration: ModelConfiguration) throws -> ModelContainer {
+        try ModelContainer(for: Schema(models), configurations: configuration)
     }
 
     #if DEBUG
