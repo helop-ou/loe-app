@@ -205,11 +205,13 @@ every file, whose review GitHub requests on each pull request.
   secret, and SonarCloud's app reports the quality gate on the pull request
   as "SonarCloud Code Analysis". It also runs on each push to `main`, so the
   dashboard for `main` stays current. A fork's pull request has no secrets, so
-  it skips the scan. `sonar-project.properties` says which folders are app
-  code and which are tests, and leaves views out of coverage: files named
-  `*View`, `*Sheet`, `*Picker`, `*Row`, `*Section`, `*Menu` or `*Controls`,
-  `BarcodeScanner.swift`, `TasteQuiz.swift` and `Shared/UI`. Snapshots,
-  journeys and the simulator check those. A view-only file with another name
+  it skips the scan. SonarCloud analyses the whole repository and takes no
+  list of source or test folders, so `sonar-project.properties` leaves the
+  tests out of coverage and out of the check for repeated code, keeps
+  snapshots and fixtures out altogether, and leaves views out of coverage:
+  files named `*View`, `*Sheet`, `*Picker`, `*Row`, `*Section`, `*Menu` or
+  `*Controls`, `BarcodeScanner.swift`, `TasteQuiz.swift` and `Shared/UI`.
+  Snapshots, journeys and the simulator check those. A view-only file with another name
   goes on that list. The catalogue's Python is tested but reports no
   coverage, which would need a package the build doesn't otherwise use.
   Automatic analysis in SonarCloud must stay off, or the two analyses
