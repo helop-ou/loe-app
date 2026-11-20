@@ -18,6 +18,8 @@ CloudKit sets the rules for the model:
   relationships are optional.
 - Never rename or remove a property. Synced records outlive app versions, so
   add new properties instead.
+- Every synced field is listed in `scripts/synced-models.txt`. Add a new one
+  there in the same pull request, and never rename or remove a line.
 - The shelf is stored as its raw name in `shelfName`, so queries can filter on
   it. Read `shelf`.
 
@@ -109,8 +111,6 @@ and the bookshops are searched by title and author. Translations and books by
 the same author still come from the catalogue when it has them. Removing the
 book from the shelves deletes it, so its page closes.
 
-`sourceName`, `year` and `language` are new fields on `ShelvedBook`, so deploy
-the CloudKit schema to production after the first debug run, as for `Taste`.
 Older versions of Loe read a book entered by hand as a catalogue book with no
 record, and show it without the Edit button.
 
@@ -131,10 +131,6 @@ catalogue keeps a subtitle apart, Open Library puts it in the title), folded
 and without a leading article, and the lead author's surname, so "Eric Nylund"
 and "Eric S. Nylund" match. A book shelved from the catalogue keeps its
 subtitle for this. Books entered by hand are never matched.
-
-`subtitle`, `openLibraryKey`, `isbn` and `coverID` are new fields on
-`ShelvedBook`, so deploy the CloudKit schema to production before a build with
-them reaches testers (see [Release](release.md#uploading-to-testflight)).
 
 ## Read next
 
@@ -190,10 +186,6 @@ devices adding the same genre offline cannot clash. `Taste.set` removes a
 second record of a genre and keeps genres it does not know, which a newer
 version of Loe may have added.
 
-`Taste` is a new record type for CloudKit. Run a debug build signed for the
-container once, then deploy the schema to production, or TestFlight builds
-will not sync it.
-
 ## Where to get it
 
 A book's page lists where to get it: the libraries and bookshops the reader
@@ -228,9 +220,7 @@ put each copy in its place.
 
 Each pick is one `ChosenPlace` record, synced like the shelves, with a
 position for its order. A place's ID is kept in iCloud, so never change one.
-Places this version does not know are kept but not shown. `ChosenPlace` is a
-new record type, so deploy the CloudKit schema to production after the first
-debug run, as for `Taste`.
+Places this version does not know are kept but not shown.
 
 ## Availability
 

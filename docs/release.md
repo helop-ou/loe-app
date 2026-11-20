@@ -34,6 +34,11 @@ Development the new fields, then deploy the schema from Development to
 Production in the CloudKit Console before testers sync, or sync stops for them.
 See [Library](library.md).
 
+`scripts/synced-models.txt` lists every synced field and `StoredNamesTests`
+holds the models to it, so a pull request that changes a synced model changes
+that file too. `scripts/synced-models.deployed.txt` records what Production
+has. The upload script refuses, also with `--dry-run`, while the two differ.
+
 A debug build launched with `-initializeCloudKitSchema YES` pushes every synced
 model to Development from a throwaway store, so no shelves are touched and
 nothing needs tapping. On a device signed into iCloud, wired or on the same
@@ -50,7 +55,9 @@ xcrun devicectl device process launch --device <device> --console --terminate-ex
 It prints "CloudKit schema: Development now has every synced model". Then
 choose Deploy Schema Changes in the CloudKit Console, and reinstall Loe from
 TestFlight on that device. `xcrun devicectl list devices` gives the device's
-identifier.
+identifier. The last step is to copy `scripts/synced-models.txt` over
+`scripts/synced-models.deployed.txt` in a pull request, which is the record
+that the deploy happened.
 
 ## Secrets
 
