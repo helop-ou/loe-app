@@ -1,5 +1,7 @@
 """python3 -I -m unittest discover -s tools/catalogue"""
+import hashlib
 import os
+import pathlib
 import sqlite3
 import subprocess
 import sys
@@ -273,6 +275,65 @@ class ConvertTests(unittest.TestCase):
             titles = [t for (t,) in db.execute("SELECT title FROM edition ORDER BY erb_id")]
             self.assertEqual(titles, ["Tõde ja õigus. 1. kd.", "... ja õnne elus"])
             db.close()
+
+
+class RepeatableBuildTests(unittest.TestCase):
+    def setUp(self):
+        self.directory = tempfile.TemporaryDirectory()
+        self.addCleanup(self.directory.cleanup)
+        self.sources = []
+        for name, records in (("first.xml", (TODE_JA_OIGUS,)), ("second.xml", (TRANSLATION, THESIS))):
+            path = os.path.join(self.directory.name, name)
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(collection(*records))
+            self.sources.append(path)
+
+    def build(self, name, epoch=None):
+        out = os.path.join(self.directory.name, name)
+        environment = {"SOURCE_DATE_EPOCH": epoch} if epoch else {}
+        with mock.patch.dict(os.environ, environment):
+            if not epoch:
+                os.environ.pop("SOURCE_DATE_EPOCH", None)
+            build.build(out, self.sources, latest_year=2026, log=lambda _: None, allow_small=True)
+        return out
+
+    def meta(self, out):
+        db = sqlite3.connect(out)
+        rows = dict(db.execute("SELECT key, value FROM meta").fetchall())
+        db.close()
+        return rows
+
+    def test_meta_names_each_source_and_its_hash_in_command_line_order(self):
+        meta = self.meta(self.build("catalogue.sqlite"))
+        self.assertEqual(meta["source_1"], "first.xml")
+        self.assertEqual(meta["source_2"], "second.xml")
+        self.assertEqual(meta["source_1_sha256"], hashlib.sha256(pathlib.Path(self.sources[0]).read_bytes()).hexdigest())
+        self.assertEqual(meta["source_2_sha256"], hashlib.sha256(pathlib.Path(self.sources[1]).read_bytes()).hexdigest())
+        self.assertNotEqual(meta["source_1_sha256"], meta["source_2_sha256"])
+        self.assertEqual(meta["schema_version"], str(build.SCHEMA_VERSION))
+
+    def test_source_date_epoch_sets_the_build_time(self):
+        self.assertEqual(self.meta(self.build("a.sqlite", "1700000000"))["built"], "2023-11-14T22:13:20Z")
+
+    def test_two_builds_with_one_source_date_epoch_are_byte_identical(self):
+        first = self.build("a.sqlite", "1700000000")
+        second = self.build("b.sqlite", "1700000000")
+        with open(first, "rb") as a, open(second, "rb") as b:
+            self.assertEqual(a.read(), b.read())
+
+    def test_a_different_source_date_epoch_gives_a_different_file(self):
+        first = self.build("a.sqlite", "1700000000")
+        second = self.build("b.sqlite", "1700000001")
+        with open(first, "rb") as a, open(second, "rb") as b:
+            self.assertNotEqual(a.read(), b.read())
+
+    def test_without_source_date_epoch_the_build_time_is_now(self):
+        self.assertRegex(self.meta(self.build("a.sqlite"))["built"], r"^20\d\d-\d\d-\d\dT\d\d:\d\d:\d\dZ$")
+
+    def test_a_source_date_epoch_that_is_not_a_number_fails_the_build(self):
+        with self.assertRaisesRegex(build.BuildError, "SOURCE_DATE_EPOCH"):
+            self.build("a.sqlite", "yesterday")
+        self.assertFalse(os.path.exists(os.path.join(self.directory.name, "a.sqlite")))
 
 
 class RefusalTests(unittest.TestCase):

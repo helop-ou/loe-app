@@ -8,6 +8,7 @@ A build that kept nothing, or under 90% of the editions in manifest.json, fails
 and leaves no file. --allow-small turns the 90% check off for a sample.
 """
 import datetime
+import hashlib
 import json
 import os
 import re
@@ -345,6 +346,24 @@ EDITION_COLUMNS = [
 ]
 
 
+def sha256(path):
+    digest = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def built_at():
+    """The build time, or SOURCE_DATE_EPOCH when set so that a build can be repeated."""
+    epoch = os.environ.get("SOURCE_DATE_EPOCH")
+    try:
+        moment = datetime.datetime.fromtimestamp(int(epoch), datetime.timezone.utc) if epoch else None
+    except (ValueError, OverflowError, OSError) as error:
+        raise BuildError(f"SOURCE_DATE_EPOCH is not a timestamp: {epoch!r}") from error
+    return (moment or datetime.datetime.now(datetime.timezone.utc)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
 def check_integrity(db):
     """Fails unless SQLite says the file is sound."""
     try:
@@ -421,10 +440,13 @@ def write(out, inputs, latest_year, log):
     db.execute("INSERT INTO edition_search (edition_search) VALUES ('optimize')")
     meta = {
         "schema_version": str(SCHEMA_VERSION),
-        "built": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "built": built_at(),
         "editions": str(kept),
         "source": "Eesti rahvusbibliograafia, Eesti Rahvusraamatukogu",
     }
+    for number, path in enumerate(inputs, 1):
+        meta[f"source_{number}"] = os.path.basename(path)
+        meta[f"source_{number}_sha256"] = sha256(path)
     db.executemany("INSERT INTO meta VALUES (?, ?)", meta.items())
     db.commit()
     db.execute("VACUUM")
