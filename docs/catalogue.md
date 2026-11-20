@@ -248,12 +248,17 @@ results as "From Open Library".
 
 - **When it asks.** Only once typing pauses (`OpenLibrary.pause`, 600 ms after
   the catalogue's own 150 ms), never on each keystroke, and only for three or
-  more characters that are not an ISBN. A new keystroke cancels the wait before
-  anything is sent. Answers are kept in memory for the session, and a search
-  already answered shows at once, as when coming back from a book's page.
+  more characters. A new keystroke cancels the wait before anything is sent.
+  Answers are kept in memory for the session, and a search already answered
+  shows at once, as when coming back from a book's page.
+- **An ISBN.** The catalogue answers an ISBN first, whether it was typed or
+  scanned. Open Library is asked only when the catalogue has no edition with
+  it, in the same search as `isbn:` and the thirteen digits, so the answer is
+  read like any other. When neither has it, Search says so and offers adding
+  the book by hand. `OpenLibrary.question(for:catalogueFound:)` has the rule.
 - **What it sends.** `https://openlibrary.org/search.json` with the search
-  text, `lang=en`, a limit of 20 and the fields Loe reads, over a session with
-  no cookies, cache or credentials. The `User-Agent` names the app, the
+  text or the ISBN, `lang=en`, a limit of 20 and the fields Loe reads, over a
+  session with no cookies, cache or credentials. The `User-Agent` names the app, the
   repository and `kontakt@helop.ee`: Open Library asks apps to identify
   themselves, and allows three requests a second for those that do.
   `Accept-Language` is set to `en`, so the reader's own languages are not sent.
@@ -286,9 +291,9 @@ How it is kept on a shelf is in [Library](library.md#books-from-open-library).
 
 With no network, or when Open Library fails, the catalogue's results show as
 they are and the section says it can't be reached. Debug builds launched with
-`-openLibraryStub YES` answer "halo" with a fixed Halo book, fail any search
-with "offline" in it, and find nothing for anything else, so the journeys never
-touch the network.
+`-openLibraryStub YES` answer "halo", or the ISBN 9780345451323, with a fixed
+Halo book, fail any search with "offline" in it, and find nothing for anything
+else, so the journeys never touch the network.
 
 ## What is kept
 
