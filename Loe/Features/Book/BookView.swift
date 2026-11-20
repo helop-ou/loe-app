@@ -97,6 +97,9 @@ struct BookView: View {
                     OpenLibraryCredit(url: url)
                 }
             }
+            // Fill the width even when nothing on the page does, or the scroll
+            // view shrinks to the text and its background stops short of the edges.
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 20)
             .padding(.vertical, 12)
         }
