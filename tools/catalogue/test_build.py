@@ -2,11 +2,13 @@
 import hashlib
 import os
 import pathlib
+import re
 import sqlite3
 import subprocess
 import sys
 import tempfile
 import unittest
+import zipfile
 from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -334,6 +336,89 @@ class RepeatableBuildTests(unittest.TestCase):
         with self.assertRaisesRegex(build.BuildError, "SOURCE_DATE_EPOCH"):
             self.build("a.sqlite", "yesterday")
         self.assertFalse(os.path.exists(os.path.join(self.directory.name, "a.sqlite")))
+
+
+class SourceTests(unittest.TestCase):
+    def setUp(self):
+        self.directory = tempfile.TemporaryDirectory()
+        self.addCleanup(self.directory.cleanup)
+
+    def write(self, name, *records):
+        path = os.path.join(self.directory.name, name)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(collection(*records))
+        return path
+
+    def build(self, *sources):
+        out = os.path.join(self.directory.name, "catalogue.sqlite")
+        result = build.build(out, list(sources), latest_year=2026, log=lambda _: None, allow_small=True)
+        db = sqlite3.connect(out)
+        self.addCleanup(db.close)
+        return result, db
+
+    def test_a_zip_holding_one_xml_file_gives_the_records_of_the_bare_xml(self):
+        xml = self.write("ERB_eestikeelne_raamat.xml", TODE_JA_OIGUS, TRANSLATION, THESIS)
+        archive = os.path.join(self.directory.name, "ERB_eestikeelne_raamat.zip")
+        with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as z:
+            z.write(xml, "ERB_eestikeelne_raamat.xml")
+        records = list(build.read(xml))
+        self.assertEqual(len(records), 3)
+        self.assertEqual(list(build.read(archive)), records)
+
+    def test_a_zip_with_no_xml_file_fails_the_build(self):
+        archive = os.path.join(self.directory.name, "erb.zip")
+        with zipfile.ZipFile(archive, "w") as z:
+            z.writestr("readme.txt", "no records here")
+        with self.assertRaisesRegex(build.BuildError, "holds no XML file"):
+            self.build(archive)
+
+    def test_a_repeated_id_keeps_the_first_record_and_counts_the_rest(self):
+        first = record("b60000001", field("020", ("a", "9789916099896")), field("245", ("a", "Esimene")))
+        second = record("b60000001", field("020", ("a", "9789949633289")), field("245", ("a", "Teine")))
+        third = record("b60000001", field("245", ("a", "Kolmas")))
+        for sources in (
+            [self.write("one.xml", first, second, third)],
+            [self.write("a.xml", first), self.write("b.xml", second, third)],
+        ):
+            (kept, skipped), db = self.build(*sources)
+            self.assertEqual((kept, skipped), (1, {"duplicate id": 2}))
+            self.assertEqual(db.execute("SELECT title FROM edition").fetchall(), [("Esimene",)])
+            self.assertEqual(db.execute("SELECT isbn13 FROM isbn").fetchall(), [("9789916099896",)])
+
+    def test_vale_stays_as_the_qualifier_of_a_wrong_isbn(self):
+        book = record(
+            "b60000002",
+            field("020", ("a", "9789949445707"), ("q", "(vale)")),
+            field("020", ("a", "9789916099896 (vale)")),
+            field("020", ("a", "9789949633289"), ("q", "(köites : vale)")),
+            field("020", ("a", "9780306406157"), ("q", "(köites)")),
+            field("245", ("a", "Raamat")),
+        )
+        _, db = self.build(self.write("erb.xml", book))
+        self.assertEqual(
+            db.execute("SELECT isbn13, qualifier FROM isbn").fetchall(),
+            [
+                ("9789949445707", "vale"),
+                ("9789916099896", "vale"),
+                ("9789949633289", "köites : vale"),
+                ("9780306406157", "köites"),
+            ],
+        )
+
+    def test_vale_after_a_binding_qualifier_in_two_parentheses_is_kept(self):
+        book = record("b60000003", field("020", ("a", "9789949445707"), ("q", "(köites) (vale)")), field("245", ("a", "Raamat")))
+        _, db = self.build(self.write("erb.xml", book))
+        (qualifier,) = db.execute("SELECT qualifier FROM isbn").fetchone()
+        self.assertIn("vale", qualifier)
+        self.assertIn("köites", qualifier)
+
+
+class SchemaVersionTests(unittest.TestCase):
+    def test_the_build_and_the_app_agree_on_the_schema_version(self):
+        swift = pathlib.Path(__file__).resolve().parents[2] / "Loe" / "Shared" / "Catalogue" / "Catalogue.swift"
+        match = re.search(r"static let schemaVersion = (\d+)", swift.read_text(encoding="utf-8"))
+        self.assertIsNotNone(match)
+        self.assertEqual(build.SCHEMA_VERSION, int(match.group(1)))
 
 
 class RefusalTests(unittest.TestCase):
