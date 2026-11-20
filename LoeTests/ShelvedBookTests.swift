@@ -77,6 +77,44 @@ struct ShelvedBookTests {
         #expect(book.progress == nil)
     }
 
+    @Test func aBookOnlyOnAShelfKeepsNothingOfTheReaders() throws {
+        let book = try ShelvedBook.shelve(work, edition: edition, on: .wantToRead, in: context)
+        #expect(book.keepsSomethingOfTheReaders == false)
+    }
+
+    @Test func aRatingIsSomethingOfTheReaders() throws {
+        let book = try ShelvedBook.shelve(work, edition: edition, on: .setAside, in: context)
+        book.rate(4)
+        #expect(book.keepsSomethingOfTheReaders)
+    }
+
+    @Test func aPageIsSomethingOfTheReaders() throws {
+        let book = try ShelvedBook.shelve(work, edition: edition, on: .wantToRead, in: context)
+        book.setPage(12, of: 352)
+        #expect(book.keepsSomethingOfTheReaders)
+    }
+
+    @Test func aCoverPhotoIsSomethingOfTheReaders() throws {
+        let book = try ShelvedBook.shelve(work, edition: edition, on: .wantToRead, in: context)
+        book.coverPhoto = Data([1, 2, 3])
+        #expect(book.keepsSomethingOfTheReaders)
+    }
+
+    @Test func havingStartedABookIsSomethingOfTheReaders() throws {
+        let book = try ShelvedBook.shelve(work, edition: edition, on: .reading, in: context)
+        #expect(book.keepsSomethingOfTheReaders)
+    }
+
+    @Test func havingFinishedABookIsSomethingOfTheReaders() throws {
+        let book = try ShelvedBook.shelve(work, edition: edition, on: .read, in: context)
+        #expect(book.keepsSomethingOfTheReaders)
+    }
+
+    @Test func aBookEnteredByHandIsAlwaysSomethingOfTheReaders() {
+        let book = ShelvedBook.add(EnteredBook(title: "Recipes from Grandma Tiiu"), on: .wantToRead, in: context)
+        #expect(book.keepsSomethingOfTheReaders)
+    }
+
     @Test func itOpensTheSameWorkItWasShelvedFrom() throws {
         let book = try ShelvedBook.shelve(work, edition: edition, on: .read, in: context)
         #expect(book.work.id == work.id)

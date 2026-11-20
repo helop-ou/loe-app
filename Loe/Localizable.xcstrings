@@ -821,6 +821,16 @@
         }
       }
     },
+    "Its rating, page, dates and cover photo go too. This can't be undone.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kaovad ka selle hinnang, lehekülg, kuupäevad ja kaanepilt. Seda ei saa tagasi võtta."
+          }
+        }
+      }
+    },
     "Language": {
       "localizations": {
         "et": {
@@ -1387,6 +1397,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kas eemaldada kataloog?"
+          }
+        }
+      }
+    },
+    "Remove this book?": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kas eemaldada see raamat?"
           }
         }
       }
