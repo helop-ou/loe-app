@@ -91,7 +91,13 @@ A book's page asks `Catalogue.details(for:)` for the rest of what it shows:
   original title, by the same lead author.
 - **Translations**, for an original: the works whose original title is this
   title, by the same lead author. This is how „Keisri hull“ finds *The czar's
-  madman*, and the reverse.
+  madman*, and the reverse. A book from abroad finds its translation the same
+  way: *Project Hail Mary* from Open Library lists „Ave Maria“.
+  [`SameBook`](../Loe/Shared/Catalogue/SameBook.swift) compares the two, so a
+  leading article or a middle initial doesn't hide one. The bibliography
+  writes an original title with or without its subtitle, and Open Library puts
+  the subtitle in the title, so either side may drop what follows its colon.
+  Never both, because the books of a series share what comes before it.
 - **By the same author**: other works by the lead author in the same language,
   so an Estonian page lists Estonian books and a translation lists others in
   its language.
@@ -287,13 +293,16 @@ A book from Open Library opens as a work with one edition and no catalogue
 record: an empty `erbID` and an `OpenLibraryRecord` with its work key, ISBN and
 cover id. Its page shows no editions, ESTER link or library availability,
 searches the bookshops by title and author, and links back to Open Library.
+It lists the catalogue's translations of the book, so an English book leads
+to its Estonian edition and the libraries that hold it.
 How it is kept on a shelf is in [Library](library.md#books-from-open-library).
 
 With no network, or when Open Library fails, the catalogue's results show as
 they are and the section says it can't be reached. Debug builds launched with
 `-openLibraryStub YES` answer "halo", or the ISBN 9780345451323, with a fixed
-Halo book, fail any search with "offline" in it, and find nothing for anything
-else, so the journeys never touch the network.
+Halo book, and "hail mary" with *Project Hail Mary*, which the catalogue has in
+Estonian. They fail any search with "offline" in it and find nothing for
+anything else, so the journeys never touch the network.
 
 ## What is kept
 
