@@ -188,7 +188,7 @@ struct ScanSheet: View {
                 }
                 unavailable = !cameraAllowed || !DataScannerViewController.isAvailable
             }
-            .navigationTitle("Scan a barcode")
+            .loeNavigationTitle("Scan a barcode")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -202,6 +202,8 @@ struct ScanSheet: View {
 /// What the scanner is doing, or why the barcode in view does not open a book.
 struct ScanHint: View {
     let other: ScannedBarcode?
+
+    @Environment(\.locale) private var locale
     /// The icons differ in width, so the text starts in the same place for each.
     @ScaledMetric(relativeTo: .subheadline) private var iconWidth = 22.0
 
@@ -226,7 +228,7 @@ struct ScanHint: View {
         .background(.regularMaterial, in: .rect(cornerRadius: 16))
         .accessibilityElement(children: .combine)
         .onChange(of: other) {
-            AccessibilityNotification.Announcement(String(localized: message)).post()
+            AccessibilityNotification.Announcement(locale.localized(message)).post()
         }
     }
 

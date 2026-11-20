@@ -39,7 +39,7 @@ struct ShelvesView: View {
                     .background(.loeBackground)
                 }
             }
-            .navigationTitle("Shelves")
+            .loeNavigationTitle("Shelves")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     NavigationLink {
@@ -164,7 +164,7 @@ struct ShelfListView: View {
             .padding(20)
         }
         .background(.loeBackground)
-        .navigationTitle(Text(shelf.name))
+        .loeNavigationTitle(shelf.name)
     }
 }
 

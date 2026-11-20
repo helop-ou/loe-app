@@ -45,7 +45,7 @@ struct SearchView: View {
     var body: some View {
         NavigationStack(path: $path) {
             content
-                .navigationTitle("Search")
+                .loeNavigationTitle("Search")
                 .navigationDestination(for: CatalogueWork.self) { BookView(work: $0) }
                 .searchable(text: $query, prompt: "Title, author or ISBN")
                 .task(id: query) { await search() }

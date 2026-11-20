@@ -101,7 +101,7 @@ struct SettingsView: View {
         }
         .scrollContentBackground(.hidden)
         .background(.loeBackground)
-        .navigationTitle("Settings")
+        .loeNavigationTitle("Settings")
         .environment(\.editMode, $editMode)
         .toolbar {
             if places.count > 1 || editMode.isEditing {

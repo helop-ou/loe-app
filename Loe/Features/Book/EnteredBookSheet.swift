@@ -3,15 +3,16 @@ import SwiftUI
 /// The form for a book the catalogue doesn't have: adding one, or changing what
 /// the reader entered for it.
 struct EnteredBookSheet: View {
-    let heading: LocalizedStringKey
+    let heading: LocalizedStringResource
     let onSave: (EnteredBook) -> Void
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.locale) private var locale
     @State private var book: EnteredBook
     @FocusState private var titleFocused: Bool
     private let languages: [String]
 
-    init(_ heading: LocalizedStringKey, book: EnteredBook, onSave: @escaping (EnteredBook) -> Void) {
+    init(_ heading: LocalizedStringResource, book: EnteredBook, onSave: @escaping (EnteredBook) -> Void) {
         self.heading = heading
         self.onSave = onSave
         _book = State(initialValue: book)
@@ -36,7 +37,7 @@ struct EnteredBookSheet: View {
                     number("Year", $book.year, format: .number.grouping(.never))
                     Picker("Language", selection: $book.language) {
                         ForEach(languages, id: \.self) { code in
-                            Text(LanguageName.of(code) ?? code).tag(Optional(code))
+                            Text(LanguageName.of(code, in: locale) ?? code).tag(Optional(code))
                         }
                         Text("Another language").tag(String?.none)
                     }
@@ -44,7 +45,7 @@ struct EnteredBookSheet: View {
             }
             .scrollContentBackground(.hidden)
             .background(.loeBackground)
-            .navigationTitle(heading)
+            .loeNavigationTitle(heading)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

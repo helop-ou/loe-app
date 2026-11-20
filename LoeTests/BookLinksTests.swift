@@ -27,6 +27,6 @@ struct BookLinksTests {
         #expect(LanguageName.of("fre", in: Locale(identifier: "en")) == "French")
         #expect(LanguageName.of("fre", in: Locale(identifier: "et")) == "prantsuse")
         #expect(LanguageName.of("est", in: Locale(identifier: "en")) == "Estonian")
-        #expect(LanguageName.of(nil) == nil)
+        #expect(LanguageName.of(nil, in: Locale(identifier: "en")) == nil)
     }
 }

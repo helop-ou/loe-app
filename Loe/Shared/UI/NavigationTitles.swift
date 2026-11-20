@@ -1,3 +1,4 @@
+import SwiftUI
 import UIKit
 
 /// Screen titles are Newsreader in the native navigation bar, so the bar keeps its
@@ -16,5 +17,24 @@ enum NavigationTitles {
             .font: UIFontMetrics(forTextStyle: style).scaledFont(for: base as UIFont),
             .foregroundColor: UIColor(resource: .loeInk),
         ]
+    }
+}
+
+extension View {
+    /// The screen's title, in the language Loe is showing. The navigation bar keeps
+    /// a title in the language it first appeared in, so a screen that is up while
+    /// the reader changes the language needs one that changes with it.
+    func loeNavigationTitle(_ title: LocalizedStringResource) -> some View {
+        modifier(FollowingTitle(title: title))
+    }
+}
+
+private struct FollowingTitle: ViewModifier {
+    let title: LocalizedStringResource
+
+    @Environment(\.locale) private var locale
+
+    func body(content: Content) -> some View {
+        content.navigationTitle(locale.localized(title))
     }
 }
