@@ -5,11 +5,13 @@ import Testing
 
 struct StoredNamesTests {
     private static let monday = Date(timeIntervalSince1970: 1_800_000_000)
-    private static let rule: Comment = "Records in iCloud use these names. Never rename or remove a stored property, only add one. See docs/library.md."
+    private static let scripts = URL(filePath: #filePath)
+        .deletingLastPathComponent().deletingLastPathComponent()
+        .appending(path: "scripts")
 
-    private func attributes(of entity: String, in schema: Schema) throws -> [String] {
-        let entity = try #require(schema.entities.first { $0.name == entity })
-        return entity.attributes.map { "\($0.name): \(String(describing: $0.valueType))" }.sorted()
+    private func lines(of name: String) throws -> [String] {
+        let text = try String(contentsOf: Self.scripts.appending(path: name), encoding: .utf8)
+        return text.split(separator: "\n", omittingEmptySubsequences: true).map(String.init)
     }
 
     @Test func theSyncedModelsAreThreeEntities() {
@@ -17,46 +19,23 @@ struct StoredNamesTests {
         #expect(names == ["ChosenPlace", "ShelvedBook", "Taste"])
     }
 
-    @Test func aShelvedBookKeepsTheseAttributes() throws {
-        #expect(try attributes(of: "ShelvedBook", in: Schema(LibraryStore.models)) == [
-            "addedAt: Date",
-            "authors: Optional<String>",
-            "coverHue: Optional<Double>",
-            "coverID: Optional<Int>",
-            "coverPhoto: Optional<Data>",
-            "coverSaturation: Optional<Double>",
-            "currentPage: Optional<Int>",
-            "erbID: String",
-            "finishedAt: Optional<Date>",
-            "isbn: Optional<String>",
-            "language: Optional<String>",
-            "openLibraryKey: Optional<String>",
-            "pageCount: Optional<Int>",
-            "rating: Optional<Int>",
-            "shelfName: String",
-            "sourceName: Optional<String>",
-            "startedAt: Optional<Date>",
-            "subtitle: Optional<String>",
-            "title: String",
-            "updatedAt: Date",
-            "workKey: String",
-            "year: Optional<Int>",
-        ], Self.rule)
+    @Test func theSyncedModelsAreTheOnesWrittenDown() throws {
+        let stored = Schema(LibraryStore.models).entities.flatMap { entity in
+            entity.attributes.map { "\(entity.name).\($0.name): \(String(describing: $0.valueType))" }
+        }.sorted()
+        #expect(stored == (try lines(of: "synced-models.txt")), "The synced models changed. Add the change to scripts/synced-models.txt, and never rename or remove a line: records in iCloud use these names. Before the next TestFlight build, deploy the CloudKit schema to Production and copy that file over scripts/synced-models.deployed.txt. See docs/release.md.")
     }
 
-    @Test func aTasteKeepsTheseAttributes() throws {
-        #expect(try attributes(of: "Taste", in: Schema(LibraryStore.models)) == [
-            "addedAt: Date",
-            "genreName: String",
-        ], Self.rule)
+    @Test func nothingProductionHasWasRenamedOrRemoved() throws {
+        let written = Set(try lines(of: "synced-models.txt"))
+        let missing = try lines(of: "synced-models.deployed.txt").filter { !written.contains($0) }
+        #expect(missing.isEmpty, "A synced property Production already has was renamed or removed. Records in iCloud outlive app versions, so put it back and add a new property.")
     }
 
-    @Test func aChosenPlaceKeepsTheseAttributes() throws {
-        #expect(try attributes(of: "ChosenPlace", in: Schema(LibraryStore.models)) == [
-            "addedAt: Date",
-            "placeID: String",
-            "position: Double",
-        ], Self.rule)
+    @Test(arguments: ["synced-models.txt", "synced-models.deployed.txt"])
+    func theListsAreSortedAndHaveNoRepeats(file: String) throws {
+        let found = try lines(of: file)
+        #expect(found == Array(Set(found)).sorted(), "\(file) must be sorted, with no repeated line.")
     }
 
     @Test func rawValuesStayAsShipped() {
