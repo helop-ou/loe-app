@@ -1,9 +1,11 @@
 """python3 -I -m unittest discover -s tools/catalogue"""
 import os
 import sqlite3
+import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build  # noqa: E402
@@ -101,7 +103,7 @@ class BuildTests(unittest.TestCase):
         with open(source, "w", encoding="utf-8") as f:
             f.write(collection(TODE_JA_OIGUS, TRANSLATION, THESIS, MAP, DIGITAL_COPY))
         self.out = os.path.join(self.directory.name, "catalogue.sqlite")
-        self.kept, self.skipped = build.build(self.out, [source], latest_year=2026, log=lambda _: None)
+        self.kept, self.skipped = build.build(self.out, [source], latest_year=2026, log=lambda _: None, allow_small=True)
         self.db = sqlite3.connect(self.out)
         self.db.row_factory = sqlite3.Row
 
@@ -173,6 +175,96 @@ class BuildTests(unittest.TestCase):
     def test_records_its_schema_version(self):
         version = self.db.execute("SELECT value FROM meta WHERE key = 'schema_version'").fetchone()[0]
         self.assertEqual(version, str(build.SCHEMA_VERSION))
+
+
+class RefusalTests(unittest.TestCase):
+    def setUp(self):
+        self.directory = tempfile.TemporaryDirectory()
+        self.out = os.path.join(self.directory.name, "catalogue.sqlite")
+
+    def tearDown(self):
+        self.directory.cleanup()
+
+    def source(self, text, name="erb.xml"):
+        path = os.path.join(self.directory.name, name)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(text)
+        return path
+
+    def run_script(self, *arguments):
+        script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "build.py")
+        return subprocess.run([sys.executable, "-I", script, *arguments], capture_output=True, text=True)
+
+    def test_a_build_that_kept_nothing_fails_and_leaves_no_file(self):
+        source = self.source(collection(THESIS, MAP))
+        for allow_small in (False, True):
+            with self.assertRaisesRegex(build.BuildError, "kept no records"):
+                build.build(self.out, [source], log=lambda _: None, allow_small=allow_small)
+            self.assertFalse(os.path.exists(self.out))
+
+    def test_input_without_the_marc_namespace_keeps_nothing(self):
+        source = self.source(f"<collection>{TODE_JA_OIGUS}</collection>")
+        with self.assertRaisesRegex(build.BuildError, "kept no records"):
+            build.build(self.out, [source], log=lambda _: None, allow_small=True)
+        self.assertFalse(os.path.exists(self.out))
+
+    def test_an_empty_file_fails_and_leaves_no_file(self):
+        with self.assertRaisesRegex(build.BuildError, "not readable XML"):
+            build.build(self.out, [self.source("")], log=lambda _: None, allow_small=True)
+        self.assertFalse(os.path.exists(self.out))
+
+    def test_far_fewer_records_than_were_published_fails_without_allow_small(self):
+        source = self.source(collection(TODE_JA_OIGUS, TRANSLATION))
+        with self.assertRaisesRegex(build.BuildError, "under 90%"):
+            build.build(self.out, [source], log=lambda _: None)
+        self.assertFalse(os.path.exists(self.out))
+
+    def test_allow_small_keeps_a_sample(self):
+        source = self.source(collection(TODE_JA_OIGUS, TRANSLATION))
+        kept, _ = build.build(self.out, [source], log=lambda _: None, allow_small=True)
+        self.assertEqual(kept, 2)
+        self.assertTrue(os.path.exists(self.out))
+
+    def test_the_limit_is_ninety_percent_of_the_published_count(self):
+        with mock.patch.object(build, "MANIFEST", self.source('{"editions": 20}', "manifest.json")):
+            build.check_size(18, allow_small=False)
+            with self.assertRaises(build.BuildError):
+                build.check_size(17, allow_small=False)
+
+    def test_the_command_exits_non_zero_with_a_message_and_no_file(self):
+        result = self.run_script(self.out, self.source(collection(THESIS)))
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("kept no records", result.stderr)
+        self.assertFalse(os.path.exists(self.out))
+
+    def test_the_command_takes_allow_small_before_or_after_the_paths(self):
+        source = self.source(collection(TODE_JA_OIGUS))
+        for arguments in (("--allow-small", self.out, source), (self.out, source, "--allow-small")):
+            result = self.run_script(*arguments)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertTrue(os.path.exists(self.out))
+            os.remove(self.out)
+
+    def test_a_failed_integrity_check_fails_the_build_and_leaves_no_file(self):
+        source = self.source(collection(TODE_JA_OIGUS))
+        with mock.patch.object(build, "check_integrity", side_effect=build.BuildError("damaged")) as check:
+            with self.assertRaisesRegex(build.BuildError, "damaged"):
+                build.build(self.out, [source], log=lambda _: None, allow_small=True)
+        check.assert_called_once()
+        self.assertFalse(os.path.exists(self.out))
+
+    def test_a_corrupted_file_fails_the_integrity_check(self):
+        build.build(self.out, [self.source(collection(TODE_JA_OIGUS))], log=lambda _: None, allow_small=True)
+        db = sqlite3.connect(self.out)
+        build.check_integrity(db)
+        db.close()
+        with open(self.out, "r+b") as f:
+            f.seek(4096 * 2)
+            f.write(b"\xff" * 4096)
+        db = sqlite3.connect(self.out)
+        with self.assertRaises(build.BuildError):
+            build.check_integrity(db)
+        db.close()
 
 
 if __name__ == "__main__":
