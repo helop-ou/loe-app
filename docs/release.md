@@ -114,10 +114,15 @@ The header images come from the brand repository's GitHub images.
 
 ## Privacy
 
-`Loe/PrivacyInfo.xcprivacy` declares no tracking and no collected data. The
-only required-reason API is `UserDefaults`, for the appearance setting and the
-catalogue's update check. The catalogue download sends nothing about the
-reader, and covers are the reader's own photos.
+`Loe/PrivacyInfo.xcprivacy` declares no tracking and no collected data. It
+names two required-reason APIs: `UserDefaults`, for the appearance setting and
+the catalogue's update check, and file timestamps, by which `Covers` remembers
+for 30 days that a book has no cover. `PrivacyManifestTests` fails when the
+code calls one the manifest doesn't declare, or the manifest declares one the
+code doesn't call. The catalogue download sends nothing about the reader.
+
+The camera is asked for once, with one text for both of its uses: reading a
+barcode in Search and photographing a cover on a book's page.
 
 When a reader has picked libraries, a book's page asks ESTER about that book
 as it opens, over HTTPS with no cookies (see [Library](library.md#availability)).
