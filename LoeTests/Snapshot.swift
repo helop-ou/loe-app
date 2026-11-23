@@ -30,8 +30,9 @@ enum Snapshot {
 
     /// The width of an iPhone 17 Pro.
     static let width: CGFloat = 402
-    /// The share of pixels that may differ, for antialiasing.
-    static let tolerance = 0.001
+    /// How many pixels may differ. A count and not a share of the image, so a
+    /// changed icon fails however tall the snapshot is.
+    static let budget = 10
 
     static let directory = URL(filePath: #filePath)
         .deletingLastPathComponent()
@@ -48,7 +49,7 @@ enum Snapshot {
         case renderedOnly
         case noReferences(folder: String)
         case recorded(String)
-        case differs(String, share: Double)
+        case differs(String, pixels: Int)
 
         /// What the test fails with, or nil when nothing is wrong.
         var problem: String? {
@@ -63,8 +64,8 @@ enum Snapshot {
                 """
             case .recorded(let file):
                 "Recorded \(file). Look at it, then run again."
-            case .differs(let file, let share):
-                "\(Int(share * 100))% of \(file) differs"
+            case .differs(let file, let pixels):
+                "\(pixels) pixels of \(file) differ, and \(Snapshot.budget) may"
             }
         }
     }
@@ -94,8 +95,8 @@ enum Snapshot {
             try png.write(to: reference)
             return .recorded(file)
         }
-        let difference = try #require(differingShare(image, expected))
-        return difference <= tolerance ? .matches : .differs(file, share: difference)
+        let differing = try #require(differingPixels(image, expected))
+        return differing <= budget ? .matches : .differs(file, pixels: differing)
     }
 
     /// The first answer `make` gives in this many goes. On a busy CI runner the
@@ -125,9 +126,10 @@ enum Snapshot {
         return CGImageDestinationFinalize(destination) ? data as Data : nil
     }
 
-    /// The share of pixels that differ visibly, or 1 when the sizes differ.
-    private static func differingShare(_ a: CGImage, _ b: CGImage) -> Double? {
-        guard a.width == b.width, a.height == b.height else { return 1 }
+    /// How many pixels differ visibly, or every pixel when the sizes differ. A
+    /// pixel a shade apart, as antialiasing leaves it, is not a difference.
+    static func differingPixels(_ a: CGImage, _ b: CGImage) -> Int? {
+        guard a.width == b.width, a.height == b.height else { return max(a.width * a.height, b.width * b.height) }
         guard let first = rgba(a), let second = rgba(b) else { return nil }
         var differing = 0
         for pixel in stride(from: 0, to: first.count, by: 4) {
@@ -136,7 +138,7 @@ enum Snapshot {
                 break
             }
         }
-        return Double(differing) / Double(a.width * a.height)
+        return differing
     }
 
     private static func rgba(_ image: CGImage) -> [UInt8]? {
