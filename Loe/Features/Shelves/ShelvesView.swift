@@ -129,6 +129,8 @@ private struct ShelfRail: View {
                         .font(.footnote.weight(.semibold))
                         .foregroundStyle(.loeSecondary)
                 }
+                // Without a shape only the words and the arrow take a tap.
+                .contentShape(.rect)
             }
             .buttonStyle(.plain)
             ScrollView(.horizontal, showsIndicators: false) {
