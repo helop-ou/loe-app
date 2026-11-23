@@ -76,7 +76,7 @@ final class SearchJourneyTests: JourneyTestCase {
         guard let manifest = ProcessInfo.processInfo.environment["LOE_CATALOGUE_MANIFEST"] else {
             throw XCTSkip("Set TEST_RUNNER_LOE_CATALOGUE_MANIFEST to a served manifest")
         }
-        let app = launch(Self.quizSeen + ["-catalogueManifestURL", manifest])
+        let app = launch(Self.quizSeen + ["-catalogueManifestURL", manifest], onTheNetwork: true)
         app.tabBars.buttons["Search"].tap()
         let download = app.buttons["Download the catalogue"]
         guard download.waitForExistence(timeout: 3) else {

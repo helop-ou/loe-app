@@ -21,6 +21,10 @@ nonisolated enum PrivateSession {
     }
 
     static func make(timeout: TimeInterval) -> URLSession {
-        URLSession(configuration: configuration(timeout: timeout))
+        let configuration = configuration(timeout: timeout)
+        #if DEBUG
+        if NetworkStub.isOn { configuration.protocolClasses = [NetworkStub.Unreachable.self] }
+        #endif
+        return URLSession(configuration: configuration)
     }
 }
