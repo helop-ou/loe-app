@@ -324,8 +324,8 @@ and leaves nothing behind. They pass `-tasteQuizSeen YES` so the quiz stays
 away, and `TasteQuizJourneyTests` passes `NO` to see it. The
 [standards](standards.md#review-and-verification) say how a journey launches.
 The cover journey in `ShelvesJourneyTests` picks the newest photo in the
-simulator's Photos, so add a cover image first with
-`xcrun simctl addmedia <udid> cover.jpg`.
+simulator's Photos. A new simulator comes with a few, and
+`xcrun simctl addmedia <udid> cover.jpg` adds another.
 
 `LibraryStoreTests` opens a store that can't be opened, and
 `LibraryUnavailableJourneyTests` launches with `-libraryCannotOpen YES`, which
