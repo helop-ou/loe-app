@@ -65,9 +65,10 @@ final class PlacesJourneyTests: JourneyTestCase {
         XCTAssertTrue(app.links.matching(NSPredicate(format: "label CONTAINS 'Apollo'")).firstMatch.exists)
         XCTAssertFalse(app.links.matching(NSPredicate(format: "label CONTAINS 'Rahva Raamat'")).firstMatch.exists)
         XCTAssertFalse(app.links.matching(NSPredicate(format: "label CONTAINS 'Tartu Ülikooli'")).firstMatch.exists)
-        // ESTER is asked as the page opens, so the library says what it has.
-        let answered = NSPredicate(format: "label CONTAINS 'Kännukuke' AND NOT (label CONTAINS 'Checking') AND NOT (label CONTAINS 'check right now')")
-        XCTAssertTrue(app.links.matching(answered).firstMatch.waitForExistence(timeout: 20))
+        // ESTER is asked as the page opens, so the library says what it has. The
+        // journey's ESTER has every book on the shelf at Kännukuke.
+        let answered = NSPredicate(format: "label CONTAINS 'Kännukuke' AND label CONTAINS 'On the shelf'")
+        XCTAssertTrue(app.links.matching(answered).firstMatch.waitForExistence(timeout: 5))
         attach("places-book", app)
     }
 }

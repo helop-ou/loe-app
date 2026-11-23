@@ -78,4 +78,13 @@ struct AvailabilityCheckerTests {
         #expect(await checker.copies(of: [CatalogueEdition(id: 0, erbID: "", title: "Kevade")]) == nil)
         #expect(await server.asked.isEmpty)
     }
+
+    @Test func theJourneysESTERHasEveryBookOnTheShelfAtKannukuke() async throws {
+        let copies = try #require(await AvailabilityChecker.stubbed.copies(of: Self.editions(2)))
+        #expect(copies.count == 2)
+        for copy in copies.values.joined() {
+            #expect(copy.state == .onShelf)
+            #expect(Place.library(forLocation: copy.location)?.name == "Kännukuke")
+        }
+    }
 }

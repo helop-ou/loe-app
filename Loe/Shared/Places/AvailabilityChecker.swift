@@ -29,6 +29,9 @@ actor AvailabilityChecker {
 
     /// The app's checker, on a session that keeps no cookies, cache or credentials.
     static let live: AvailabilityChecker = {
+        #if DEBUG
+        if NetworkStub.isOn { return stubbed }
+        #endif
         let session = PrivateSession.make(timeout: Limits.standard.timeout)
         return AvailabilityChecker { url in
             let (data, response) = try await session.data(from: url)
@@ -36,6 +39,21 @@ actor AvailabilityChecker {
             return String(decoding: data, as: UTF8.self)
         }
     }()
+
+    #if DEBUG
+    /// Journeys never touch the network: every record has one copy, on the shelf
+    /// at Kännukuke.
+    static var stubbed: AvailabilityChecker {
+        AvailabilityChecker { _ in
+            """
+            <table class="bibItems"><tr class="bibItemsEntry">
+            <td><!-- field 1 -->&nbsp;TlnRK Kännukuke ilukirjandus</td>
+            <td><!-- field % -->&nbsp;KOHAL </td>
+            <td><!-- field ! -->&nbsp;</td></tr></table>
+            """
+        }
+    }
+    #endif
 
     /// Each edition's copies by ERB number, for the newest editions. Nil when no
     /// edition could be asked about, such as with no network.
