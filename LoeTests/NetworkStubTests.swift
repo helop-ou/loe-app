@@ -13,4 +13,13 @@ struct NetworkStubTests {
         }
         #expect(error?.code == .notConnectedToInternet)
     }
+
+    /// The scheme passes `-networkStub YES` to the app that hosts these tests.
+    @Test func theAppThatHostsTheTestsIsOffTheNetwork() async {
+        #expect(NetworkStub.isOn)
+        let error = await #expect(throws: URLError.self) {
+            _ = try await PrivateSession.make(timeout: 5).data(from: URL(string: "https://loe.invalid/")!)
+        }
+        #expect(error?.code == .notConnectedToInternet)
+    }
 }
