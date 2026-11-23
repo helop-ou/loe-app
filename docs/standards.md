@@ -172,7 +172,12 @@ or English, stored on the phone under `language`.
   a render that fails is tried up to three times before the test fails.
   `ImageRenderer` cannot draw a `NavigationStack`, and a `NavigationLink`
   outside one draws as disabled, so a view meant for a snapshot takes what
-  opens a book as an action and its screen pushes it onto a path.
+  opens a book as an action and its screen pushes it onto a path. It also
+  leaves out native controls such as a progress bar and anything that scrolls
+  sideways, and at the largest text size it can cut short a line that a
+  screen would wrap. A snapshot of such a view is drawn in a window, with
+  `on: .window`: the view sits in a scroll view in a window of the app the
+  tests run in, as it does on its screen.
 - Journeys in `LoeUITests` launch Loe through
   [`JourneyTestCase`](../LoeUITests/JourneyTestCase.swift), never on their
   own, so each starts the same way: in English on a light phone, on an empty
