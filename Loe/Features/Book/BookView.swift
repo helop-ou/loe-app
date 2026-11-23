@@ -149,7 +149,7 @@ private struct OpenLibraryCredit: View {
     }
 }
 
-private struct BookHeader: View {
+struct BookHeader: View {
     let work: CatalogueWork
     let edition: CatalogueEdition
     let book: ShelvedBook?
@@ -212,7 +212,7 @@ private struct BookHeader: View {
 
 /// For a translation: the language it came from, and the original when the
 /// catalogue has it.
-private struct OriginalCard: View {
+struct OriginalCard: View {
     let edition: CatalogueEdition
     let original: CatalogueWork?
 
@@ -263,7 +263,7 @@ private struct OriginalCard: View {
     }
 }
 
-private struct EditionsSection: View {
+struct EditionsSection: View {
     let editions: [CatalogueEdition]
     @State private var showsAll = false
 
