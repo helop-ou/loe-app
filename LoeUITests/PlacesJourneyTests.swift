@@ -1,10 +1,10 @@
 import XCTest
 
 /// Picking libraries and bookshops in Settings, and the book page listing them, on
-/// an in-memory library. The book page needs the catalogue on the simulator.
+/// an in-memory library.
 final class PlacesJourneyTests: JourneyTestCase {
     @MainActor
-    func testPickedPlacesAreWhereToGetIt() throws {
+    func testPickedPlacesAreWhereToGetIt() {
         let app = launch()
 
         app.buttons["Settings"].tap()
@@ -47,10 +47,8 @@ final class PlacesJourneyTests: JourneyTestCase {
         XCTAssertTrue(app.staticTexts["Tartu Ülikooli Raamatukogu"].waitForNonExistence(timeout: 5))
 
         app.tabBars.buttons["Search"].tap()
-        if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {
-            throw XCTSkip("No catalogue on this simulator")
-        }
         let field = app.searchFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
         field.tap()
         field.typeText("keisri hull")
         let result = app.staticTexts["Keisri hull"].firstMatch

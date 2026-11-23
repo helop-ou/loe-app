@@ -24,7 +24,7 @@ final class ReadmeScreensTests: JourneyTestCase {
         guard ProcessInfo.processInfo.environment["LOE_README_SCREENS"] != nil else {
             throw XCTSkip("Set TEST_RUNNER_LOE_README_SCREENS=1 to capture the README screens")
         }
-        let app = launch()
+        let app = launch(real: .catalogue)
         app.tabBars.buttons["Search"].tap()
         if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {
             throw XCTSkip("No catalogue on this simulator")

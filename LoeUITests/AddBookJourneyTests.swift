@@ -1,17 +1,15 @@
 import XCTest
 
 /// Adds a book the catalogue doesn't have, by hand, on an in-memory library that
-/// starts empty. Search needs the catalogue on the simulator, like the search journeys.
+/// starts empty.
 final class AddBookJourneyTests: JourneyTestCase {
     @MainActor
-    func testAddsABookByHandEditsItAndRemovesIt() throws {
+    func testAddsABookByHandEditsItAndRemovesIt() {
         let app = launch()
 
         app.tabBars.buttons["Search"].tap()
-        if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {
-            throw XCTSkip("No catalogue on this simulator")
-        }
         let field = app.searchFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
         field.tap()
         field.typeText("Recipes from Grandma Tiiu")
         XCTAssertTrue(app.staticTexts["No books found"].waitForExistence(timeout: 5))

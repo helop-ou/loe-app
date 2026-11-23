@@ -1,18 +1,15 @@
 import XCTest
 
 /// Shelves a book and tracks reading it, on an in-memory library that starts empty.
-/// Needs the catalogue on the simulator, like the search journeys.
 final class ShelvesJourneyTests: JourneyTestCase {
     @MainActor
-    func testShelvesABookAndTracksReadingIt() throws {
+    func testShelvesABookAndTracksReadingIt() {
         let app = launch()
 
         XCTAssertTrue(app.staticTexts["Your shelves are empty"].waitForExistence(timeout: 5))
         app.tabBars.buttons["Search"].tap()
-        if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {
-            throw XCTSkip("No catalogue on this simulator")
-        }
         let field = app.searchFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
         field.tap()
         field.typeText("keisri hull")
         let result = app.staticTexts["Keisri hull"].firstMatch
@@ -67,14 +64,12 @@ final class ShelvesJourneyTests: JourneyTestCase {
     /// A book that is only on a shelf has nothing of the reader's to lose, so
     /// removing it does not ask.
     @MainActor
-    func testRemovesABookThatIsOnlyOnAShelfWithoutAsking() throws {
+    func testRemovesABookThatIsOnlyOnAShelfWithoutAsking() {
         let app = launch()
 
         app.tabBars.buttons["Search"].tap()
-        if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {
-            throw XCTSkip("No catalogue on this simulator")
-        }
         let field = app.searchFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
         field.tap()
         field.typeText("keisri hull")
         let result = app.staticTexts["Keisri hull"].firstMatch
@@ -94,16 +89,14 @@ final class ShelvesJourneyTests: JourneyTestCase {
         XCTAssertFalse(app.staticTexts["Remove this book?"].exists)
     }
 
-    /// Needs a cover photo as the newest picture in the simulator's Photos, added
-    /// with `xcrun simctl addmedia <udid> cover.jpg`.
+    /// Picks the newest picture in the simulator's Photos. A new simulator comes
+    /// with a few.
     @MainActor
-    func testGivesABookACoverPhoto() throws {
+    func testGivesABookACoverPhoto() {
         let app = launch()
         app.tabBars.buttons["Search"].tap()
-        if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {
-            throw XCTSkip("No catalogue on this simulator")
-        }
         let field = app.searchFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
         field.tap()
         field.typeText("keisri hull")
         app.staticTexts["Keisri hull"].firstMatch.tap()
