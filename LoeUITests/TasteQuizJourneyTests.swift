@@ -1,8 +1,7 @@
 import XCTest
 
 /// The quiz on first launch, after its language step, its answers in Read next, and
-/// changing them in Settings, on an in-memory library. Read next needs the catalogue
-/// on the simulator.
+/// changing them in Settings, on an in-memory library.
 final class TasteQuizJourneyTests: JourneyTestCase {
     @MainActor
     private func launch(firstTime: Bool) -> XCUIApplication {
@@ -36,7 +35,7 @@ final class TasteQuizJourneyTests: JourneyTestCase {
     }
 
     @MainActor
-    func testTastesFromTheQuizShapeReadNextAndChangeInSettings() throws {
+    func testTastesFromTheQuizShapeReadNextAndChangeInSettings() {
         let app = launch(firstTime: true)
         leaveTheLanguageAsItIs(app)
         XCTAssertTrue(app.staticTexts["What do you like to read?"].waitForExistence(timeout: 5))
@@ -54,9 +53,6 @@ final class TasteQuizJourneyTests: JourneyTestCase {
         attach("settings-tastes", app)
 
         app.tabBars.buttons["Read next"].tap()
-        if app.staticTexts["Suggestions need the catalogue"].waitForExistence(timeout: 2) {
-            throw XCTSkip("No catalogue on this simulator")
-        }
         let fantasy = app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'From your tastes: Fantasy'")).firstMatch
         XCTAssertTrue(fantasy.waitForExistence(timeout: 10))
         XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'From your tastes: Crime and mystery'")).firstMatch.exists)

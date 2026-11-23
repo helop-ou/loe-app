@@ -1,11 +1,11 @@
 import XCTest
 
-/// Searches the real catalogue. A simulator without one skips, so copy a built
-/// catalogue into the app's container first (docs/catalogue.md, "Trying it in the simulator").
+/// Searches the journeys' catalogue and opens what it finds. The download is the
+/// one journey here that needs more: docs/catalogue.md, "Trying it in the simulator".
 final class SearchJourneyTests: JourneyTestCase {
     @MainActor
-    func testFindsABookByTitleWithoutDiacritics() throws {
-        let app = try openSearch()
+    func testFindsABookByTitleWithoutDiacritics() {
+        let app = openSearch()
         search("keisri hull", in: app)
         XCTAssertTrue(app.staticTexts["Keisri hull"].firstMatch.waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["Jaan Kross"].firstMatch.exists)
@@ -13,16 +13,16 @@ final class SearchJourneyTests: JourneyTestCase {
     }
 
     @MainActor
-    func testSaysSoWhenNothingMatches() throws {
-        let app = try openSearch()
+    func testSaysSoWhenNothingMatches() {
+        let app = openSearch()
         search("qqxxzzqq", in: app)
         XCTAssertTrue(app.staticTexts["No books found"].waitForExistence(timeout: 5))
         attach("search-nothing", app)
     }
 
     @MainActor
-    func testFindsABookByISBNAndSaysWhenOneIsMissing() throws {
-        let app = try openSearch()
+    func testFindsABookByISBNAndSaysWhenOneIsMissing() {
+        let app = openSearch()
         search("978-9949-633-28-9", in: app)
         let field = app.searchFields.firstMatch
         XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 5))
@@ -33,8 +33,8 @@ final class SearchJourneyTests: JourneyTestCase {
     }
 
     @MainActor
-    func testOpensABookAndFollowsATranslation() throws {
-        let app = try openSearch()
+    func testOpensABookAndFollowsATranslation() {
+        let app = openSearch()
         search("keisri hull", in: app)
         let result = app.staticTexts["Keisri hull"].firstMatch
         XCTAssertTrue(result.waitForExistence(timeout: 5))
@@ -56,8 +56,8 @@ final class SearchJourneyTests: JourneyTestCase {
     }
 
     @MainActor
-    func testABookSuggestsSimilarBooks() throws {
-        let app = try openSearch()
+    func testABookSuggestsSimilarBooks() {
+        let app = openSearch()
         search("kevade luts", in: app)
         let result = app.staticTexts["Kevade"].firstMatch
         XCTAssertTrue(result.waitForExistence(timeout: 5))
@@ -76,7 +76,7 @@ final class SearchJourneyTests: JourneyTestCase {
         guard let manifest = ProcessInfo.processInfo.environment["LOE_CATALOGUE_MANIFEST"] else {
             throw XCTSkip("Set TEST_RUNNER_LOE_CATALOGUE_MANIFEST to a served manifest")
         }
-        let app = launch(Self.quizSeen + ["-catalogueManifestURL", manifest], onTheNetwork: true)
+        let app = launch(Self.quizSeen + ["-catalogueManifestURL", manifest], real: .download)
         app.tabBars.buttons["Search"].tap()
         let download = app.buttons["Download the catalogue"]
         guard download.waitForExistence(timeout: 3) else {
@@ -95,13 +95,9 @@ final class SearchJourneyTests: JourneyTestCase {
     }
 
     @MainActor
-    private func openSearch() throws -> XCUIApplication {
+    private func openSearch() -> XCUIApplication {
         let app = launch()
         app.tabBars.buttons["Search"].tap()
-        if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {
-            attach("search-no-catalogue", app)
-            throw XCTSkip("No catalogue on this simulator")
-        }
         return app
     }
 

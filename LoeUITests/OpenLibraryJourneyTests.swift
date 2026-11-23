@@ -2,18 +2,15 @@ import XCTest
 
 /// Finds a book from abroad on Open Library and shelves it. `-networkStub YES`
 /// answers a search for Halo, by title or ISBN, with Halo, so the journey never
-/// touches the network. Search needs the catalogue on the simulator, like the
-/// search journeys.
+/// touches the network.
 final class OpenLibraryJourneyTests: JourneyTestCase {
     @MainActor
-    func testFindsABookFromAbroadAndShelvesIt() throws {
+    func testFindsABookFromAbroadAndShelvesIt() {
         let app = launch()
 
         app.tabBars.buttons["Search"].tap()
-        if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {
-            throw XCTSkip("No catalogue on this simulator")
-        }
         let field = app.searchFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
         field.tap()
         field.typeText("Halo: The Fall of Reach")
         XCTAssertTrue(app.staticTexts["From Open Library"].waitForExistence(timeout: 5))
@@ -56,13 +53,11 @@ final class OpenLibraryJourneyTests: JourneyTestCase {
 
     /// A scan types the ISBN into Search, so typing it is the same journey.
     @MainActor
-    func testFindsABookFromAbroadByItsISBN() throws {
+    func testFindsABookFromAbroadByItsISBN() {
         let app = launch()
         app.tabBars.buttons["Search"].tap()
-        if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {
-            throw XCTSkip("No catalogue on this simulator")
-        }
         let field = app.searchFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
         field.tap()
         field.typeText("9780345451323")
         XCTAssertTrue(app.staticTexts["From Open Library"].waitForExistence(timeout: 5))
@@ -85,13 +80,11 @@ final class OpenLibraryJourneyTests: JourneyTestCase {
 
     /// The catalogue has Project Hail Mary in Estonian, as „Ave Maria“.
     @MainActor
-    func testABookFromAbroadLinksToItsEstonianTranslation() throws {
+    func testABookFromAbroadLinksToItsEstonianTranslation() {
         let app = launch()
         app.tabBars.buttons["Search"].tap()
-        if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {
-            throw XCTSkip("No catalogue on this simulator")
-        }
         let field = app.searchFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
         field.tap()
         field.typeText("Project Hail Mary")
         let result = app.buttons.matching(NSPredicate(format: "label CONTAINS 'Project Hail Mary'")).firstMatch
@@ -114,13 +107,11 @@ final class OpenLibraryJourneyTests: JourneyTestCase {
     }
 
     @MainActor
-    func testSaysSoWhenOpenLibraryCantBeReached() throws {
+    func testSaysSoWhenOpenLibraryCantBeReached() {
         let app = launch()
         app.tabBars.buttons["Search"].tap()
-        if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {
-            throw XCTSkip("No catalogue on this simulator")
-        }
         let field = app.searchFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
         field.tap()
         field.typeText("offline reading")
         XCTAssertTrue(app.staticTexts["Open Library can't be reached right now."].waitForExistence(timeout: 5))

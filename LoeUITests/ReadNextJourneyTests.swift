@@ -1,17 +1,13 @@
 import XCTest
 
 /// Rates a book and follows what Read next suggests, on an in-memory library that
-/// starts empty. Needs the catalogue on the simulator, like the search journeys.
+/// starts empty.
 final class ReadNextJourneyTests: JourneyTestCase {
     @MainActor
-    func testSuggestsBooksFromAFavouriteAndKeepsOneForLater() throws {
+    func testSuggestsBooksFromAFavouriteAndKeepsOneForLater() {
         let app = launch()
 
         app.tabBars.buttons["Read next"].tap()
-        if app.staticTexts["Suggestions need the catalogue"].waitForExistence(timeout: 2) {
-            attach("read-next-no-catalogue", app)
-            throw XCTSkip("No catalogue on this simulator")
-        }
         XCTAssertTrue(app.staticTexts["Nothing to suggest yet"].waitForExistence(timeout: 5))
         attach("read-next-empty", app)
 
