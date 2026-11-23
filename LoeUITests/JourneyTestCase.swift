@@ -2,24 +2,27 @@ import XCTest
 
 /// A journey through the real app. Every journey launches Loe through here, so
 /// they all start the same way: in English on a light phone, on an empty
-/// in-memory library, with Open Library answered for. See docs/library.md, "Testing".
+/// in-memory library, and off the network. See docs/standards.md, "Review and verification".
 class JourneyTestCase: XCTestCase {
     /// Keeps the quiz away. A journey about the quiz passes its own.
     static let quizSeen = ["-tasteQuizSeen", "YES"]
 
-    /// Loe with what every journey passes it, not yet launched.
+    /// Loe with what every journey passes it, not yet launched. Only the journey
+    /// that downloads a catalogue from the Mac goes on the network.
     @MainActor
-    static func application(_ extra: [String] = quizSeen) -> XCUIApplication {
+    static func application(_ extra: [String] = quizSeen, onTheNetwork: Bool = false) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-inMemoryLibrary", "YES", "-networkStub", "YES"] + extra
+        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-inMemoryLibrary", "YES"]
+        app.launchArguments += onTheNetwork ? [] : ["-networkStub", "YES"]
+        app.launchArguments += extra
         return app
     }
 
     @MainActor
-    func launch(_ extra: [String] = JourneyTestCase.quizSeen) -> XCUIApplication {
+    func launch(_ extra: [String] = JourneyTestCase.quizSeen, onTheNetwork: Bool = false) -> XCUIApplication {
         continueAfterFailure = false
         XCUIDevice.shared.appearance = .light
-        let app = Self.application(extra)
+        let app = Self.application(extra, onTheNetwork: onTheNetwork)
         app.launch()
         return app
     }
