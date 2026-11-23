@@ -22,4 +22,16 @@ struct NetworkStubTests {
         }
         #expect(error?.code == .notConnectedToInternet)
     }
+
+    /// The journeys count on each of the app's own clients answering for itself.
+    @Test func theAppsOwnClientsAnswerWithoutAskingAnyone() async throws {
+        try #require(NetworkStub.isOn)
+        let halo = try await OpenLibrary.live.search("halo")
+        #expect(halo.map(\.title) == ["Halo: The Fall of Reach"])
+        #expect(await Covers.live.cover(.id(210551)) != nil)
+        #expect(await Covers.live.cover(.isbn("9780345451323")) == nil)
+        let edition = CatalogueEdition(id: 1, erbID: "b10544215", title: "Keisri hull")
+        let copies = await AvailabilityChecker.live.copies(of: [edition])
+        #expect(copies?["b10544215"]?.map(\.state) == [.onShelf])
+    }
 }
