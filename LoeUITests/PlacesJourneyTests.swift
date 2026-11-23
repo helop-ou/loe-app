@@ -2,13 +2,10 @@ import XCTest
 
 /// Picking libraries and bookshops in Settings, and the book page listing them, on
 /// an in-memory library. The book page needs the catalogue on the simulator.
-final class PlacesJourneyTests: XCTestCase {
+final class PlacesJourneyTests: JourneyTestCase {
     @MainActor
     func testPickedPlacesAreWhereToGetIt() throws {
-        continueAfterFailure = false
-        let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES", "-inMemoryLibrary", "YES", "-openLibraryStub", "YES"]
-        app.launch()
+        let app = launch()
 
         app.buttons["Settings"].tap()
         let add = app.buttons["Add a library or bookshop"]
@@ -72,13 +69,5 @@ final class PlacesJourneyTests: XCTestCase {
         let answered = NSPredicate(format: "label CONTAINS 'Kännukuke' AND NOT (label CONTAINS 'Checking') AND NOT (label CONTAINS 'check right now')")
         XCTAssertTrue(app.links.matching(answered).firstMatch.waitForExistence(timeout: 20))
         attach("places-book", app)
-    }
-
-    @MainActor
-    private func attach(_ name: String, _ app: XCUIApplication) {
-        let attachment = XCTAttachment(screenshot: app.screenshot())
-        attachment.name = name
-        attachment.lifetime = .keepAlways
-        add(attachment)
     }
 }

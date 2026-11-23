@@ -2,13 +2,10 @@ import XCTest
 
 /// Settings and About on an in-memory library: the appearance, the quiz again,
 /// iCloud, the catalogue, privacy and a credit with its licence.
-final class SettingsJourneyTests: XCTestCase {
+final class SettingsJourneyTests: JourneyTestCase {
     @MainActor
     func testSettingsAndAbout() {
-        continueAfterFailure = false
-        let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES", "-inMemoryLibrary", "YES", "-openLibraryStub", "YES"]
-        app.launch()
+        let app = launch()
         app.buttons["Settings"].tap()
 
         let quizAgain = app.buttons["Take the quiz again"]
@@ -103,13 +100,5 @@ final class SettingsJourneyTests: XCTestCase {
         let total = pixels.enumerated().reduce(0.0) { sum, item in item.offset % 4 == 3 ? sum : sum + Double(item.element) }
         let brightness = total / Double(side * side * 3 * 255)
         return 1 - brightness
-    }
-
-    @MainActor
-    private func attach(_ name: String, _ app: XCUIApplication) {
-        let attachment = XCTAttachment(screenshot: app.screenshot())
-        attachment.name = name
-        attachment.lifetime = .keepAlways
-        add(attachment)
     }
 }

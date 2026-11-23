@@ -4,18 +4,7 @@ import XCTest
 /// to English. The choice is kept on the simulator, so each journey starts by
 /// forgetting it and the class forgets it again when a journey ends, pass or fail:
 /// every other journey reads Loe in English.
-final class LanguageJourneyTests: XCTestCase {
-    private static let arguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-inMemoryLibrary", "YES", "-openLibraryStub", "YES"]
-
-    @MainActor
-    private func launch(_ extra: [String]) -> XCUIApplication {
-        continueAfterFailure = false
-        let app = XCUIApplication()
-        app.launchArguments += Self.arguments + extra
-        app.launch()
-        return app
-    }
-
+final class LanguageJourneyTests: JourneyTestCase {
     @MainActor
     private func quit(_ app: XCUIApplication) {
         app.terminate()
@@ -28,10 +17,10 @@ final class LanguageJourneyTests: XCTestCase {
             let app = XCUIApplication()
             app.terminate()
             _ = app.wait(for: .notRunning, timeout: 30)
-            app.launchArguments += Self.arguments + ["-tasteQuizSeen", "YES", "-forgetLanguage", "YES"]
-            app.launch()
-            app.terminate()
-            _ = app.wait(for: .notRunning, timeout: 30)
+            let forgetting = Self.application(Self.quizSeen + ["-forgetLanguage", "YES"])
+            forgetting.launch()
+            forgetting.terminate()
+            _ = forgetting.wait(for: .notRunning, timeout: 30)
         }
     }
 
@@ -102,13 +91,5 @@ final class LanguageJourneyTests: XCTestCase {
             app.swipeUp()
         }
         XCTAssertTrue(element.isHittable)
-    }
-
-    @MainActor
-    private func attach(_ name: String, _ app: XCUIApplication) {
-        let attachment = XCTAttachment(screenshot: app.screenshot())
-        attachment.name = name
-        attachment.lifetime = .keepAlways
-        add(attachment)
     }
 }

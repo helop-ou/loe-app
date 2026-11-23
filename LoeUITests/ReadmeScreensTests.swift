@@ -2,7 +2,7 @@ import XCTest
 
 /// Fills the shelves with real books from the catalogue and captures the README
 /// screens. Runs only when asked, see docs/release.md, "README screens".
-final class ReadmeScreensTests: XCTestCase {
+final class ReadmeScreensTests: JourneyTestCase {
     private struct Book {
         let query: String
         let title: String
@@ -24,10 +24,7 @@ final class ReadmeScreensTests: XCTestCase {
         guard ProcessInfo.processInfo.environment["LOE_README_SCREENS"] != nil else {
             throw XCTSkip("Set TEST_RUNNER_LOE_README_SCREENS=1 to capture the README screens")
         }
-        continueAfterFailure = false
-        let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES", "-inMemoryLibrary", "YES", "-openLibraryStub", "YES"]
-        app.launch()
+        let app = launch()
         app.tabBars.buttons["Search"].tap()
         if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {
             throw XCTSkip("No catalogue on this simulator")
@@ -92,13 +89,5 @@ final class ReadmeScreensTests: XCTestCase {
         Thread.sleep(forTimeInterval: 1)
         attach("readme-shelves", app)
         XCTAssertTrue(shown)
-    }
-
-    @MainActor
-    private func attach(_ name: String, _ app: XCUIApplication) {
-        let attachment = XCTAttachment(screenshot: app.screenshot())
-        attachment.name = name
-        attachment.lifetime = .keepAlways
-        add(attachment)
     }
 }
