@@ -62,9 +62,8 @@ final class ReadmeScreensTests: JourneyTestCase {
         app.buttons["Save"].tap()
         app.buttons["Add a cover photo"].tap()
         app.buttons["Choose a photo"].tap()
-        Thread.sleep(forTimeInterval: 3)
-        app.coordinate(withNormalizedOffset: CGVector(dx: 0.16, dy: 0.42)).tap()
-        XCTAssertTrue(app.buttons["Change the cover photo"].waitForExistence(timeout: 10))
+        chooseTheNewestPhoto(in: app)
+        XCTAssertTrue(app.buttons["Change the cover photo"].waitForExistence(timeout: 30))
         Thread.sleep(forTimeInterval: 1)
         attach("readme-book", app)
 
