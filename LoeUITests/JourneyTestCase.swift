@@ -23,6 +23,19 @@ class JourneyTestCase: XCTestCase {
         return app
     }
 
+    /// A journey that launches while the last one's Loe is still on its way out
+    /// fails on a slow simulator, so each one ends with Loe gone.
+    override func tearDown() async throws {
+        await MainActor.run { Self.quit(XCUIApplication()) }
+        try await super.tearDown()
+    }
+
+    @MainActor
+    static func quit(_ app: XCUIApplication) {
+        app.terminate()
+        XCTAssertTrue(app.wait(for: .notRunning, timeout: 30))
+    }
+
     @MainActor
     func attach(_ name: String, _ app: XCUIApplication) {
         let attachment = XCTAttachment(screenshot: app.screenshot())

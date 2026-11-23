@@ -5,23 +5,12 @@ import XCTest
 /// forgetting it and the class forgets it again when a journey ends, pass or fail:
 /// every other journey reads Loe in English.
 final class LanguageJourneyTests: JourneyTestCase {
-    @MainActor
-    private func quit(_ app: XCUIApplication) {
-        app.terminate()
-        // Relaunching while the old process is still on its way out fails on a slow simulator.
-        XCTAssertTrue(app.wait(for: .notRunning, timeout: 30))
-    }
-
     override func tearDown() async throws {
         await MainActor.run {
-            let app = XCUIApplication()
-            app.terminate()
-            _ = app.wait(for: .notRunning, timeout: 30)
-            let forgetting = Self.application(Self.quizSeen + ["-forgetLanguage", "YES"])
-            forgetting.launch()
-            forgetting.terminate()
-            _ = forgetting.wait(for: .notRunning, timeout: 30)
+            Self.quit(XCUIApplication())
+            Self.application(Self.quizSeen + ["-forgetLanguage", "YES"]).launch()
         }
+        try await super.tearDown()
     }
 
     @MainActor
@@ -44,7 +33,7 @@ final class LanguageJourneyTests: JourneyTestCase {
         attach("shelves-estonian", app)
 
         // It is still Estonian the next time Loe opens, on a phone set to English.
-        quit(app)
+        Self.quit(app)
         let again = launch([])
         XCTAssertTrue(again.tabBars.buttons["Riiulid"].waitForExistence(timeout: 5))
         XCTAssertFalse(again.staticTexts["Eesti või English?"].exists)
