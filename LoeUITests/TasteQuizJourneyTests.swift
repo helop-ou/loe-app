@@ -26,9 +26,7 @@ final class TasteQuizJourneyTests: JourneyTestCase {
         app.buttons["Skip"].tap()
         XCTAssertFalse(app.staticTexts["What do you like to read?"].waitForExistence(timeout: 2))
 
-        app.terminate()
-        // Relaunching while the old process is still on its way out fails on a slow simulator.
-        XCTAssertTrue(app.wait(for: .notRunning, timeout: 30))
+        Self.quit(app)
         let again = launch(firstTime: false)
         XCTAssertTrue(again.tabBars.buttons["Shelves"].waitForExistence(timeout: 5))
         XCTAssertFalse(again.staticTexts["What do you like to read?"].waitForExistence(timeout: 2))
