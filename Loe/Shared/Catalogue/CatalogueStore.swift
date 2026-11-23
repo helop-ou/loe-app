@@ -38,7 +38,13 @@ final class CatalogueStore {
     nonisolated private static let updateInterval: TimeInterval = 7 * 24 * 60 * 60
 
     nonisolated static var defaultURL: URL {
-        URL.applicationSupportDirectory.appending(path: "Catalogue/catalogue.sqlite")
+        #if DEBUG
+        // Lets a journey search a small catalogue of its own. See docs/catalogue.md.
+        if let file = UserDefaults.standard.string(forKey: "catalogueFile") {
+            return URL(filePath: file)
+        }
+        #endif
+        return URL.applicationSupportDirectory.appending(path: "Catalogue/catalogue.sqlite")
     }
 
     init(url: URL = defaultURL, downloader: CatalogueDownloader = .live, defaults: UserDefaults = .standard) {
