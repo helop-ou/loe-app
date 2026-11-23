@@ -84,6 +84,30 @@ struct SnapshotTests {
         #expect(differing == 804 * 101)
     }
 
+    /// What a shelf's row of covers is made of.
+    private static var sideways: some View {
+        ScrollView(.horizontal) {
+            Color.black.frame(width: 100, height: 100)
+        }
+    }
+
+    @Test func aWindowDrawsWhatScrollsSidewaysAndTheRendererLeavesItOut() throws {
+        let folder = Self.folder()
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let look = Snapshot.Look.all[0]
+        func outcome(on canvas: Snapshot.Canvas) throws -> Snapshot.Outcome {
+            try Snapshot.outcome(of: Self.sideways, named: "sideways", look: look, on: canvas, in: folder, rendersOnly: false)
+        }
+        #expect(try outcome(on: .window) == .recorded("sideways-light-en.png"))
+        #expect(try outcome(on: .window) == .matches)
+        guard case .differs(_, let pixels) = try outcome(on: .renderer) else {
+            Issue.record("The renderer drew what scrolls sideways")
+            return
+        }
+        // The black square, at two pixels to a point.
+        #expect(pixels == 200 * 200)
+    }
+
     @Test func aRenderThatFailsIsTriedAgain() {
         var goes = 0
         let value = Snapshot.firstSuccess(in: 3) {
