@@ -24,7 +24,7 @@ final class TasteQuizJourneyTests: JourneyTestCase {
         XCTAssertTrue(app.staticTexts["What do you like to read?"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["Done"].isEnabled)
         app.buttons["Skip"].tap()
-        XCTAssertFalse(app.staticTexts["What do you like to read?"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["What do you like to read?"].waitForNonExistence(timeout: 5))
 
         Self.quit(app)
         let again = launch(firstTime: false)
