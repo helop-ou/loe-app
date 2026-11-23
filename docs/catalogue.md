@@ -216,17 +216,30 @@ SHA-256, its size and its schema version.
 
 ### Trying it in the simulator
 
-To see search, copy a built catalogue into the installed app's container,
-then run the search journeys, which skip on a simulator without one:
+The journeys search a small catalogue of their own, so they find the same
+books on every simulator and on CI.
+[`JourneyCatalogue`](../LoeUITests/JourneyCatalogue.swift) builds it for each
+run from `schema.sql` and the records in `LoeUITests/Fixtures/catalogue.sql`:
+real ones from the bibliography, for the books the journeys look for and a
+few around each. A debug build launched with `-catalogueFile <path>` opens
+that file in place of its own. `JourneyCatalogueTests` names what each journey
+needs from it, so a change to the records, the schema or the matching fails
+there first. Run the journeys and look at their screenshots with:
+
+```sh
+xcodebuild test -scheme Loe -destination 'platform=iOS Simulator,id=<udid>' \
+  -only-testing:LoeUITests -collect-test-diagnostics never \
+  -resultBundlePath /tmp/journey.xcresult
+xcrun xcresulttool export attachments --path /tmp/journey.xcresult --output-path /tmp/journey
+```
+
+To see the whole catalogue in the app, as the README screens need it, copy a
+built one into the installed app's container:
 
 ```sh
 container="$(xcrun simctl get_app_container <udid> ee.helop.loe data)"
 mkdir -p "$container/Library/Application Support/Catalogue"
 cp /tmp/erb/catalogue.sqlite "$container/Library/Application Support/Catalogue/"
-xcodebuild test -scheme Loe -destination 'platform=iOS Simulator,id=<udid>' \
-  -only-testing:LoeUITests -collect-test-diagnostics never \
-  -resultBundlePath /tmp/journey.xcresult
-xcrun xcresulttool export attachments --path /tmp/journey.xcresult --output-path /tmp/journey
 ```
 
 To try the download, serve the xz file and a manifest naming it from the Mac,

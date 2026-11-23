@@ -171,10 +171,11 @@ or English, stored on the phone under `language`.
 - Journeys in `LoeUITests` launch Loe through
   [`JourneyTestCase`](../LoeUITests/JourneyTestCase.swift), never on their
   own, so each starts the same way: in English on a light phone, on an empty
-  in-memory library, with the quiz out of the way and off the network. Each
-  ends by quitting Loe and waiting until it is gone, because a journey that
-  launches while the last one's Loe is still on its way out fails on a slow
-  simulator.
+  in-memory library, searching a
+  [small catalogue of their own](catalogue.md#trying-it-in-the-simulator),
+  with the quiz out of the way and off the network. Each ends by quitting Loe
+  and waiting until it is gone, because a journey that launches while the
+  last one's Loe is still on its way out fails on a slow simulator.
 - A debug build launched with `-networkStub YES` never reaches the network.
   [`PrivateSession`](../Loe/Shared/Network/PrivateSession.swift) then fails
   every request as it does with no network, so the catalogue's update check
@@ -249,10 +250,10 @@ every file, whose review GitHub requests on each pull request.
 
 - **App tests (iOS)**: the whole `Loe` scheme, unit tests and journeys, on
   GitHub's `xcode-27` image with Xcode 27.2, on a regular iPhone on the newest
-  standard iOS runtime it has. The journeys that need the catalogue skip,
-  because the runner has none. When the local Xcode moves, move
-  `DEVELOPER_DIR` in the same change. A failed run keeps its result bundle
-  and log for 14 days.
+  standard iOS runtime it has. Every journey runs but the two that need the
+  real thing, the README screens and the catalogue download. When the local
+  Xcode moves, move `DEVELOPER_DIR` in the same change. A failed run keeps
+  its result bundle and log for 14 days.
 - **Catalogue build tests**: `tools/catalogue` on Ubuntu.
 - **SonarCloud scan**: the app tests collect coverage, and
   `scripts/coverage-to-sonar.py` turns the result bundle into Sonar's format.
