@@ -2,14 +2,14 @@ import XCTest
 
 /// Searches the real catalogue. A simulator without one skips, so copy a built
 /// catalogue into the app's container first (docs/catalogue.md, "Trying it in the simulator").
-final class SearchJourneyTests: XCTestCase {
+final class SearchJourneyTests: JourneyTestCase {
     @MainActor
     func testFindsABookByTitleWithoutDiacritics() throws {
         let app = try openSearch()
         search("keisri hull", in: app)
         XCTAssertTrue(app.staticTexts["Keisri hull"].firstMatch.waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["Jaan Kross"].firstMatch.exists)
-        attachScreenshot("search-results", of: app)
+        attach("search-results", app)
     }
 
     @MainActor
@@ -17,7 +17,7 @@ final class SearchJourneyTests: XCTestCase {
         let app = try openSearch()
         search("qqxxzzqq", in: app)
         XCTAssertTrue(app.staticTexts["No books found"].waitForExistence(timeout: 5))
-        attachScreenshot("search-nothing", of: app)
+        attach("search-nothing", app)
     }
 
     @MainActor
@@ -29,7 +29,7 @@ final class SearchJourneyTests: XCTestCase {
         field.buttons["Clear text"].tap()
         field.typeText("0-306-40615-2")
         XCTAssertTrue(app.staticTexts["No book with this ISBN"].waitForExistence(timeout: 5))
-        attachScreenshot("search-isbn-missing", of: app)
+        attach("search-isbn-missing", app)
     }
 
     @MainActor
@@ -41,18 +41,18 @@ final class SearchJourneyTests: XCTestCase {
         result.tap()
 
         XCTAssertTrue(app.staticTexts["Translations"].waitForExistence(timeout: 5))
-        attachScreenshot("book-top", of: app)
+        attach("book-top", app)
         app.swipeUp()
         XCTAssertTrue(app.staticTexts["Where to get it"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.links.matching(NSPredicate(format: "label CONTAINS 'ESTER'")).firstMatch.exists)
-        attachScreenshot("book-scrolled", of: app)
+        attach("book-scrolled", app)
         app.swipeDown()
 
         let translation = app.buttons.matching(NSPredicate(format: "label CONTAINS[c] 'czar'")).firstMatch
         XCTAssertTrue(translation.waitForExistence(timeout: 2))
         translation.tap()
         XCTAssertTrue(app.staticTexts["Translated from Estonian"].waitForExistence(timeout: 5))
-        attachScreenshot("book-translation", of: app)
+        attach("book-translation", app)
     }
 
     @MainActor
@@ -66,7 +66,7 @@ final class SearchJourneyTests: XCTestCase {
         for _ in 0..<4 where !similar.isHittable { app.swipeUp() }
         XCTAssertTrue(similar.waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label CONTAINS 'koolijutud'")).firstMatch.exists)
-        attachScreenshot("book-similar", of: app)
+        attach("book-similar", app)
     }
 
     /// Needs a catalogue served from the Mac and none on the simulator yet. See
@@ -76,31 +76,22 @@ final class SearchJourneyTests: XCTestCase {
         guard let manifest = ProcessInfo.processInfo.environment["LOE_CATALOGUE_MANIFEST"] else {
             throw XCTSkip("Set TEST_RUNNER_LOE_CATALOGUE_MANIFEST to a served manifest")
         }
-        let app = launch(arguments: ["-catalogueManifestURL", manifest])
+        let app = launch(Self.quizSeen + ["-catalogueManifestURL", manifest])
         app.tabBars.buttons["Search"].tap()
         let download = app.buttons["Download the catalogue"]
         guard download.waitForExistence(timeout: 3) else {
             throw XCTSkip("The catalogue is already on this simulator")
         }
-        attachScreenshot("download-offer", of: app)
+        attach("download-offer", app)
         download.tap()
         // From a server on the same Mac the download can finish before progress shows.
         if app.staticTexts["Downloading the catalogue"].waitForExistence(timeout: 1) {
-            attachScreenshot("download-progress", of: app)
+            attach("download-progress", app)
         }
         XCTAssertTrue(app.staticTexts["Find a book"].waitForExistence(timeout: 180))
         search("keisri hull", in: app)
         XCTAssertTrue(app.staticTexts["Keisri hull"].firstMatch.waitForExistence(timeout: 5))
-        attachScreenshot("download-done", of: app)
-    }
-
-    @MainActor
-    private func launch(arguments: [String] = []) -> XCUIApplication {
-        continueAfterFailure = false
-        let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES", "-inMemoryLibrary", "YES", "-openLibraryStub", "YES"] + arguments
-        app.launch()
-        return app
+        attach("download-done", app)
     }
 
     @MainActor
@@ -108,7 +99,7 @@ final class SearchJourneyTests: XCTestCase {
         let app = launch()
         app.tabBars.buttons["Search"].tap()
         if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {
-            attachScreenshot("search-no-catalogue", of: app)
+            attach("search-no-catalogue", app)
             throw XCTSkip("No catalogue on this simulator")
         }
         return app
@@ -120,13 +111,5 @@ final class SearchJourneyTests: XCTestCase {
         XCTAssertTrue(field.waitForExistence(timeout: 5))
         field.tap()
         field.typeText(text)
-    }
-
-    @MainActor
-    private func attachScreenshot(_ name: String, of app: XCUIApplication) {
-        let attachment = XCTAttachment(screenshot: app.screenshot())
-        attachment.name = name
-        attachment.lifetime = .keepAlways
-        add(attachment)
     }
 }

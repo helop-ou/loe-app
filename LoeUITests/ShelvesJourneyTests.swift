@@ -2,13 +2,10 @@ import XCTest
 
 /// Shelves a book and tracks reading it, on an in-memory library that starts empty.
 /// Needs the catalogue on the simulator, like the search journeys.
-final class ShelvesJourneyTests: XCTestCase {
+final class ShelvesJourneyTests: JourneyTestCase {
     @MainActor
     func testShelvesABookAndTracksReadingIt() throws {
-        continueAfterFailure = false
-        let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES", "-inMemoryLibrary", "YES", "-openLibraryStub", "YES"]
-        app.launch()
+        let app = launch()
 
         XCTAssertTrue(app.staticTexts["Your shelves are empty"].waitForExistence(timeout: 5))
         app.tabBars.buttons["Search"].tap()
@@ -71,10 +68,7 @@ final class ShelvesJourneyTests: XCTestCase {
     /// removing it does not ask.
     @MainActor
     func testRemovesABookThatIsOnlyOnAShelfWithoutAsking() throws {
-        continueAfterFailure = false
-        let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES", "-inMemoryLibrary", "YES", "-openLibraryStub", "YES"]
-        app.launch()
+        let app = launch()
 
         app.tabBars.buttons["Search"].tap()
         if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {
@@ -104,10 +98,7 @@ final class ShelvesJourneyTests: XCTestCase {
     /// with `xcrun simctl addmedia <udid> cover.jpg`.
     @MainActor
     func testGivesABookACoverPhoto() throws {
-        continueAfterFailure = false
-        let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES", "-inMemoryLibrary", "YES", "-openLibraryStub", "YES"]
-        app.launch()
+        let app = launch()
         app.tabBars.buttons["Search"].tap()
         if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {
             throw XCTSkip("No catalogue on this simulator")
@@ -134,13 +125,5 @@ final class ShelvesJourneyTests: XCTestCase {
         app.tabBars.buttons["Shelves"].tap()
         XCTAssertTrue(app.staticTexts["Keisri hull"].waitForExistence(timeout: 5))
         attach("cover-shelves", app)
-    }
-
-    @MainActor
-    private func attach(_ name: String, _ app: XCUIApplication) {
-        let attachment = XCTAttachment(screenshot: app.screenshot())
-        attachment.name = name
-        attachment.lifetime = .keepAlways
-        add(attachment)
     }
 }

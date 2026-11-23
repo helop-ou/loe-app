@@ -3,16 +3,11 @@ import XCTest
 /// The quiz on first launch, after its language step, its answers in Read next, and
 /// changing them in Settings, on an in-memory library. Read next needs the catalogue
 /// on the simulator.
-final class TasteQuizJourneyTests: XCTestCase {
+final class TasteQuizJourneyTests: JourneyTestCase {
     @MainActor
     private func launch(firstTime: Bool) -> XCUIApplication {
-        continueAfterFailure = false
-        let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-inMemoryLibrary", "YES", "-openLibraryStub", "YES"]
         // Launch arguments win over what the app saved, so only pass one to start fresh.
-        if firstTime { app.launchArguments += ["-tasteQuizSeen", "NO", "-forgetLanguage", "YES"] }
-        app.launch()
-        return app
+        launch(firstTime ? ["-tasteQuizSeen", "NO", "-forgetLanguage", "YES"] : [])
     }
 
     /// The first launch asks for the language before the tastes.
@@ -78,13 +73,5 @@ final class TasteQuizJourneyTests: XCTestCase {
         XCTAssertTrue(crime.waitForExistence(timeout: 10))
         XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'From your tastes: Fantasy'")).firstMatch.waitForNonExistence(timeout: 10))
         attach("read-next-one-taste", app)
-    }
-
-    @MainActor
-    private func attach(_ name: String, _ app: XCUIApplication) {
-        let attachment = XCTAttachment(screenshot: app.screenshot())
-        attachment.name = name
-        attachment.lifetime = .keepAlways
-        add(attachment)
     }
 }

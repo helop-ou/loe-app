@@ -2,13 +2,10 @@ import XCTest
 
 /// Adds a book the catalogue doesn't have, by hand, on an in-memory library that
 /// starts empty. Search needs the catalogue on the simulator, like the search journeys.
-final class AddBookJourneyTests: XCTestCase {
+final class AddBookJourneyTests: JourneyTestCase {
     @MainActor
     func testAddsABookByHandEditsItAndRemovesIt() throws {
-        continueAfterFailure = false
-        let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES", "-inMemoryLibrary", "YES", "-openLibraryStub", "YES"]
-        app.launch()
+        let app = launch()
 
         app.tabBars.buttons["Search"].tap()
         if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {
@@ -72,13 +69,5 @@ final class AddBookJourneyTests: XCTestCase {
         attach("remove-book", app)
         app.buttons["Remove"].tap()
         XCTAssertTrue(app.staticTexts["Your shelves are empty"].waitForExistence(timeout: 5))
-    }
-
-    @MainActor
-    private func attach(_ name: String, _ app: XCUIApplication) {
-        let attachment = XCTAttachment(screenshot: app.screenshot())
-        attachment.name = name
-        attachment.lifetime = .keepAlways
-        add(attachment)
     }
 }

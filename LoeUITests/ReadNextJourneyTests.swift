@@ -2,13 +2,10 @@ import XCTest
 
 /// Rates a book and follows what Read next suggests, on an in-memory library that
 /// starts empty. Needs the catalogue on the simulator, like the search journeys.
-final class ReadNextJourneyTests: XCTestCase {
+final class ReadNextJourneyTests: JourneyTestCase {
     @MainActor
     func testSuggestsBooksFromAFavouriteAndKeepsOneForLater() throws {
-        continueAfterFailure = false
-        let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES", "-inMemoryLibrary", "YES", "-openLibraryStub", "YES"]
-        app.launch()
+        let app = launch()
 
         app.tabBars.buttons["Read next"].tap()
         if app.staticTexts["Suggestions need the catalogue"].waitForExistence(timeout: 2) {
@@ -55,13 +52,5 @@ final class ReadNextJourneyTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Want to read"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons.matching(NSPredicate(format: "%@ BEGINSWITH label", kept)).firstMatch.exists, kept)
         attach("read-next-shelves", app)
-    }
-
-    @MainActor
-    private func attach(_ name: String, _ app: XCUIApplication) {
-        let attachment = XCTAttachment(screenshot: app.screenshot())
-        attachment.name = name
-        attachment.lifetime = .keepAlways
-        add(attachment)
     }
 }

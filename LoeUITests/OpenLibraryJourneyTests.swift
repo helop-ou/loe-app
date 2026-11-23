@@ -4,14 +4,10 @@ import XCTest
 /// answers a search for Halo, by title or ISBN, with Halo, so the journey never
 /// touches the network. Search needs the catalogue on the simulator, like the
 /// search journeys.
-final class OpenLibraryJourneyTests: XCTestCase {
+final class OpenLibraryJourneyTests: JourneyTestCase {
     @MainActor
     func testFindsABookFromAbroadAndShelvesIt() throws {
-        continueAfterFailure = false
-        let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES",
-                                "-inMemoryLibrary", "YES", "-openLibraryStub", "YES"]
-        app.launch()
+        let app = launch()
 
         app.tabBars.buttons["Search"].tap()
         if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {
@@ -61,11 +57,7 @@ final class OpenLibraryJourneyTests: XCTestCase {
     /// A scan types the ISBN into Search, so typing it is the same journey.
     @MainActor
     func testFindsABookFromAbroadByItsISBN() throws {
-        continueAfterFailure = false
-        let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES",
-                                "-inMemoryLibrary", "YES", "-openLibraryStub", "YES"]
-        app.launch()
+        let app = launch()
         app.tabBars.buttons["Search"].tap()
         if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {
             throw XCTSkip("No catalogue on this simulator")
@@ -94,11 +86,7 @@ final class OpenLibraryJourneyTests: XCTestCase {
     /// The catalogue has Project Hail Mary in Estonian, as „Ave Maria“.
     @MainActor
     func testABookFromAbroadLinksToItsEstonianTranslation() throws {
-        continueAfterFailure = false
-        let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES",
-                                "-inMemoryLibrary", "YES", "-openLibraryStub", "YES"]
-        app.launch()
+        let app = launch()
         app.tabBars.buttons["Search"].tap()
         if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {
             throw XCTSkip("No catalogue on this simulator")
@@ -127,11 +115,7 @@ final class OpenLibraryJourneyTests: XCTestCase {
 
     @MainActor
     func testSaysSoWhenOpenLibraryCantBeReached() throws {
-        continueAfterFailure = false
-        let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-tasteQuizSeen", "YES",
-                                "-inMemoryLibrary", "YES", "-openLibraryStub", "YES"]
-        app.launch()
+        let app = launch()
         app.tabBars.buttons["Search"].tap()
         if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {
             throw XCTSkip("No catalogue on this simulator")
@@ -143,13 +127,5 @@ final class OpenLibraryJourneyTests: XCTestCase {
         // Adding it by hand still works without the network.
         XCTAssertTrue(app.buttons["Can't find it? Add it yourself"].exists)
         attach("openlibrary-offline", app)
-    }
-
-    @MainActor
-    private func attach(_ name: String, _ app: XCUIApplication) {
-        let attachment = XCTAttachment(screenshot: app.screenshot())
-        attachment.name = name
-        attachment.lifetime = .keepAlways
-        add(attachment)
     }
 }
