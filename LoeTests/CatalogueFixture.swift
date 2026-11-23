@@ -29,10 +29,8 @@ enum CatalogueFixture {
         headings: String = "",
         at url: URL = URL.temporaryDirectory.appending(path: "catalogue-\(UUID().uuidString).sqlite")
     ) throws -> URL {
-        var db: OpaquePointer?
-        try #require(sqlite3_open(url.path, &db) == SQLITE_OK)
-        defer { sqlite3_close(db) }
-        let sql = try String(contentsOf: schema, encoding: .utf8) + """
+        try build(
+            """
             INSERT INTO meta VALUES ('schema_version', '\(version)');
             INSERT INTO edition (id, erb_id, title, authors, year, fiction, electronic, original_title, language, original_language, series)
               VALUES \(books);
@@ -40,9 +38,29 @@ enum CatalogueFixture {
             \(headings)
             INSERT INTO edition_search (rowid, title, authors, series, original_title)
               SELECT id, title, authors, series, original_title FROM edition;
-            """
+            """,
+            at: url
+        )
+    }
+
+    /// The catalogue the journeys search, built as `JourneyCatalogue` in LoeUITests
+    /// builds it.
+    static func journeys() throws -> URL {
+        let records = URL(filePath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent()
+            .appending(path: "LoeUITests/Fixtures/catalogue.sql")
+        return try build(
+            String(contentsOf: records, encoding: .utf8),
+            at: URL.temporaryDirectory.appending(path: "catalogue-\(UUID().uuidString).sqlite")
+        )
+    }
+
+    private static func build(_ records: String, at url: URL) throws -> URL {
+        var db: OpaquePointer?
+        try #require(sqlite3_open(url.path, &db) == SQLITE_OK)
+        defer { sqlite3_close(db) }
         try #require(
-            sqlite3_exec(db, sql, nil, nil, nil) == SQLITE_OK,
+            sqlite3_exec(db, try String(contentsOf: schema, encoding: .utf8) + records, nil, nil, nil) == SQLITE_OK,
             Comment(rawValue: String(cString: sqlite3_errmsg(db)))
         )
         return url
