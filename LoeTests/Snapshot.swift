@@ -6,10 +6,11 @@ import UniformTypeIdentifiers
 
 /// Renders a view the way a reader sees it and compares it with a reference PNG in
 /// LoeTests/Snapshots/iOS-<version>. Text renders a little differently on each iOS
-/// version, so references are kept per runtime, and on a runtime without a folder
-/// the view is only rendered and attached. Inside the folder a missing reference is
-/// written and the test fails once, so look at the new PNG before committing it.
-/// Delete a reference to record it again, or create a folder for a new runtime.
+/// version, so references are kept per runtime, and a run on a runtime without a
+/// folder fails unless it asked to only render. Inside the folder a missing
+/// reference is written and the test fails once, so look at the new PNG before
+/// committing it. Delete a reference to record it again, or create a folder for a
+/// new runtime.
 @MainActor
 enum Snapshot {
     nonisolated struct Look: Sendable, CustomTestStringConvertible {
@@ -32,26 +33,69 @@ enum Snapshot {
     /// The share of pixels that may differ, for antialiasing.
     static let tolerance = 0.001
 
-    private static let directory = URL(filePath: #filePath)
+    static let directory = URL(filePath: #filePath)
         .deletingLastPathComponent()
         .appending(path: "Snapshots/iOS-\(UIDevice.current.systemVersion)")
 
+    /// Whether this run asked to only render where its iOS has no references:
+    /// `TEST_RUNNER_LOE_SNAPSHOTS_RENDER_ONLY=1 xcodebuild test`.
+    static let rendersOnly = ProcessInfo.processInfo.environment["LOE_SNAPSHOTS_RENDER_ONLY"] != nil
+
+    /// What became of a snapshot.
+    enum Outcome: Equatable {
+        case matches
+        /// The run asked to only render, and its iOS has no references.
+        case renderedOnly
+        case noReferences(folder: String)
+        case recorded(String)
+        case differs(String, share: Double)
+
+        /// What the test fails with, or nil when nothing is wrong.
+        var problem: String? {
+            switch self {
+            case .matches, .renderedOnly:
+                nil
+            case .noReferences(let folder):
+                """
+                No references for this iOS: \(folder) is not in LoeTests/Snapshots. Create the folder to record \
+                them and look at each PNG before committing it, or run with \
+                TEST_RUNNER_LOE_SNAPSHOTS_RENDER_ONLY=1 to only render.
+                """
+            case .recorded(let file):
+                "Recorded \(file). Look at it, then run again."
+            case .differs(let file, let share):
+                "\(Int(share * 100))% of \(file) differs"
+            }
+        }
+    }
+
     static func verify(_ view: some View, named name: String, look: Look) throws {
+        let outcome = try outcome(of: view, named: name, look: look, in: directory, rendersOnly: rendersOnly)
+        if let problem = outcome.problem {
+            Issue.record(Comment(rawValue: problem))
+        }
+    }
+
+    static func outcome(
+        of view: some View, named name: String, look: Look, in directory: URL, rendersOnly: Bool
+    ) throws -> Outcome {
+        let file = "\(name)-\(look.name).png"
         let (image, png) = try #require(
             firstSuccess(in: 3) { render(view, look: look).flatMap { image in pngData(image).map { (image, $0) } } },
             "\(name)-\(look.name) could not be rendered and made into a PNG"
         )
-        Attachment.record(png, named: "\(name)-\(look.name).png")
+        Attachment.record(png, named: file)
 
-        guard FileManager.default.fileExists(atPath: directory.path) else { return }
-        let reference = directory.appending(path: "\(name)-\(look.name).png")
+        guard FileManager.default.fileExists(atPath: directory.path) else {
+            return rendersOnly ? .renderedOnly : .noReferences(folder: directory.lastPathComponent)
+        }
+        let reference = directory.appending(path: file)
         guard let expected = CGImageSourceCreateWithURL(reference as CFURL, nil).flatMap({ CGImageSourceCreateImageAtIndex($0, 0, nil) }) else {
             try png.write(to: reference)
-            Issue.record("Recorded \(reference.lastPathComponent). Look at it, then run again.")
-            return
+            return .recorded(file)
         }
         let difference = try #require(differingShare(image, expected))
-        #expect(difference <= tolerance, "\(Int(difference * 100))% of \(reference.lastPathComponent) differs")
+        return difference <= tolerance ? .matches : .differs(file, share: difference)
     }
 
     /// The first answer `make` gives in this many goes. On a busy CI runner the
