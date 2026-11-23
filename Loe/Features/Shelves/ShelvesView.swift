@@ -5,11 +5,10 @@ import SwiftUI
 /// each other shelf that has books on it.
 struct ShelvesView: View {
     @Query(sort: \ShelvedBook.updatedAt, order: .reverse) private var books: [ShelvedBook]
-
-    private static let rails: [Shelf] = [.wantToRead, .read, .setAside, .didNotFinish]
+    @State private var path = NavigationPath()
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             Group {
                 if books.isEmpty {
                     EmptyState(
@@ -19,19 +18,10 @@ struct ShelvesView: View {
                     )
                 } else {
                     ScrollView {
-                        VStack(alignment: .leading, spacing: 28) {
-                            ForEach(books.filter { $0.shelf == .reading }) { book in
-                                NavigationLink(value: book.work) {
-                                    ReadingCard(book: book)
-                                }
-                                .buttonStyle(.plain)
-                            }
-                            ForEach(Self.rails, id: \.self) { shelf in
-                                let onShelf = books.filter { $0.shelf == shelf }
-                                if !onShelf.isEmpty {
-                                    ShelfRail(shelf: shelf, books: onShelf)
-                                }
-                            }
+                        ShelvesList(books: books) { book in
+                            path.append(book.work)
+                        } openShelf: { shelf in
+                            path.append(shelf)
                         }
                         .padding(.horizontal, 20)
                         .padding(.vertical, 12)
@@ -51,6 +41,36 @@ struct ShelvesView: View {
             }
             .navigationDestination(for: CatalogueWork.self) { BookView(work: $0) }
             .navigationDestination(for: Shelf.self) { ShelfListView(shelf: $0) }
+        }
+    }
+}
+
+/// The books being read, then a row of covers for each other shelf with books on
+/// it. Opening a book or a shelf is left to the screen, so that a snapshot can draw
+/// this without a navigation stack.
+struct ShelvesList: View {
+    let books: [ShelvedBook]
+    let open: (ShelvedBook) -> Void
+    let openShelf: (Shelf) -> Void
+
+    private static let rails: [Shelf] = [.wantToRead, .read, .setAside, .didNotFinish]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 28) {
+            ForEach(books.filter { $0.shelf == .reading }) { book in
+                Button {
+                    open(book)
+                } label: {
+                    ReadingCard(book: book)
+                }
+                .buttonStyle(.plain)
+            }
+            ForEach(Self.rails, id: \.self) { shelf in
+                let onShelf = books.filter { $0.shelf == shelf }
+                if !onShelf.isEmpty {
+                    ShelfRail(shelf: shelf, books: onShelf, open: open) { openShelf(shelf) }
+                }
+            }
         }
     }
 }
@@ -92,10 +112,12 @@ private struct ReadingCard: View {
 private struct ShelfRail: View {
     let shelf: Shelf
     let books: [ShelvedBook]
+    let open: (ShelvedBook) -> Void
+    let openShelf: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            NavigationLink(value: shelf) {
+            Button(action: openShelf) {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Text(shelf.name)
                         .loeHeading(.section)
@@ -113,7 +135,9 @@ private struct ShelfRail: View {
                 // Lazy, so covers are asked for only as books scroll into view.
                 LazyHStack(alignment: .top, spacing: 14) {
                     ForEach(books.prefix(20)) { book in
-                        NavigationLink(value: book.work) {
+                        Button {
+                            open(book)
+                        } label: {
                             ShelvedBookCover(book: book, width: 96)
                         }
                         .buttonStyle(.plain)
