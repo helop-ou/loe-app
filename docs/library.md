@@ -90,7 +90,7 @@ on the book's page, and its colour gives the wash until there is a photo.
   `covers.openlibrary.org`, with the same `User-Agent` as search and no
   cookies. Open Library redirects to the Internet Archive (`archive.org`),
   which serves the image and so sees the same request. Debug builds launched
-  with `-openLibraryStub YES` give every cover id a plain green cover and no
+  with `-networkStub YES` give every cover id a plain green cover and no
   ISBN one, from memory only.
 
 ## Books entered by hand
@@ -259,7 +259,9 @@ is), on its way, only to read there, or not in this library (Puudub).
 
 Without a network or an answer the row says it could not check, and the link
 still opens ESTER. `AvailabilityTests` reads two holdings pages saved in
-`LoeTests/Fixtures`.
+`LoeTests/Fixtures`. Debug builds launched with `-networkStub YES` ask nobody:
+every record has one copy, on the shelf at Kännukuke, so the journey that
+picks that library sees it answer.
 
 ## Rules
 
@@ -317,10 +319,13 @@ the synced models and reads them back from a store on disk, so a rename fails
 a test instead of reaching iCloud.
 
 In debug builds the `-inMemoryLibrary YES` launch argument opens an empty
-in-memory library, which the journeys use so they start from empty shelves and
-leave nothing behind. They pass `-tasteQuizSeen YES` so the quiz stays away,
-and `TasteQuizJourneyTests` passes `NO` to see it. Its cover journey picks the newest photo in the simulator's
-Photos, so add a cover image first with `xcrun simctl addmedia <udid> cover.jpg`.
+in-memory library, which every journey gets so it starts from empty shelves
+and leaves nothing behind. They pass `-tasteQuizSeen YES` so the quiz stays
+away, and `TasteQuizJourneyTests` passes `NO` to see it. The
+[standards](standards.md#review-and-verification) say how a journey launches.
+The cover journey in `ShelvesJourneyTests` picks the newest photo in the
+simulator's Photos, so add a cover image first with
+`xcrun simctl addmedia <udid> cover.jpg`.
 
 `LibraryStoreTests` opens a store that can't be opened, and
 `LibraryUnavailableJourneyTests` launches with `-libraryCannotOpen YES`, which

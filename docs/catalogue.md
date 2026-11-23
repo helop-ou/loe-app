@@ -299,7 +299,7 @@ How it is kept on a shelf is in [Library](library.md#books-from-open-library).
 
 With no network, or when Open Library fails, the catalogue's results show as
 they are and the section says it can't be reached. Debug builds launched with
-`-openLibraryStub YES` answer "halo", or the ISBN 9780345451323, with a fixed
+`-networkStub YES` answer "halo", or the ISBN 9780345451323, with a fixed
 Halo book, and "hail mary" with *Project Hail Mary*, which the catalogue has in
 Estonian. They fail any search with "offline" in it and find nothing for
 anything else, so the journeys never touch the network.
