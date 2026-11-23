@@ -28,6 +28,15 @@ enum Snapshot {
         ]
     }
 
+    /// What draws the view. The renderer is enough for a plain piece of a screen. A
+    /// window draws what the renderer leaves out: native controls such as a progress
+    /// bar, and rows that scroll sideways. It holds the view in a scroll view, as a
+    /// screen does, so text takes the lines it needs.
+    nonisolated enum Canvas: Sendable {
+        case renderer
+        case window
+    }
+
     /// The width of an iPhone 17 Pro.
     static let width: CGFloat = 402
     /// How many pixels may differ. A count and not a share of the image, so a
@@ -70,19 +79,19 @@ enum Snapshot {
         }
     }
 
-    static func verify(_ view: some View, named name: String, look: Look) throws {
-        let outcome = try outcome(of: view, named: name, look: look, in: directory, rendersOnly: rendersOnly)
+    static func verify(_ view: some View, named name: String, look: Look, on canvas: Canvas = .renderer) throws {
+        let outcome = try outcome(of: view, named: name, look: look, on: canvas, in: directory, rendersOnly: rendersOnly)
         if let problem = outcome.problem {
             Issue.record(Comment(rawValue: problem))
         }
     }
 
     static func outcome(
-        of view: some View, named name: String, look: Look, in directory: URL, rendersOnly: Bool
+        of view: some View, named name: String, look: Look, on canvas: Canvas = .renderer, in directory: URL, rendersOnly: Bool
     ) throws -> Outcome {
         let file = "\(name)-\(look.name).png"
         let (image, png) = try #require(
-            firstSuccess(in: 3) { render(view, look: look).flatMap { image in pngData(image).map { (image, $0) } } },
+            firstSuccess(in: 3) { render(view, look: look, on: canvas).flatMap { image in pngData(image).map { (image, $0) } } },
             "\(name)-\(look.name) could not be rendered and made into a PNG"
         )
         Attachment.record(png, named: file)
@@ -108,15 +117,54 @@ enum Snapshot {
         return nil
     }
 
-    private static func render(_ view: some View, look: Look) -> CGImage? {
-        let renderer = ImageRenderer(content: view
-            .frame(width: width)
+    private static func render(_ view: some View, look: Look, on canvas: Canvas) -> CGImage? {
+        switch canvas {
+        case .renderer:
+            let renderer = ImageRenderer(content: dressed(view.frame(width: width), look: look))
+            renderer.scale = 2
+            return renderer.cgImage
+        case .window:
+            return renderInWindow(dressed(ScrollView { view }.scrollIndicators(.hidden).frame(width: width), look: look), dark: look.dark)
+        }
+    }
+
+    private static func dressed(_ view: some View, look: Look) -> some View {
+        view
             .background(Color.loeBackground)
             .environment(\.colorScheme, look.dark ? .dark : .light)
             .environment(\.locale, Locale(identifier: look.language))
-            .environment(\.dynamicTypeSize, look.size))
-        renderer.scale = 2
-        return renderer.cgImage
+            .environment(\.dynamicTypeSize, look.size)
+    }
+
+    /// Lays the view out in a window of the app the tests run in, as tall as what
+    /// its scroll view holds, and draws the window's layers.
+    private static func renderInWindow(_ view: some View, dark: Bool) -> CGImage? {
+        guard let scene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first else { return nil }
+        let controller = UIHostingController(rootView: view)
+        controller.overrideUserInterfaceStyle = dark ? .dark : .light
+        controller.safeAreaRegions = []
+        let window = UIWindow(windowScene: scene)
+        defer { window.isHidden = true }
+        func layOut(height: CGFloat) {
+            window.frame = CGRect(x: 0, y: 0, width: width, height: height)
+            controller.view.frame = window.bounds
+            controller.view.layoutIfNeeded()
+        }
+        window.rootViewController = controller
+        window.isHidden = false
+        layOut(height: 800)
+        guard let content = scrollView(in: controller.view)?.contentSize.height, content > 0 else { return nil }
+        layOut(height: content.rounded(.up))
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 2
+        format.opaque = true
+        return UIGraphicsImageRenderer(size: window.bounds.size, format: format).image { context in
+            controller.view.layer.render(in: context.cgContext)
+        }.cgImage
+    }
+
+    private static func scrollView(in view: UIView) -> UIScrollView? {
+        (view as? UIScrollView) ?? view.subviews.lazy.compactMap(scrollView(in:)).first
     }
 
     private static func pngData(_ image: CGImage) -> Data? {
