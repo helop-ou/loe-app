@@ -54,7 +54,6 @@ jobs:
           ')"
           echo "udid=$udid" >> "$GITHUB_OUTPUT"
 
-      # The journeys that need the catalogue skip, because the runner has none.
       - name: Test
         env:
           UDID: ${{ steps.simulator.outputs.udid }}
