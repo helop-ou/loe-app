@@ -160,9 +160,14 @@ or English, stored on the phone under `language`.
 - Snapshot tests render a view with `Snapshot.verify` in `LoeTests` and compare
   it with a PNG in `LoeTests/Snapshots/iOS-<version>`, in light English, dark
   Estonian and an accessibility size. Text renders differently on each iOS
-  version, so a runtime without a folder only renders and attaches. A missing
-  reference is recorded and fails the test once: look at it before committing
-  it. To record again, delete the PNG, or create the folder for a new runtime.
+  version, so references are kept for each, and a run on a version without a
+  folder fails and says so. To only render there, run with
+  `TEST_RUNNER_LOE_SNAPSHOTS_RENDER_ONLY=1`. A missing reference is recorded
+  and fails the test once: look at it before committing it. To record again,
+  delete the PNG, or create the folder for a new runtime. A snapshot may
+  differ from its reference by `Snapshot.budget` pixels and no more. That is a
+  count and not a share of the image, so a changed icon fails however tall
+  the snapshot is.
   A busy CI runner now and then renders an image no PNG can be made from, so
   a render that fails is tried up to three times before the test fails.
   `ImageRenderer` cannot draw a `NavigationStack`, and a `NavigationLink`
@@ -249,8 +254,11 @@ every file, whose review GitHub requests on each pull request.
 `main`, never on a schedule:
 
 - **App tests (iOS)**: the whole `Loe` scheme, unit tests and journeys, on
-  GitHub's `xcode-27` image with Xcode 27.2, on a regular iPhone on the newest
-  standard iOS runtime it has. Every journey runs but the two that need the
+  GitHub's `xcode-27` image with Xcode 27.2, on a regular iPhone on the iOS
+  the snapshot references are for: the newest folder in `LoeTests/Snapshots`
+  that the image has a runtime for. A newer iOS on the image is left alone
+  until its references are recorded, and the job fails when the image has a
+  runtime for none of the folders. Every journey runs but the two that need the
   real thing, the README screens and the catalogue download. When the local
   Xcode moves, move `DEVELOPER_DIR` in the same change. A failed run keeps
   its result bundle and log for 14 days.
