@@ -59,6 +59,12 @@ final class ShelvesJourneyTests: JourneyTestCase {
         XCTAssertTrue(app.staticTexts["Read"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.staticTexts["p. 212 of 352"].exists)
         attach("shelves-read", app)
+
+        // A shelf's heading opens the whole shelf.
+        app.buttons["Read, 1"].tap()
+        XCTAssertTrue(app.navigationBars["Read"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label CONTAINS 'Keisri hull'")).firstMatch.exists)
+        attach("shelves-shelf", app)
     }
 
     /// A book that is only on a shelf has nothing of the reader's to lose, so
