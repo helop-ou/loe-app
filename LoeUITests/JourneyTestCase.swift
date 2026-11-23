@@ -1,8 +1,8 @@
 import XCTest
 
 /// A journey through the real app. Every journey launches Loe through here, so
-/// they all start the same way: in English, on an empty in-memory library, with
-/// Open Library answered for. See docs/library.md, "Testing".
+/// they all start the same way: in English on a light phone, on an empty
+/// in-memory library, with Open Library answered for. See docs/library.md, "Testing".
 class JourneyTestCase: XCTestCase {
     /// Keeps the quiz away. A journey about the quiz passes its own.
     static let quizSeen = ["-tasteQuizSeen", "YES"]
@@ -18,6 +18,7 @@ class JourneyTestCase: XCTestCase {
     @MainActor
     func launch(_ extra: [String] = JourneyTestCase.quizSeen) -> XCUIApplication {
         continueAfterFailure = false
+        XCUIDevice.shared.appearance = .light
         let app = Self.application(extra)
         app.launch()
         return app
