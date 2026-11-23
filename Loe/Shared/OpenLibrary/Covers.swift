@@ -63,7 +63,7 @@ actor Covers {
         #if DEBUG
         // Journeys never touch the network: every cover id has a plain green
         // cover, and no ISBN has one.
-        if UserDefaults.standard.bool(forKey: "openLibraryStub") {
+        if NetworkStub.isOn {
             return Covers(directory: nil) { request in
                 guard request.url?.path().contains("/b/id/") == true else { return (Data(), 404) }
                 let image = UIGraphicsImageRenderer(size: CGSize(width: 120, height: 180)).jpegData(withCompressionQuality: 0.8) { context in

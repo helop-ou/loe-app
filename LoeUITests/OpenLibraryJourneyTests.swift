@@ -1,6 +1,6 @@
 import XCTest
 
-/// Finds a book from abroad on Open Library and shelves it. `-openLibraryStub YES`
+/// Finds a book from abroad on Open Library and shelves it. `-networkStub YES`
 /// answers a search for Halo, by title or ISBN, with Halo, so the journey never
 /// touches the network. Search needs the catalogue on the simulator, like the
 /// search journeys.
