@@ -107,12 +107,9 @@ final class ShelvesJourneyTests: JourneyTestCase {
         XCTAssertTrue(cover.waitForExistence(timeout: 5))
         cover.tap()
         app.buttons["Choose a photo"].tap()
-        // The photo picker runs in its own process, so its photos are not in the
-        // app's tree. The newest photo is the first thumbnail, top left.
-        Thread.sleep(forTimeInterval: 3)
-        app.coordinate(withNormalizedOffset: CGVector(dx: 0.16, dy: 0.42)).tap()
+        chooseTheNewestPhoto(in: app)
 
-        XCTAssertTrue(app.buttons["Change the cover photo"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["Change the cover photo"].waitForExistence(timeout: 30))
         attach("cover-book", app)
         app.tabBars.buttons["Shelves"].tap()
         app.tabBars.buttons["Shelves"].tap()

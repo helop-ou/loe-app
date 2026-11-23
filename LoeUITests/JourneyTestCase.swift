@@ -54,6 +54,16 @@ class JourneyTestCase: XCTestCase {
         XCTAssertTrue(app.wait(for: .notRunning, timeout: 30))
     }
 
+    /// Picks the newest photo in the system's photo picker, the first in its grid.
+    /// The picker can be slow to fill on a busy simulator, so this waits for the
+    /// photo itself.
+    @MainActor
+    func chooseTheNewestPhoto(in app: XCUIApplication) {
+        let photo = app.images.matching(identifier: "PXGGridLayout-Info").firstMatch
+        XCTAssertTrue(photo.waitForExistence(timeout: 90), "The photo picker shows no photos")
+        photo.tap()
+    }
+
     @MainActor
     func attach(_ name: String, _ app: XCUIApplication) {
         let attachment = XCTAttachment(screenshot: app.screenshot())
