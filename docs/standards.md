@@ -168,6 +168,22 @@ or English, stored on the phone under `language`.
   `ImageRenderer` cannot draw a `NavigationStack`, and a `NavigationLink`
   outside one draws as disabled, so a view meant for a snapshot takes what
   opens a book as an action and its screen pushes it onto a path.
+- Journeys in `LoeUITests` launch Loe through
+  [`JourneyTestCase`](../LoeUITests/JourneyTestCase.swift), never on their
+  own, so each starts the same way: in English on a light phone, on an empty
+  in-memory library, with the quiz out of the way and off the network. Each
+  ends by quitting Loe and waiting until it is gone, because a journey that
+  launches while the last one's Loe is still on its way out fails on a slow
+  simulator.
+- A debug build launched with `-networkStub YES` never reaches the network.
+  [`PrivateSession`](../Loe/Shared/Network/PrivateSession.swift) then fails
+  every request as it does with no network, so the catalogue's update check
+  at launch finds nothing. Open Library, its covers and ESTER answer from
+  fixed answers kept beside each client, which
+  [Catalogue](catalogue.md#books-from-abroad) and
+  [Library](library.md#availability) describe. Every journey passes it, and
+  the scheme passes it to the app that hosts the unit tests. The one journey
+  that goes on the network downloads a catalogue served from the Mac.
 - No new compiler warnings, and no blanket suppression.
 
 ### Pull requests
