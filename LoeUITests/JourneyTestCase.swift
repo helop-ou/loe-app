@@ -11,7 +11,7 @@ class JourneyTestCase: XCTestCase {
     @MainActor
     static func application(_ extra: [String] = quizSeen) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-inMemoryLibrary", "YES", "-openLibraryStub", "YES"] + extra
+        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-inMemoryLibrary", "YES", "-networkStub", "YES"] + extra
         return app
     }
 

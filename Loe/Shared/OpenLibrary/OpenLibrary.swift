@@ -28,7 +28,7 @@ actor OpenLibrary {
         // finds Halo, one with "hail mary" finds Project Hail Mary, which the
         // catalogue has in Estonian, one with "offline" fails as with no network,
         // and any other finds nothing.
-        if UserDefaults.standard.bool(forKey: "openLibraryStub") {
+        if NetworkStub.isOn {
             return OpenLibrary { request in
                 let query = request.url?.query(percentEncoded: false)?.lowercased() ?? ""
                 if query.contains("offline") { throw URLError(.notConnectedToInternet) }
