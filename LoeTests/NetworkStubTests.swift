@@ -36,6 +36,12 @@ struct NetworkStubTests {
         #expect(try await OpenLibrary.live.description(of: try #require(halo.first).record) == nil)
         #expect(await Covers.live.cover(.id(210551)) != nil)
         #expect(await Covers.live.cover(.isbn("9780345451323")) == nil)
+        // ESTER has a cover and a summary of its own for one book, and nothing for the rest.
+        let aveMaria = CoverArt.ester(["b5469156", "b5454324"])
+        #expect(await Covers.live.cover(aveMaria) != nil)
+        #expect(await Covers.live.description(for: aveMaria)?.hasPrefix("Õpetaja ärkab üksi") == true)
+        #expect(await Covers.live.cover(.ester(["b1054421"])) == nil)
+        #expect(await Covers.live.description(for: .ester(["b1054421"])) == nil)
         let edition = CatalogueEdition(id: 1, erbID: "b10544215", title: "Keisri hull")
         let copies = await AvailabilityChecker.live.copies(of: [edition])
         #expect(copies?["b10544215"]?.map(\.state) == [.onShelf])

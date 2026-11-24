@@ -1,21 +1,21 @@
 import SwiftUI
 
 /// A book's cover at a given width and the 2:3 shape of a book. Shows the
-/// reader's photo when there is one, otherwise Open Library's cover when it has
-/// one, otherwise the plain card with the title. A cover keeps its own colours by
-/// night, with a hairline edge instead of a shadow.
+/// reader's photo when there is one, otherwise the cover Open Library or ESTER
+/// has for it, otherwise the plain card with the title. A cover keeps its own
+/// colours by night, with a hairline edge instead of a shadow.
 struct BookCover: View {
     let title: String
     var photo: Data?
-    /// Open Library's cover, asked for only when there is no photo.
+    /// The cover to look for, asked for only when there is no photo.
     var art: CoverArt?
     let width: CGFloat
     var covers: Covers = .live
-    /// Told when Open Library's cover arrives, or nil when there is none.
+    /// Told when the cover that was looked for arrives, or nil when there is none.
     var onCover: ((Covers.Loaded?) -> Void)?
 
     @Environment(\.colorScheme) private var colorScheme
-    /// Open Library's cover, decoded once when it arrives.
+    /// The cover that was found, decoded once when it arrives.
     @State private var loaded: UIImage?
 
     private struct Request: Equatable {
@@ -25,9 +25,9 @@ struct BookCover: View {
 
     var body: some View {
         Group {
-            switch CoverChoice.of(hasPhoto: photo != nil, hasOpenLibrary: loaded != nil) {
+            switch CoverChoice.of(hasPhoto: photo != nil, hasFound: loaded != nil) {
             case .photo: picture(photo.flatMap(UIImage.init(data:)))
-            case .openLibrary: picture(loaded)
+            case .found: picture(loaded)
             case .card: BlankCover(title: title, width: width)
             }
         }
