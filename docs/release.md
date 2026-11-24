@@ -151,6 +151,11 @@ edition with it. The `User-Agent` names the app and the developer's contact,
 never the reader. Loe keeps the answers in memory only, so the collected data stays
 empty here too.
 
+A book found on Open Library asks it for the work's record as its page opens,
+for the description (see [Catalogue](catalogue.md#books-from-abroad)). Open
+Library sees which of those books was opened, from the phone's address. The
+description is kept in memory only.
+
 Covers come from Open Library too (see [Library](library.md#covers)), but
 only for a book found on Open Library: its cover id, or its ISBN when it has
 none, is sent to `covers.openlibrary.org` when the book shows, which

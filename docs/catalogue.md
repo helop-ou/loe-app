@@ -324,12 +324,37 @@ It lists the catalogue's translations of the book, so an English book leads
 to its Estonian edition and the libraries that hold it.
 How it is kept on a shelf is in [Library](library.md#books-from-open-library).
 
+Its page also says what the book is about, when Open Library does:
+
+- **What it asks.** The work's own record,
+  `https://openlibrary.org/works/<key>.json`, as the page opens, on the same
+  session as the search. Only a key that reads as a work's is asked about. The
+  answer is kept in memory for the session, a work with no description
+  included, and a failure is not kept, so the next opening asks again.
+- **What it shows.** The description as plain text, credited "From Open
+  Library". Open Library writes it in Markdown, as a string or inside an
+  object, and adds its own notes under a rule: what the work contains and what
+  to see also. [`OpenLibraryDescription`](../Loe/Shared/OpenLibrary/OpenLibraryDescription.swift)
+  drops the rule and what follows, the Markdown, links and source notes. A
+  text longer than 280 characters is cut to five lines until the reader asks
+  for more, and a shorter one shows whole. With no description, no network or
+  an answer that can't be read, the page shows none.
+- **Which books.** Only a book found on Open Library. A catalogue book has no
+  description: the bibliography carries a summary on fewer than one record in
+  a hundred, and a translation is not given its original's.
+- **Whose words.** Open Library's catalogue data is CC0, but a description is
+  often a publisher's blurb. Loe shows it as Open Library serves it, with the
+  credit and the link back, and keeps no copy: not in the repository, the
+  catalogue or on the phone. The tests' and the stub's descriptions are
+  written for Loe, in the shapes Open Library uses.
+
 With no network, or when Open Library fails, the catalogue's results show as
 they are and the section says it can't be reached. Debug builds launched with
 `-networkStub YES` answer "halo", or the ISBN 9780345451323, with a fixed
 Halo book, and "hail mary" with *Project Hail Mary*, which the catalogue has in
-Estonian. They fail any search with "offline" in it and find nothing for
-anything else, so the journeys never touch the network.
+Estonian. *Project Hail Mary* has a description there and Halo has none. They
+fail any search with "offline" in it and find nothing for anything else, so
+the journeys never touch the network.
 
 ## What is kept
 
