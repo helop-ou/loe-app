@@ -13,9 +13,11 @@ struct BookView: View {
     @State private var details: Catalogue.Details?
     @State private var editing = false
     @State private var enteredByHand = false
-    @State private var openLibraryCover: Covers.Loaded?
-    @State private var description: String?
+    /// The cover Open Library or ESTER had for the book.
+    @State private var foundCover: Covers.Loaded?
+    @State private var description: (text: String, source: BookDescription.Source)?
     var openLibrary = OpenLibrary.live
+    var covers = Covers.live
     @Query private var shelves: [ShelvedBook]
 
     /// The reader's copy of this book, found by its record before its title, which
@@ -44,18 +46,37 @@ struct BookView: View {
     /// Library has no editions, ESTER record or library copies to show.
     private var fromCatalogue: Bool { shown.editions.contains { !$0.erbID.isEmpty } }
 
-    /// Open Library's cover, for a book found there. A catalogue book has none.
+    /// The cover to look for: Open Library's for a book found there, and ESTER's
+    /// for a catalogue book, by its editions in the order given. A book entered by
+    /// hand has none.
     static func coverArt(for work: CatalogueWork) -> CoverArt? {
-        work.editions[0].openLibrary.flatMap(CoverArt.init)
+        if let abroad = work.editions[0].openLibrary { return CoverArt(abroad) }
+        return CoverArt(erbIDs: work.editions.map(\.erbID))
+    }
+
+    /// A catalogue book waits for all its editions, newest first, so that ESTER is
+    /// asked about it once.
+    private var art: CoverArt? {
+        base.editions[0].openLibrary != nil || details != nil ? Self.coverArt(for: shown) : nil
+    }
+
+    /// Whose cover is showing, to say so under it. The reader's own photo needs none.
+    private var coverCredit: LocalizedStringKey? {
+        guard book?.coverPhoto == nil, foundCover != nil, let art else { return nil }
+        return art.isESTERs ? "Cover: ESTER" : "Cover: Open Library"
+    }
+
+    private struct DescriptionRequest: Equatable {
+        let abroad: OpenLibraryRecord?
+        let art: CoverArt?
     }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 32) {
                 BookHeader(
-                    work: shown, edition: newest, book: book, art: Self.coverArt(for: base),
-                    credit: book?.coverPhoto == nil && openLibraryCover != nil
-                ) { openLibraryCover = $0 }
+                    work: shown, edition: newest, book: book, art: art, credit: coverCredit
+                ) { foundCover = $0 }
                 // A book entered by hand that was just removed is on its way off screen.
                 if book != nil || !enteredByHand {
                     ShelfControls(work: shown, edition: newest, book: book)
@@ -64,7 +85,7 @@ struct BookView: View {
                     BookTagList(tags: tags)
                 }
                 if let description {
-                    BookDescription(text: description)
+                    BookDescription(text: description.text, source: description.source)
                 }
                 if newest.originalTitle != nil {
                     OriginalCard(edition: newest, original: details?.original)
@@ -106,7 +127,7 @@ struct BookView: View {
         }
         .background {
             // A book's own page takes a soft wash of its cover's colour.
-            if let wash = (book?.coverSample ?? openLibraryCover?.sample).flatMap({ CoverWash.color($0, dark: colorScheme == .dark, surface: .page) }) {
+            if let wash = (book?.coverSample ?? foundCover?.sample).flatMap({ CoverWash.color($0, dark: colorScheme == .dark, surface: .page) }) {
                 LinearGradient(colors: [wash, .loeBackground], startPoint: .top, endPoint: UnitPoint(x: 0.5, y: 0.55))
                     .ignoresSafeArea()
             } else {
@@ -135,20 +156,35 @@ struct BookView: View {
             guard case .ready(let catalogue) = catalogue.state else { return }
             details = try? await catalogue.details(for: base)
         }
-        // A book from abroad says what it is about. With no network it says nothing.
-        .task(id: base.editions[0].openLibrary) {
+        // What the book is about: Open Library's words for a book from abroad, and
+        // ESTER's own summary for a catalogue book that has one. With no network it
+        // says nothing.
+        .task(id: DescriptionRequest(abroad: base.editions[0].openLibrary, art: art)) {
             description = nil
-            guard let record = base.editions[0].openLibrary else { return }
-            description = try? await openLibrary.description(of: record)
+            if let record = base.editions[0].openLibrary {
+                description = ((try? await openLibrary.description(of: record)) ?? nil).map { ($0, .openLibrary) }
+            } else if let art {
+                description = await covers.description(for: art).map { ($0, .ester) }
+            }
         }
     }
 }
 
-/// What a book from abroad is about, in Open Library's words. A long one is cut to
-/// a few lines until the reader asks for more, and a short one shows whole, so
+/// What a book is about, in the words of Open Library or ESTER. A long one is cut
+/// to a few lines until the reader asks for more, and a short one shows whole, so
 /// nothing is cut without a way to read on.
 struct BookDescription: View {
+    enum Source {
+        case openLibrary
+        case ester
+    }
+
     let text: String
+    var source = Source.openLibrary
+
+    private var credit: LocalizedStringKey {
+        source == .ester ? "From ESTER" : "From Open Library"
+    }
 
     @State private var showsAll = false
 
@@ -168,7 +204,7 @@ struct BookDescription: View {
                         .tint(.loeAccent)
                 }
                 Spacer()
-                Text("From Open Library")
+                Text(credit)
                     .foregroundStyle(.loeSecondary)
             }
             .font(.footnote)
@@ -200,8 +236,8 @@ struct BookHeader: View {
     let edition: CatalogueEdition
     let book: ShelvedBook?
     let art: CoverArt?
-    /// Whether Open Library's cover is showing, which is credited under it.
-    let credit: Bool
+    /// Whose cover is showing, said under it. Nil for the reader's photo or a card.
+    let credit: LocalizedStringKey?
     let onCover: (Covers.Loaded?) -> Void
 
     var body: some View {
@@ -212,8 +248,8 @@ struct BookHeader: View {
                 } else {
                     BookCover(title: work.title, art: art, width: 140, onCover: onCover)
                 }
-                if credit {
-                    Text("Cover: Open Library")
+                if let credit {
+                    Text(credit)
                         .font(.caption2)
                         .foregroundStyle(.loeSecondary)
                 }

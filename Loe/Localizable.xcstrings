@@ -331,12 +331,12 @@
         }
       }
     },
-    "Availability comes from ESTER, the catalogue Estonian libraries share, run by the ELNET Consortium.": {
+    "Availability, and the covers and descriptions of Estonian books, come from ESTER, the catalogue Estonian libraries share, run by the ELNET Consortium.": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Saadavus tuleb ESTERist, Eesti raamatukogude ühisest kataloogist, mida peab ELNET Konsortsium."
+            "value": "Saadavus ning Eesti raamatute kaaned ja kirjeldused tulevad ESTERist, Eesti raamatukogude ühisest kataloogist, mida peab ELNET Konsortsium."
           }
         }
       }
@@ -631,6 +631,16 @@
         }
       }
     },
+    "Cover: ESTER": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kaanepilt: ESTER"
+          }
+        }
+      }
+    },
     "Cover: Open Library": {
       "localizations": {
         "et": {
@@ -651,12 +661,12 @@
         }
       }
     },
-    "Covers of books from abroad come from Open Library and the Internet Archive, which see which of those books' covers were asked for. Loe keeps the covers on your phone.": {
+    "Covers of Estonian books come from ESTER, and covers of books from abroad from Open Library and the Internet Archive. Each sees which books' covers were asked for. Loe keeps the covers on your phone.": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Välismaal ilmunud raamatute kaaned tulevad Open Libraryst ja Internet Archive'ist, kes näevad, milliste raamatute kaasi küsiti. Loe hoiab kaasi sinu telefonis."
+            "value": "Eesti raamatute kaaned tulevad ESTERist ning välismaal ilmunud raamatute kaaned Open Libraryst ja Internet Archive'ist. Igaüks neist näeb, milliste raamatute kaasi küsiti. Loe hoiab kaasi sinu telefonis."
           }
         }
       }
@@ -1017,6 +1027,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Otsi raamatukogu"
+          }
+        }
+      }
+    },
+    "From ESTER": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ESTERist"
           }
         }
       }
@@ -1741,12 +1761,12 @@
         }
       }
     },
-    "Opening a book from abroad asks Open Library what it is about. Open Library sees which book was asked about.": {
+    "Opening a book from abroad asks Open Library what it is about. Open Library sees which book was asked about. An Estonian book's description comes from ESTER along with its cover.": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Välismaal ilmunud raamatu avamine küsib Open Libraryst, millest see räägib. Open Library näeb, millise raamatu kohta küsiti."
+            "value": "Välismaal ilmunud raamatu avamine küsib Open Libraryst, millest see räägib. Open Library näeb, millise raamatu kohta küsiti. Eesti raamatu kirjeldus tuleb ESTERist koos kaanepildiga."
           }
         }
       }
@@ -2981,12 +3001,12 @@
         }
       }
     },
-    "Whether a library has a book": {
+    "Whether a library has a book, and covers": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kas raamatukogus on raamat olemas"
+            "value": "Kas raamatukogus on raamat olemas, ja kaaned"
           }
         }
       }

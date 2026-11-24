@@ -26,6 +26,7 @@ struct SettingsSnapshotTests {
 
     @Test(arguments: Snapshot.Look.all)
     func privacy(look: Snapshot.Look) throws {
-        try Snapshot.verify(PrivacyContent().padding(20), named: "privacy", look: look)
+        // A window, because at the large text size it is taller than the renderer draws.
+        try Snapshot.verify(PrivacyContent().padding(20), named: "privacy", look: look, on: .window)
     }
 }

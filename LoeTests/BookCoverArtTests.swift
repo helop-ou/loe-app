@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import Loe
 
-/// Which cover a book's page asks Open Library for.
+/// Which cover a book's page asks for.
 struct BookCoverArtTests {
     @Test func aBookFromOpenLibraryAsksByCoverID() {
         let halo = OpenLibraryBook(record: .init(workKey: "/works/OL1W", isbn: "9780345451323", coverID: 7), title: "Halo", authors: [])
@@ -14,12 +14,12 @@ struct BookCoverArtTests {
         #expect(BookView.coverArt(for: halo.work) == .isbn("9780345451323"))
     }
 
-    @Test func aCatalogueBookAsksForNothing() {
+    @Test func aCatalogueBookAsksESTERByItsEditionsInTheirOrder() {
         let tode = CatalogueWork(id: "tode", editions: [
-            CatalogueEdition(id: 1, erbID: "b1", title: "Tõde ja õigus"),
-            CatalogueEdition(id: 2, erbID: "b2", title: "Tõde ja õigus"),
+            CatalogueEdition(id: 2, erbID: "b46590080", title: "Tõde ja õigus"),
+            CatalogueEdition(id: 1, erbID: "b1210534x", title: "Tõde ja õigus"),
         ])
-        #expect(BookView.coverArt(for: tode) == nil)
+        #expect(BookView.coverArt(for: tode) == .ester(["b4659008", "b1210534"]))
     }
 
     @Test func aBookEnteredByHandAsksForNothing() {

@@ -106,6 +106,10 @@ final class OpenLibraryJourneyTests: JourneyTestCase {
 
         // The Estonian edition is the catalogue's, with its libraries and its ESTER record.
         XCTAssertTrue(app.staticTexts["Translated from English"].waitForExistence(timeout: 5))
+        // ESTER has its cover and a summary of its own, each credited to it.
+        XCTAssertTrue(app.staticTexts["Cover: ESTER"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Õpetaja ärkab üksi'")).firstMatch.exists)
+        XCTAssertTrue(app.staticTexts["From ESTER"].exists)
         attach("openlibrary-translation", app)
         app.swipeUp()
         XCTAssertTrue(app.staticTexts["Where to get it"].waitForExistence(timeout: 2))
