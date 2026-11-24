@@ -1,8 +1,9 @@
 import Foundation
 
-/// Searches Open Library for books the catalogue doesn't have. It sends what the
-/// reader searched for and nothing else: no cookies, no account, and answers are
-/// kept in memory only. See docs/catalogue.md, "Books from abroad".
+/// Searches Open Library for books the catalogue doesn't have, and asks it what
+/// one of them is about when its page opens. It sends the search text or the
+/// book's work key and nothing else: no cookies, no account, and answers are kept
+/// in memory only. See docs/catalogue.md, "Books from abroad".
 actor OpenLibrary {
     /// How long typing has to pause before Open Library is asked. Open Library
     /// allows three requests a second from an app that names itself, and a pause
@@ -16,6 +17,8 @@ actor OpenLibrary {
 
     private let fetch: @Sendable (URLRequest) async throws -> Data
     private var answers: [String: [OpenLibraryBook]] = [:]
+    /// By work key. A work with no description is remembered too.
+    private var descriptions: [String: String?] = [:]
 
     init(fetch: @escaping @Sendable (URLRequest) async throws -> Data) {
         self.fetch = fetch
@@ -27,9 +30,13 @@ actor OpenLibrary {
         // Journeys never touch the network: a search with "halo" or Halo's ISBN in it
         // finds Halo, one with "hail mary" finds Project Hail Mary, which the
         // catalogue has in Estonian, one with "offline" fails as with no network,
-        // and any other finds nothing.
+        // and any other finds nothing. Project Hail Mary has a description and
+        // Halo, as on Open Library itself, has none.
         if NetworkStub.isOn {
             return OpenLibrary { request in
+                if request.url?.path.hasPrefix("/works/") == true {
+                    return Data((request.url?.path == "/works/OL21745884W.json" ? stubHailMaryWork : "{}").utf8)
+                }
                 let query = request.url?.query(percentEncoded: false)?.lowercased() ?? ""
                 if query.contains("offline") { throw URLError(.notConnectedToInternet) }
                 let halo = query.contains("halo") || query.contains("isbn:9780345451323")
@@ -96,6 +103,23 @@ actor OpenLibrary {
         answers[key] = books
         return books
     }
+
+    /// The work's own record. Nil for a key that isn't a work's, so nothing a
+    /// record carries can send the request elsewhere.
+    static func workRequest(for record: OpenLibraryRecord) -> URLRequest? {
+        guard record.workKey.wholeMatch(of: /\/works\/OL\d+W/) != nil else { return nil }
+        return URL(string: "https://openlibrary.org\(record.workKey).json").map { URLRequest(url: $0) }
+    }
+
+    /// What the book is about, or nil when Open Library doesn't say. Asked once a
+    /// session for each work.
+    func description(of record: OpenLibraryRecord) async throws -> String? {
+        if let known = descriptions[record.workKey] { return known }
+        guard let request = Self.workRequest(for: record) else { return nil }
+        let description = OpenLibraryDescription.text(inWork: try await fetch(request))
+        descriptions[record.workKey] = description
+        return description
+    }
 }
 
 #if DEBUG
@@ -110,4 +134,10 @@ nonisolated private let stubHailMary = """
   "number_of_pages_median": 496, "cover_i": 11200092,
   "editions": {"docs": [{"title": "Project Hail Mary", "language": ["eng"], "isbn": ["9780593135204", "0593135202"]}]}}
 """
+
+// Loe's own words, in the shapes Open Library uses: Markdown, and notes under a rule.
+nonisolated private let stubHailMaryWork = #"""
+{"key": "/works/OL21745884W", "title": "Project Hail Mary", "description": {"type": "/type/text", "value":
+  "A teacher wakes up alone on a spaceship, far from home, with no memory of how he got there.\r\n\r\nPiece by piece he works out that he was sent to save the Earth, and that he may not be as alone as he thought. *Project Hail Mary* is a story of science, friendship and stubborn hope, told by a man who would much rather be marking homework.\r\n\r\n----------\r\nAlso contained in:\r\n[A collection](https://openlibrary.org/works/OL1W)"}}
+"""#
 #endif
