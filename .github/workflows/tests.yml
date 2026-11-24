@@ -64,20 +64,29 @@ jobs:
           ')"
           echo "udid=$udid" >> "$GITHUB_OUTPUT"
 
+      # A test that hangs fails after five minutes and the rest still run. A run
+      # that hangs anywhere else is stopped after forty, as a failure: the job's own
+      # limit cancels it, and a cancelled run keeps no results.
       - name: Test
         env:
           UDID: ${{ steps.simulator.outputs.udid }}
         run: |
           mkdir -p build
           status=0
-          xcodebuild test \
+          perl -e 'alarm shift; exec @ARGV' 2400 xcodebuild test \
             -scheme Loe \
             -destination "platform=iOS Simulator,id=$UDID" \
             -derivedDataPath build/DerivedData \
             -resultBundlePath build/TestResults.xcresult \
             -enableCodeCoverage YES \
             -collect-test-diagnostics never \
+            -test-timeouts-enabled YES \
+            -default-test-execution-time-allowance 300 \
+            -maximum-test-execution-time-allowance 300 \
             > build/xcodebuild.log 2>&1 || status=$?
+          if [ "$status" -eq 142 ]; then
+            echo "error: the test run was stopped after 40 minutes" >> build/xcodebuild.log
+          fi
           grep -E ": error: |^error: |✘|\*\* (BUILD|TEST) |Test run with|Executed .* tests" build/xcodebuild.log | sort -u || true
           exit "$status"
 
