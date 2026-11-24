@@ -27,6 +27,7 @@ struct WhereToGetItSnapshotTests {
     @Test(arguments: Snapshot.Look.all)
     func everyAnswerALibraryCanGive(look: Snapshot.Look) throws {
         let card = WhereToGetItCard(rows: Self.rows, namesESTER: true).padding(20)
-        try Snapshot.verify(card, named: "where-to-get-it", look: look)
+        // A window, because the renderer wraps a status that the page would cut short.
+        try Snapshot.verify(card, named: "where-to-get-it", look: look, on: .window)
     }
 }
