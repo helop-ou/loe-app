@@ -178,7 +178,8 @@ or English, stored on the phone under `language`.
   leaves out native controls such as a progress bar and anything that scrolls
   sideways, and at the largest text size it does not lay text out as a screen
   does: it can cut short a line that a screen would wrap, and wrap one that a
-  screen cuts short. A snapshot of such a view is drawn in a window, with
+  screen cuts short. It draws nothing at all for a view taller than about
+  4,000 points. A snapshot of such a view is drawn in a window, with
   `on: .window`: the view sits in a scroll view in a window of the app the
   tests run in, as it does on its screen.
 - Journeys in `LoeUITests` launch Loe through

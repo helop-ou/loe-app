@@ -160,9 +160,14 @@ Covers come from Open Library too (see [Library](library.md#covers)), but
 only for a book found on Open Library: its cover id, or its ISBN when it has
 none, is sent to `covers.openlibrary.org` when the book shows, which
 redirects to the Internet Archive (`archive.org`) for the image, so both see
-which of those books' covers were asked for. Books from the catalogue and
-books entered by hand ask for none. The images are kept in the caches folder
-on the phone, and nothing else.
+which of those books' covers were asked for. A book entered by hand asks for
+none. The images are kept in the caches folder on the phone, and nothing else.
+
+A catalogue book's cover comes from ESTER's cover service, EPIK
+(`epik.ester.ee`), asked from the book's own page and from the shelves: the
+record numbers of the book's editions are sent, so ESTER sees which books'
+covers were asked for, from the phone's address. A record's own summary comes
+back with its cover. Both are kept in the caches folder on the phone.
 
 The Privacy page, under About in Settings (`PrivacyView`), tells the reader
 all of this in plain words. Change it with this section, so the two never
@@ -178,3 +183,8 @@ there without a credit, or a credit names a file that isn't shipped.
 - Ask ELNET (ester@elnet.ee) for permission to show ESTER's availability in
   the app. ESTER's statutes put copying its data under ELNET's permission.
   Internal TestFlight testing goes ahead without it.
+- The same permission covers ESTER's covers and summaries, which Loe takes
+  from EPIK, ELNET's cover service (see [Library](library.md#covers)). EPIK
+  has no published terms and its `robots.txt` disallows everything, so a
+  public release waits for ELNET's answer. Without it, take ESTER's covers and
+  summaries out before releasing.

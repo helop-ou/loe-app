@@ -339,9 +339,10 @@ Its page also says what the book is about, when Open Library does:
   text longer than 280 characters is cut to five lines until the reader asks
   for more, and a shorter one shows whole. With no description, no network or
   an answer that can't be read, the page shows none.
-- **Which books.** Only a book found on Open Library. A catalogue book has no
-  description: the bibliography carries a summary on fewer than one record in
-  a hundred, and a translation is not given its original's.
+- **Which books.** A book found on Open Library. A catalogue book shows the
+  record's own summary when ESTER has one, credited "From ESTER", which comes
+  with its cover (see [Library](library.md#covers)). That is fewer than one
+  record in a hundred, and a translation is not given its original's.
 - **Whose words.** Open Library's catalogue data is CC0, but a description is
   often a publisher's blurb. Loe shows it as Open Library serves it, with the
   credit and the link back, and keeps no copy: not in the repository, the
