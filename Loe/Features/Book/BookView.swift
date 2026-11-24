@@ -287,8 +287,12 @@ struct EditionsSection: View {
             .background(.loeCard, in: .rect(cornerRadius: 18))
             .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(.loeHairline))
             if editions.count > Self.shortList && !showsAll {
-                Button("Show all \(editions.count) editions") { showsAll = true }
-                    .tint(.loeAccent)
+                Button { showsAll = true } label: {
+                    // A button centres its lines when they wrap.
+                    Text("Show all \(editions.count) editions")
+                        .multilineTextAlignment(.leading)
+                }
+                .tint(.loeAccent)
             }
         }
     }
