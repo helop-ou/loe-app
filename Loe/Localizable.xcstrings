@@ -391,12 +391,12 @@
         }
       }
     },
-    "Books published abroad. Loe asks Open Library about what you search for, and nothing else.": {
+    "Books published abroad. Loe asks Open Library about what you search for and the books you open from it, and nothing else.": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Välismaal ilmunud raamatud. Loe küsib Open Libraryst ainult seda, mida sa otsid."
+            "value": "Välismaal ilmunud raamatud. Loe küsib Open Libraryst ainult seda, mida sa otsid, ja nende raamatute kohta, mille sealt avad."
           }
         }
       }
@@ -707,6 +707,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tume"
+          }
+        }
+      }
+    },
+    "Descriptions": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kirjeldused"
           }
         }
       }
@@ -1281,6 +1291,16 @@
         }
       }
     },
+    "Less": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vähem"
+          }
+        }
+      }
+    },
     "Letters": {
       "localizations": {
         "et": {
@@ -1427,6 +1447,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mälestused"
+          }
+        }
+      }
+    },
+    "More": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rohkem"
           }
         }
       }
@@ -1707,6 +1737,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ava seaded"
+          }
+        }
+      }
+    },
+    "Opening a book from abroad asks Open Library what it is about. Open Library sees which book was asked about.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Välismaal ilmunud raamatu avamine küsib Open Libraryst, millest see räägib. Open Library näeb, millise raamatu kohta küsiti."
           }
         }
       }

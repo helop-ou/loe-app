@@ -38,6 +38,10 @@ struct PrivacyContent: View {
                 "When you stop typing, Loe asks Open Library about what you typed. It asks about an ISBN, typed or scanned, only when the catalogue doesn't have the book. Open Library, run by the Internet Archive, sees what you searched for."
             )
             Sent(
+                "Descriptions",
+                "Opening a book from abroad asks Open Library what it is about. Open Library sees which book was asked about."
+            )
+            Sent(
                 "Covers",
                 "Covers of books from abroad come from Open Library and the Internet Archive, which see which of those books' covers were asked for. Loe keeps the covers on your phone."
             )
