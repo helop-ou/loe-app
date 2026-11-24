@@ -36,8 +36,10 @@ guide is right and this file needs fixing.
   The scheme also runs `LoeUITests`, the journeys through the real app. They
   search a small catalogue of their own and stay off the network, so they run
   the same on every simulator
-  ([Catalogue](docs/catalogue.md#trying-it-in-the-simulator)). The catalogue
-  build has its own tests:
+  ([Catalogue](docs/catalogue.md#trying-it-in-the-simulator)). CI runs only
+  the unit tests, so this run on the Mac is the only check the journeys get:
+  run the whole scheme before opening a pull request, and say that it ran. The
+  catalogue build has its own tests:
   `python3 -I -m unittest discover -s tools/catalogue`.
 
   Without `-collect-test-diagnostics never`, a failing run hangs about ten

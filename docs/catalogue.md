@@ -231,7 +231,7 @@ SHA-256, its size and its schema version.
 ### Trying it in the simulator
 
 The journeys search a small catalogue of their own, so they find the same
-books on every simulator and on CI.
+books on every simulator.
 [`JourneyCatalogue`](../LoeUITests/JourneyCatalogue.swift) builds it for each
 run from `schema.sql` and the records in `LoeUITests/Fixtures/catalogue.sql`:
 real ones from the bibliography, for the books the journeys look for and a
