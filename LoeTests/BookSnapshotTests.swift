@@ -34,4 +34,18 @@ struct BookSnapshotTests {
         // A window, so a long publisher wraps at the largest text size as it does on the page.
         try Snapshot.verify(page.padding(20), named: "book", look: look, on: .window)
     }
+
+    // Genres Loe names in English, and subjects that read as the bibliography has
+    // them, enough of them to take a second row.
+    @Test(arguments: Snapshot.Look.all)
+    func aBooksTags(look: Snapshot.Look) throws {
+        let tags = BookTagList(tags: [
+            "biograafilised romaanid", "ajaloolised romaanid", "mälestused",
+            "inimese evolutsioon", "Teine maailmasõda, 1939-1945", "kultuuriantropoloogia",
+        ])
+        // From the leading edge, as the page's column lays them out.
+        try Snapshot.verify(
+            tags.frame(maxWidth: .infinity, alignment: .leading).padding(20), named: "book-tags", look: look, on: .window
+        )
+    }
 }
