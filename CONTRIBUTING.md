@@ -32,6 +32,10 @@ xcodebuild test -scheme Loe -destination 'platform=iOS Simulator,name=iPhone 17 
 python3 -I -m unittest discover -s tools/catalogue
 ```
 
+The second command runs the unit tests and the journeys through the real
+app. CI runs only the unit tests, so run it on a Mac before opening a pull
+request: nothing else checks the journeys.
+
 Run builds one after the other, never two at once. [AGENTS.md](AGENTS.md)
 says why, and holds the rest of the session checklist.
 
