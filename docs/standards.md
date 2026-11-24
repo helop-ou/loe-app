@@ -266,8 +266,10 @@ every file, whose review GitHub requests on each pull request.
   until its references are recorded, and the job fails when the image has a
   runtime for none of the folders. Every journey runs but the two that need the
   real thing, the README screens and the catalogue download. When the local
-  Xcode moves, move `DEVELOPER_DIR` in the same change. A failed run keeps
-  its result bundle and log for 14 days.
+  Xcode moves, move `DEVELOPER_DIR` in the same change. A test that runs past
+  five minutes fails and the rest still run. A run past 40 minutes is stopped
+  as a failure, because the job's own limit would cancel it, and a cancelled
+  run keeps nothing. A failed run keeps its result bundle and log for 14 days.
 - **Catalogue build tests**: `tools/catalogue` on Ubuntu.
 - **SonarCloud scan**: the app tests collect coverage, and
   `scripts/coverage-to-sonar.py` turns the result bundle into Sonar's format.
