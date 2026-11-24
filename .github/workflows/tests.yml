@@ -15,10 +15,60 @@ permissions:
   contents: read
 
 jobs:
+  # A pull request that changes only Markdown skips the app tests. A push to
+  # `main` always runs them, so its coverage stays current.
+  changes:
+    name: What changed
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      app: ${{ steps.diff.outputs.app }}
+    steps:
+      # Two commits deep: a pull request's merge commit and the base it merges into.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: See whether anything but Markdown changed
+        id: diff
+        run: |
+          changed="$(git diff --name-only HEAD^1 HEAD)"
+          echo "$changed"
+          app=true
+          if [ "$GITHUB_EVENT_NAME" = pull_request ] && ! grep -qv '\.md$' <<< "$changed"; then
+            app=false
+          fi
+          echo "app=$app" >> "$GITHUB_OUTPUT"
+
+  # Three parts side by side, because the journeys take most of the time. The
+  # second half of the journeys is every class the first half doesn't name, so a
+  # new one runs without being added here.
   app:
-    name: App tests (iOS)
+    name: App tests (${{ matrix.part }})
+    needs: changes
+    if: needs.changes.outputs.app == 'true'
     runs-on: xcode-27
-    timeout-minutes: 45
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - part: unit
+            tests: -only-testing:LoeTests -enableCodeCoverage YES
+          - part: journeys-1
+            tests: >-
+              -only-testing:LoeUITests/ShelvesJourneyTests
+              -only-testing:LoeUITests/OpenLibraryJourneyTests
+              -only-testing:LoeUITests/PlacesJourneyTests
+              -only-testing:LoeUITests/AddBookJourneyTests
+          - part: journeys-2
+            tests: >-
+              -only-testing:LoeUITests
+              -skip-testing:LoeUITests/ShelvesJourneyTests
+              -skip-testing:LoeUITests/OpenLibraryJourneyTests
+              -skip-testing:LoeUITests/PlacesJourneyTests
+              -skip-testing:LoeUITests/AddBookJourneyTests
     env:
       # Keep in step with the local Xcode.
       DEVELOPER_DIR: /Applications/Xcode_27.2.app/Contents/Developer
@@ -65,35 +115,40 @@ jobs:
           echo "udid=$udid" >> "$GITHUB_OUTPUT"
 
       # A test that hangs fails after five minutes and the rest still run. A run
-      # that hangs anywhere else is stopped after forty, as a failure: the job's own
-      # limit cancels it, and a cancelled run keeps no results.
+      # that hangs anywhere else is stopped after twenty-five, as a failure: the
+      # job's own limit cancels it, and a cancelled run keeps no results.
       - name: Test
         env:
           UDID: ${{ steps.simulator.outputs.udid }}
+          TESTS: ${{ matrix.tests }}
         run: |
           mkdir -p build
           status=0
-          perl -e 'alarm shift; exec @ARGV' 2400 xcodebuild test \
+          # Unquoted on purpose: one option to a word.
+          perl -e 'alarm shift; exec @ARGV' 1500 xcodebuild test \
             -scheme Loe \
             -destination "platform=iOS Simulator,id=$UDID" \
             -derivedDataPath build/DerivedData \
             -resultBundlePath build/TestResults.xcresult \
-            -enableCodeCoverage YES \
             -collect-test-diagnostics never \
             -test-timeouts-enabled YES \
             -default-test-execution-time-allowance 300 \
             -maximum-test-execution-time-allowance 300 \
+            $TESTS \
             > build/xcodebuild.log 2>&1 || status=$?
           if [ "$status" -eq 142 ]; then
-            echo "error: the test run was stopped after 40 minutes" >> build/xcodebuild.log
+            echo "error: the test run was stopped after 25 minutes" >> build/xcodebuild.log
           fi
           grep -E ": error: |^error: |✘|\*\* (BUILD|TEST) |Test run with|Executed .* tests" build/xcodebuild.log | sort -u || true
           exit "$status"
 
+      # Coverage comes from the unit tests, which is where logic is tested.
       - name: Export coverage
+        if: matrix.part == 'unit'
         run: scripts/coverage-to-sonar.py
 
       - name: Keep coverage for the scan
+        if: matrix.part == 'unit'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: coverage-iOS
@@ -104,12 +159,29 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
-          name: test-results
+          name: test-results-${{ matrix.part }}
           path: |
             build/TestResults.xcresult
             build/xcodebuild.log
           if-no-files-found: ignore
           retention-days: 14
+
+  # The check `main` requires. It passes when every part passed, and when the
+  # parts were skipped because only Markdown changed.
+  app-tests:
+    name: App tests (iOS)
+    needs: [changes, app]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check the parts
+        env:
+          CHANGES: ${{ needs.changes.result }}
+          PARTS: ${{ needs.app.result }}
+        run: |
+          echo "What changed: $CHANGES. The parts: $PARTS."
+          [ "$CHANGES" = success ] && { [ "$PARTS" = success ] || [ "$PARTS" = skipped ]; }
 
   catalogue:
     name: Catalogue build tests
@@ -125,7 +197,7 @@ jobs:
 
   sonar:
     name: SonarCloud scan
-    needs: app
+    needs: [changes, app-tests]
     # A fork's pull request gets no secrets.
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
@@ -137,10 +209,17 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      # No report when the app tests were skipped: nothing but Markdown changed,
+      # so an empty one says all there is to say.
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        if: needs.changes.outputs.app == 'true'
         with:
           name: coverage-iOS
           path: coverage
+
+      - name: Write an empty coverage report
+        if: needs.changes.outputs.app != 'true'
+        run: mkdir -p coverage && echo '<coverage version="1"/>' > coverage/coverage-iOS.xml
 
       # The one action from outside GitHub the repository allows, and only at this
       # commit. Move the pin, its version comment and the allowed pattern together.
