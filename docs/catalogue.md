@@ -83,6 +83,20 @@ editions ranks a little higher.
 
 A book's page asks `Catalogue.details(for:)` for the rest of what it shows:
 
+- **Tags**: what kind of book it is, in up to six of the bibliography's
+  headings. A heading counts when more than half of the work's editions carry
+  it. Genres (655) come first and subjects (650) after them, each kind with
+  the rarest heading first, and a broader genre gives way to a narrower one
+  that ends with it, "romaanid" to "ajaloolised romaanid". Fiction shows its
+  genres only, because its subjects are mostly the literature's nationality,
+  and a work is fiction when at least half of its editions are. Headings
+  about an edition's format ("e-raamatud", "suurtähtraamatud") and
+  "ilukirjandus" are left out. The bibliography writes its headings in
+  Estonian, so Estonian shows the heading itself.
+  [`HeadingName`](../Loe/Shared/Catalogue/HeadingName.swift) gives the
+  commonest genres an English name for when Loe is in English, and any other
+  heading reads there as the bibliography has it. A book the catalogue doesn't
+  hold has no tags.
 - **Editions**: every edition with the work's title and lead author. A book
   opened from a shelf may carry a title or authors the catalogue has since
   corrected. When nothing matches them, the work is found by its record number
