@@ -28,6 +28,12 @@ struct JourneyCatalogueTests {
         #expect(details.editions.contains { ESTERHoldings.url(erbID: $0.erbID) != nil })
     }
 
+    /// The search journey reads these on the book's page, by their English names.
+    @Test func keisriHullHasItsGenresAsTags() async throws {
+        let details = try await catalogue.details(for: found("keisri hull"))
+        #expect(Set(details.tags) == ["ajaloolised romaanid", "biograafilised romaanid"])
+    }
+
     /// The shelves journey types the page count itself, into an empty field.
     @Test func keisriHullsNewestEditionHasNoPageCount() async throws {
         let details = try await catalogue.details(for: found("keisri hull"))

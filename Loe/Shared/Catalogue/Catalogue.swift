@@ -18,6 +18,8 @@ actor Catalogue {
         var translations: [CatalogueWork]
         var sameAuthor: [CatalogueWork]
         var similar: [Suggestion] = []
+        /// What kind of book it is, in the bibliography's headings. See `BookTags`.
+        var tags: [String] = []
     }
 
     /// A book to move on to, and the reason it was suggested: the subject heading,
@@ -113,8 +115,35 @@ actor Catalogue {
             original: original,
             translations: CatalogueWork.grouped(translated),
             sameAuthor: Array(CatalogueWork.grouped(others).prefix(12)),
-            similar: try similar(to: CatalogueWork(id: work.id, editions: allEditions), limits: limits)
+            similar: try similar(to: CatalogueWork(id: work.id, editions: allEditions), limits: limits),
+            tags: try tags(of: allEditions)
         )
+    }
+
+    /// The kind `tools/catalogue/build.py` gives a genre heading. A subject has another.
+    private static let genreKind = 2
+
+    /// A book from a shelf or from Open Library that the catalogue doesn't hold has
+    /// no headings, and so no tags.
+    private func tags(of editions: [CatalogueEdition]) throws -> [String] {
+        let held = editions.filter { $0.id > 0 }
+        guard !held.isEmpty else { return [] }
+        let headings = try database.rows(
+            """
+            SELECT h.name, h.kind, COUNT(*), (SELECT COUNT(*) FROM edition_heading u WHERE u.heading_id = h.id)
+            FROM edition_heading eh JOIN heading h ON h.id = eh.heading_id
+            WHERE eh.edition_id IN (\(Self.placeholders(held.count))) GROUP BY h.id
+            """,
+            held.map { .integer($0.id) }
+        ) { row in
+            BookTags.Heading(
+                name: row.text(0) ?? "", isGenre: row.integer(1) == Self.genreKind,
+                editions: row.integer(2) ?? 0, uses: row.integer(3) ?? 0
+            )
+        }
+        // A work is fiction when at least half of its editions are catalogued so.
+        let fiction = held.filter(\.fiction).count * 2 >= held.count
+        return BookTags.chosen(from: headings, editions: held.count, fiction: fiction)
     }
 
     /// Editions that name this book as their original, by the same lead author, as
