@@ -259,20 +259,29 @@ every file, whose review GitHub requests on each pull request.
 `.github/workflows/tests.yml` runs on every pull request and every push to
 `main`, never on a schedule:
 
-- **App tests (iOS)**: the whole `Loe` scheme, unit tests and journeys, on
-  GitHub's `xcode-27` image with Xcode 27.2, on a regular iPhone on the iOS
-  the snapshot references are for: the newest folder in `LoeTests/Snapshots`
-  that the image has a runtime for. A newer iOS on the image is left alone
-  until its references are recorded, and the job fails when the image has a
-  runtime for none of the folders. Every journey runs but the two that need the
-  real thing, the README screens and the catalogue download. When the local
-  Xcode moves, move `DEVELOPER_DIR` in the same change. A test that runs past
-  five minutes fails and the rest still run. A run past 40 minutes is stopped
-  as a failure, because the job's own limit would cancel it, and a cancelled
-  run keeps nothing. A failed run keeps its result bundle and log for 14 days.
+- **App tests (iOS)**: the whole `Loe` scheme in three parts that run side by
+  side, because the journeys take most of the time: the unit tests, and the
+  journeys in two halves. The second half is every journey class the first
+  doesn't name, so a new class runs without being added to the workflow. Each
+  part runs on GitHub's `xcode-27` image with Xcode 27.2, on a regular iPhone
+  on the iOS the snapshot references are for: the newest folder in
+  `LoeTests/Snapshots` that the image has a runtime for. A newer iOS on the
+  image is left alone until its references are recorded, and a part fails
+  when the image has a runtime for none of the folders. Every journey runs but
+  the two that need the real thing, the README screens and the catalogue
+  download. When the local Xcode moves, move `DEVELOPER_DIR` in the same
+  change. A test that runs past five minutes fails and the rest still run. A
+  part past 25 minutes is stopped as a failure, because the job's own limit
+  would cancel it, and a cancelled run keeps nothing. A failed part keeps its
+  result bundle and log for 14 days. The check `main` requires is a last
+  small job of this name, which passes when every part passed.
+- A pull request that changes only Markdown skips the three parts, and the
+  required check passes without them. A push to `main` always runs them.
 - **Catalogue build tests**: `tools/catalogue` on Ubuntu.
-- **SonarCloud scan**: the app tests collect coverage, and
-  `scripts/coverage-to-sonar.py` turns the result bundle into Sonar's format.
+- **SonarCloud scan**: the unit tests collect coverage, and
+  `scripts/coverage-to-sonar.py` turns their result bundle into Sonar's
+  format. The journeys add none, because logic is tested in unit tests. A pull
+  request that skipped the app tests is scanned with an empty report.
   This job then runs the scan with it on Ubuntu, using the `SONAR_TOKEN`
   secret, and SonarCloud's app reports the quality gate on the pull request
   as "SonarCloud Code Analysis". It also runs on each push to `main`, so the
