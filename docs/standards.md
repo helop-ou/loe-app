@@ -44,6 +44,8 @@ Loe/
     Settings/                  Settings, About and credits, and the language and tastes asked on first launch
   Shared/
     Catalogue/                 The offline catalogue: SQLite access, search, works
+    OpenLibrary/               Books from abroad: search and descriptions
+    Covers/                    Covers from outside, loaded and kept on the phone
     Places/                    The libraries and bookshops a reader can pick
     Library/                   The reader's shelves, stored with SwiftData
     Network/                   The session every client asks through

@@ -68,7 +68,7 @@ covers for books published in Estonia, so Loe doesn't ask, and doesn't tell it
 which of them the reader has. The reader's photo always wins, and
 removing it brings Open Library's cover back. The cover is credited under it
 on the book's page, and its colour gives the wash until there is a photo.
-[`Covers`](../Loe/Shared/OpenLibrary/Covers.swift) loads them:
+[`Covers`](../Loe/Shared/Covers/Covers.swift) loads them:
 
 - **Which cover.** A book from Open Library by its cover id, which every
   search answer carries and which Open Library does not rate limit, else its
