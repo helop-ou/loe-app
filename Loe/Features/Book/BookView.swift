@@ -58,6 +58,9 @@ struct BookView: View {
                 if book != nil || !enteredByHand {
                     ShelfControls(work: shown, edition: newest, book: book)
                 }
+                if let tags = details?.tags, !tags.isEmpty {
+                    BookTagList(tags: tags)
+                }
                 if newest.originalTitle != nil {
                     OriginalCard(edition: newest, original: details?.original)
                 }
@@ -260,6 +263,77 @@ struct OriginalCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
         .background(.loeHairline.opacity(0.5), in: .rect(cornerRadius: 18))
+    }
+}
+
+/// What kind of book it is, as small labels that wrap onto as many rows as they
+/// need. See `BookTags`.
+struct BookTagList: View {
+    /// Headings as the bibliography spells them.
+    let tags: [String]
+
+    @Environment(\.locale) private var locale
+
+    var body: some View {
+        WrappingRows(spacing: 8) {
+            ForEach(tags, id: \.self) { tag in
+                Text(HeadingName.of(tag, in: locale))
+                    .font(.footnote.weight(.medium))
+                    .foregroundStyle(.loeInk)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(.loeCard, in: .rect(cornerRadius: 10))
+                    .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(.loeHairline))
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// Rows of views, each row as long as fits. A view wider than a row takes the row's
+/// width and wraps inside it.
+private struct WrappingRows: Layout {
+    let spacing: CGFloat
+
+    private struct Row {
+        var items: [(index: Int, size: CGSize)] = []
+        var width: CGFloat = 0
+        var height: CGFloat = 0
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let rows = rows(width: proposal.width ?? .infinity, subviews: subviews)
+        return CGSize(
+            width: rows.map(\.width).max() ?? 0,
+            height: rows.map(\.height).reduce(0, +) + spacing * CGFloat(max(rows.count - 1, 0))
+        )
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var y = bounds.minY
+        for row in rows(width: bounds.width, subviews: subviews) {
+            var x = bounds.minX
+            for item in row.items {
+                subviews[item.index].place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(item.size))
+                x += item.size.width + spacing
+            }
+            y += row.height + spacing
+        }
+    }
+
+    private func rows(width: CGFloat, subviews: Subviews) -> [Row] {
+        var rows = [Row()]
+        for index in subviews.indices {
+            let size = subviews[index].sizeThatFits(ProposedViewSize(width: width, height: nil))
+            if !rows[rows.count - 1].items.isEmpty, rows[rows.count - 1].width + spacing + size.width > width {
+                rows.append(Row())
+            }
+            let last = rows.count - 1
+            rows[last].width += (rows[last].items.isEmpty ? 0 : spacing) + size.width
+            rows[last].height = max(rows[last].height, size.height)
+            rows[last].items.append((index, size))
+        }
+        return rows
     }
 }
 

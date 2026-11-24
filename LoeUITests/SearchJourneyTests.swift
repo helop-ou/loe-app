@@ -41,6 +41,9 @@ final class SearchJourneyTests: JourneyTestCase {
         result.tap()
 
         XCTAssertTrue(app.staticTexts["Translations"].waitForExistence(timeout: 5))
+        // What kind of book it is, in the catalogue's genres as English names them.
+        let tags = NSPredicate(format: "label CONTAINS 'Historical novels' AND label CONTAINS 'Biographical novels'")
+        XCTAssertTrue(app.descendants(matching: .any).matching(tags).firstMatch.waitForExistence(timeout: 5))
         attach("book-top", app)
         app.swipeUp()
         XCTAssertTrue(app.staticTexts["Where to get it"].waitForExistence(timeout: 2))
