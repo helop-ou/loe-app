@@ -27,7 +27,7 @@ struct BookSnapshotTests {
     func aTranslationsHeaderOriginalAndEditions(look: Snapshot.Look) throws {
         let work = CatalogueWork(id: CatalogueWork.key(for: Self.editions[0]), editions: Self.editions)
         let page = VStack(alignment: .leading, spacing: 32) {
-            BookHeader(work: work, edition: Self.editions[0], book: nil, art: nil, credit: false) { _ in }
+            BookHeader(work: work, edition: Self.editions[0], book: nil, art: nil, credit: nil) { _ in }
             OriginalCard(edition: Self.editions[0], original: nil)
             EditionsSection(editions: Self.editions)
         }
@@ -35,8 +35,9 @@ struct BookSnapshotTests {
         try Snapshot.verify(page.padding(20), named: "book", look: look, on: .window)
     }
 
-    // A long description cut until asked for, and a short one that shows whole
-    // with nothing to ask for. The text is Open Library's, so it stays as written.
+    // A long description from Open Library, cut until asked for, and a short one
+    // from ESTER that shows whole with nothing to ask for. The text is theirs, so
+    // it stays as written whatever language Loe is in.
     @Test(arguments: Snapshot.Look.all)
     func aBooksDescription(look: Snapshot.Look) throws {
         let long = """
@@ -48,7 +49,7 @@ struct BookSnapshotTests {
             """
         let descriptions = VStack(alignment: .leading, spacing: 32) {
             BookDescription(text: long)
-            BookDescription(text: "A fox outwits three farmers who are tired of being robbed.")
+            BookDescription(text: "Kroonik kirjutab üles oma õemehe, keisri hulluks kuulutatud mehe loo.", source: .ester)
         }
         try Snapshot.verify(descriptions.padding(20), named: "book-description", look: look, on: .window)
     }

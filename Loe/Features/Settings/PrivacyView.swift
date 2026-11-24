@@ -39,11 +39,11 @@ struct PrivacyContent: View {
             )
             Sent(
                 "Descriptions",
-                "Opening a book from abroad asks Open Library what it is about. Open Library sees which book was asked about."
+                "Opening a book from abroad asks Open Library what it is about. Open Library sees which book was asked about. An Estonian book's description comes from ESTER along with its cover."
             )
             Sent(
                 "Covers",
-                "Covers of books from abroad come from Open Library and the Internet Archive, which see which of those books' covers were asked for. Loe keeps the covers on your phone."
+                "Covers of Estonian books come from ESTER, and covers of books from abroad from Open Library and the Internet Archive. Each sees which books' covers were asked for. Loe keeps the covers on your phone."
             )
             Sent(
                 "Links",

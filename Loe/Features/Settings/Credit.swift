@@ -32,8 +32,8 @@ struct Credit: Identifiable {
         Credit(
             id: "ester",
             name: "ESTER and ELNET",
-            role: "Whether a library has a book",
-            about: "Availability comes from ESTER, the catalogue Estonian libraries share, run by the ELNET Consortium.",
+            role: "Whether a library has a book, and covers",
+            about: "Availability, and the covers and descriptions of Estonian books, come from ESTER, the catalogue Estonian libraries share, run by the ELNET Consortium.",
             link: URL(string: "https://www.ester.ee")!
         ),
         Credit(
