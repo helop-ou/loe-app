@@ -259,20 +259,27 @@ every file, whose review GitHub requests on each pull request.
 `.github/workflows/tests.yml` runs on every pull request and every push to
 `main`, never on a schedule:
 
-- **App tests (iOS)**: the whole `Loe` scheme, unit tests and journeys, on
-  GitHub's `xcode-27` image with Xcode 27.2, on a regular iPhone on the iOS
-  the snapshot references are for: the newest folder in `LoeTests/Snapshots`
-  that the image has a runtime for. A newer iOS on the image is left alone
-  until its references are recorded, and the job fails when the image has a
-  runtime for none of the folders. Every journey runs but the two that need the
-  real thing, the README screens and the catalogue download. When the local
-  Xcode moves, move `DEVELOPER_DIR` in the same change. A test that runs past
-  five minutes fails and the rest still run. A run past 40 minutes is stopped
-  as a failure, because the job's own limit would cancel it, and a cancelled
-  run keeps nothing. A failed run keeps its result bundle and log for 14 days.
+- **App tests (iOS)**: the unit tests, `LoeTests`, on GitHub's `xcode-27`
+  image with Xcode 27.2, on a regular iPhone on the iOS the snapshot
+  references are for: the newest folder in `LoeTests/Snapshots` that the image
+  has a runtime for. A newer iOS on the image is left alone until its
+  references are recorded, and the job fails when the image has a runtime for
+  none of the folders. When the local Xcode moves, move `DEVELOPER_DIR` in the
+  same change. A test that runs past five minutes fails and the rest still
+  run. A run past 25 minutes is stopped as a failure, because the job's own
+  limit would cancel it, and a cancelled run keeps nothing. A failed run keeps
+  its result bundle and log for 14 days.
+- **The journeys do not run on CI.** Its runner takes twice as long over them
+  as a Mac and fails them at random. They run on a Mac, with the whole
+  scheme, before a pull request is opened. Every journey runs there but the
+  two that need the real thing, the README screens and the catalogue download.
+- A pull request that changes only Markdown skips the app tests, and a
+  skipped job counts as passed for the check `main` requires. A push to `main`
+  always runs them.
 - **Catalogue build tests**: `tools/catalogue` on Ubuntu.
 - **SonarCloud scan**: the app tests collect coverage, and
   `scripts/coverage-to-sonar.py` turns the result bundle into Sonar's format.
+  A pull request that skipped the app tests is scanned with an empty report.
   This job then runs the scan with it on Ubuntu, using the `SONAR_TOKEN`
   secret, and SonarCloud's app reports the quality gate on the pull request
   as "SonarCloud Code Analysis". It also runs on each push to `main`, so the
@@ -296,7 +303,7 @@ every file, whose review GitHub requests on each pull request.
 
 `main` requires the conventions check, both test jobs and SonarCloud's quality
 gate. CI is a backstop, not a replacement: run the tests before pushing,
-because CI only reports after the push.
+because CI only reports after the push and never runs the journeys.
 
 ## Writing
 
