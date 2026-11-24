@@ -167,11 +167,12 @@ struct ESTERCoversTests {
     private let clock = Clock()
     private let asked = Asked()
 
-    private func covers(_ has: [String: Has], status: Int = 200) -> Covers {
+    private func covers(_ has: [String: Has], status: Int = 200, detailsStatus: Int = 200) -> Covers {
         let asked = asked
         return Covers(directory: directory, now: clock.now) { request in
             await asked.add(request)
             guard status == 200 else { return (Data("<html>Service unavailable</html>".utf8), status) }
+            if request.httpMethod != "POST", detailsStatus != 200 { return (Data(), detailsStatus) }
             if request.httpMethod == "POST" {
                 let codes = try JSONDecoder().decode([String].self, from: request.httpBody ?? Data())
                 let items = codes.map { code -> [String: Any] in
@@ -267,6 +268,14 @@ struct ESTERCoversTests {
         let art = CoverArt.ester(["b1000001"])
         #expect(await covers([:], status: 503).cover(art) == nil)
         #expect(await covers(["b1000001": Has(cover: Self.blue)]).cover(art) != nil)
+        #expect(await posts.count == 2)
+    }
+
+    @Test func aCoverThatCouldNotBeFetchedIsAskedForAgain() async {
+        let has = ["b1000001": Has(cover: Self.blue)]
+        let art = CoverArt.ester(["b1000001"])
+        #expect(await covers(has, detailsStatus: 500).cover(art) == nil)
+        #expect(await covers(has).cover(art) != nil)
         #expect(await posts.count == 2)
     }
 
