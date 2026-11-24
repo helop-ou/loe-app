@@ -6,8 +6,8 @@ import UIKit
 
 struct CoverArtTests {
     @Test func aCoverIsAskedForWithoutAPlaceholder() {
-        #expect(CoverArt.id(210_551).url.absoluteString == "https://covers.openlibrary.org/b/id/210551-L.jpg?default=false")
-        #expect(CoverArt.isbn("9780345451323").url.absoluteString == "https://covers.openlibrary.org/b/isbn/9780345451323-L.jpg?default=false")
+        #expect(CoverArt.id(210_551).url?.absoluteString == "https://covers.openlibrary.org/b/id/210551-L.jpg?default=false")
+        #expect(CoverArt.isbn("9780345451323").url?.absoluteString == "https://covers.openlibrary.org/b/isbn/9780345451323-L.jpg?default=false")
         #expect(CoverArt.isbn("9780345451323").isRateLimited)
         #expect(!CoverArt.id(1).isRateLimited)
     }
@@ -20,9 +20,23 @@ struct CoverArtTests {
     }
 
     @Test func theReadersPhotoAlwaysWins() {
-        #expect(CoverChoice.of(hasPhoto: true, hasOpenLibrary: true) == .photo)
-        #expect(CoverChoice.of(hasPhoto: false, hasOpenLibrary: true) == .openLibrary)
-        #expect(CoverChoice.of(hasPhoto: false, hasOpenLibrary: false) == .card)
+        #expect(CoverChoice.of(hasPhoto: true, hasFound: true) == .photo)
+        #expect(CoverChoice.of(hasPhoto: false, hasFound: true) == .found)
+        #expect(CoverChoice.of(hasPhoto: false, hasFound: false) == .card)
+    }
+
+    /// The record is the edition's number without its check digit, each once, the
+    /// one to prefer first, and no more than a page asks about.
+    @Test func aCatalogueBookIsAskedForByItsEditionsRecords() {
+        #expect(CoverArt(erbIDs: ["b54543241", "b5469104x", "b54543241"]) == .ester(["b5454324", "b5469104"]))
+        #expect(CoverArt(erbIDs: ["", "hand:1", "b1"]) == nil)
+        let many = (10...40).map { "b10000\($0)1" }
+        #expect(CoverArt(erbIDs: many) == .ester((10...21).map { "b10000\($0)" }))
+        #expect(CoverArt.ester(["b5454324"]).url == nil)
+        #expect(CoverArt.ester(["b5454324"]).isESTERs)
+        #expect(!CoverArt.id(1).isESTERs)
+        #expect(CoverArt.ester(["b5454324", "b5469104"]).fileName == "ester-b5454324-b5469104")
+        #expect(CoverArt.ester(["b5454324"]).fileName == "ester-b5454324")
     }
 }
 
@@ -136,6 +150,164 @@ struct CoversTests {
         clock.advance(by: 5 * 60 + 1)
         _ = await few.cover(.isbn("9780000000026"))
         #expect(await asked.count == 4)
+    }
+}
+
+/// Covers and summaries from ESTER, against a stand-in for EPIK that has what each
+/// test says it has.
+struct ESTERCoversTests {
+    private struct Has: Sendable {
+        var cover: Data?
+        var description: String?
+    }
+
+    private static let blue = EPIKTests.picture(width: 160, height: 240)
+
+    private let directory = URL.temporaryDirectory.appending(path: "covers-\(UUID().uuidString)")
+    private let clock = Clock()
+    private let asked = Asked()
+
+    private func covers(_ has: [String: Has], status: Int = 200) -> Covers {
+        let asked = asked
+        return Covers(directory: directory, now: clock.now) { request in
+            await asked.add(request)
+            guard status == 200 else { return (Data("<html>Service unavailable</html>".utf8), status) }
+            if request.httpMethod == "POST" {
+                let codes = try JSONDecoder().decode([String].self, from: request.httpBody ?? Data())
+                let items = codes.map { code -> [String: Any] in
+                    let known = has[code]
+                    return [
+                        "code": code, "idUuid": known == nil ? NSNull() : "0000-" + code.dropFirst(),
+                        "imageData": known?.cover == nil ? NSNull() : "thumbnail",
+                        "isContentPresent": false, "isContentDescriptionPresent": known?.description != nil,
+                    ]
+                }
+                return (try JSONSerialization.data(withJSONObject: items), 200)
+            }
+            let id = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)?.queryItems?.first?.value ?? ""
+            let known = has["b" + id.dropFirst(5)]
+            return (EPIKTests.details(cover: known?.cover, description: known?.description), 200)
+        }
+    }
+
+    private var posts: [[String]] {
+        get async {
+            await asked.requests.filter { $0.httpMethod == "POST" }.map { (try? JSONDecoder().decode([String].self, from: $0.httpBody ?? Data())) ?? [] }
+        }
+    }
+
+    private var detailsAsked: [String] {
+        get async {
+            await asked.requests.filter { $0.httpMethod != "POST" }.compactMap { $0.url?.query() }
+        }
+    }
+
+    @Test func theFirstEditionWithACoverGivesIt() async throws {
+        let has = ["b2000002": Has(cover: Self.blue), "b1000001": Has(cover: EPIKTests.picture(width: 100, height: 150))]
+        let loaded = try #require(await covers(has).cover(.ester(["b3000003", "b2000002", "b1000001"])))
+        #expect(loaded.data == Self.blue)
+        #expect(loaded.sample != nil)
+        #expect(await posts == [["b1000001", "b2000002", "b3000003"]])
+        #expect(await detailsAsked == ["idUuid=0000-2000002"])
+    }
+
+    @Test func aCoverAndTheRecordsSummaryAreKeptOnThePhone() async throws {
+        let has = ["b1000001": Has(cover: Self.blue, description: "Kroonik kirjutab üles oma õemehe loo.")]
+        let art = CoverArt.ester(["b1000001"])
+        let first = covers(has)
+        let loaded = try #require(await first.cover(art))
+        #expect(await first.description(for: art) == "Kroonik kirjutab üles oma õemehe loo.")
+        #expect(await asked.count == 2)
+        // Next launch, both come from the phone.
+        let next = covers(has)
+        #expect(await next.description(for: art) == "Kroonik kirjutab üles oma õemehe loo.")
+        #expect(await next.cover(art) == loaded)
+        #expect(await asked.count == 2)
+    }
+
+    @Test func coversWantedAtTheSameMomentGoInOneRequest() async {
+        let has = ["b1000001": Has(cover: Self.blue), "b2000002": Has(cover: Self.blue), "b3000003": Has()]
+        let covers = covers(has)
+        async let first = covers.cover(.ester(["b1000001"]))
+        async let second = covers.cover(.ester(["b2000002"]))
+        async let third = covers.cover(.ester(["b3000003"]))
+        #expect(await first != nil)
+        #expect(await second != nil)
+        #expect(await third == nil)
+        #expect(await posts == [["b1000001", "b2000002", "b3000003"]])
+        #expect(await detailsAsked.sorted() == ["idUuid=0000-1000001", "idUuid=0000-2000002"])
+    }
+
+    /// A shelf holds one edition, often an e-book with no cover of its own.
+    @Test func theShelfShowsTheCoverTheBooksPageFound() async throws {
+        let has = ["b1000001": Has(cover: Self.blue)]
+        let shelved = CoverArt.ester(["b2000002"])
+        // Asked by its own edition first, the shelf finds none.
+        #expect(await covers(has).cover(shelved) == nil)
+        let page = covers(has)
+        let found = try #require(await page.cover(.ester(["b2000002", "b1000001"])))
+        let before = await asked.count
+        #expect(await page.cover(shelved) == found)
+        // And so does the next launch, with nothing more asked.
+        #expect(await covers(has).cover(shelved) == found)
+        #expect(await asked.count == before)
+    }
+
+    @Test func aBookWithNoCoverIsNotAskedAboutAgainForAMonth() async {
+        let art = CoverArt.ester(["b1000001"])
+        #expect(await covers([:]).cover(art) == nil)
+        #expect(await covers([:]).cover(art) == nil)
+        #expect(await asked.count == 1)
+        clock.advance(by: 31 * 24 * 60 * 60)
+        #expect(await covers([:]).cover(art) == nil)
+        #expect(await asked.count == 2)
+    }
+
+    @Test func anOutageIsNotTakenForABookWithNoCover() async {
+        let art = CoverArt.ester(["b1000001"])
+        #expect(await covers([:], status: 503).cover(art) == nil)
+        #expect(await covers(["b1000001": Has(cover: Self.blue)]).cover(art) != nil)
+        #expect(await posts.count == 2)
+    }
+
+    @Test func aWholeJacketIsCutToItsFront() async throws {
+        // Back and spine first, in red, and the front in blue.
+        let jacket = EPIKTests.picture(width: 340, height: 240, left: .red, right: .blue)
+        let loaded = try #require(await covers(["b1000001": Has(cover: jacket)]).cover(.ester(["b1000001"])))
+        let image = try #require(UIImage(data: loaded.data)?.cgImage)
+        #expect(image.width == 170)
+        #expect(image.height == 240)
+        // Blue's hue is two thirds of the way round, and red's is at the start.
+        let sample = try #require(loaded.sample)
+        #expect((0.55...0.75).contains(sample.hue))
+        // An ordinary cover is kept as it came.
+        #expect(Covers.front(of: Self.blue) == Self.blue)
+    }
+
+    @Test func aSummaryOnAnotherEditionIsFoundToo() async {
+        let has = ["b2000002": Has(cover: Self.blue), "b1000001": Has(description: "Kroonik kirjutab üles oma õemehe loo.")]
+        let covers = covers(has)
+        let art = CoverArt.ester(["b2000002", "b1000001"])
+        #expect(await covers.cover(art) != nil)
+        #expect(await covers.description(for: art) == "Kroonik kirjutab üles oma õemehe loo.")
+        #expect(await detailsAsked == ["idUuid=0000-2000002", "idUuid=0000-1000001"])
+    }
+
+    @Test func aSummaryShowsForABookWithNoCover() async {
+        let has = ["b1000001": Has(description: "Kroonik kirjutab üles oma õemehe loo.")]
+        let art = CoverArt.ester(["b1000001"])
+        let first = covers(has)
+        #expect(await first.description(for: art) == "Kroonik kirjutab üles oma õemehe loo.")
+        #expect(await first.cover(art) == nil)
+        #expect(await asked.count == 2)
+        // Next launch it is read from the phone, and the missing cover is not asked for.
+        #expect(await covers(has).description(for: art) == "Kroonik kirjutab üles oma õemehe loo.")
+        #expect(await asked.count == 2)
+    }
+
+    @Test func aCoverFromOpenLibraryHasNoSummary() async {
+        #expect(await covers([:]).description(for: .id(7)) == nil)
+        #expect(await asked.count == 0)
     }
 }
 

@@ -39,10 +39,11 @@ struct ShelvedOpenLibraryBookTests {
         #expect(book.coverArt == .id(210_551))
     }
 
-    @Test func aCatalogueBookHasNoCover() throws {
+    @Test func aCatalogueBookAsksESTERForTheEditionThatWasShelved() throws {
         let kross = CatalogueEdition(id: 1, erbID: "b10544215", title: "Keisri hull", authors: "Jaan Kross")
-        let book = try ShelvedBook.shelve(CatalogueWork(id: CatalogueWork.key(for: kross), editions: [kross]), edition: kross, on: .read, in: context)
-        #expect(book.coverArt == nil)
+        let newer = CatalogueEdition(id: 2, erbID: "b46590080", title: "Keisri hull", authors: "Jaan Kross")
+        let book = try ShelvedBook.shelve(CatalogueWork(id: CatalogueWork.key(for: kross), editions: [newer, kross]), edition: kross, on: .read, in: context)
+        #expect(book.coverArt == .ester(["b1054421"]))
     }
 
     @Test func aBookEnteredByHandHasNoCover() {

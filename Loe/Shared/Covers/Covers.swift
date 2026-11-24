@@ -2,9 +2,9 @@ import Foundation
 import ImageIO
 import UIKit
 
-/// Loads covers from Open Library and keeps them on the phone, along with the books
-/// it has none for, so each is asked about once. It sends the cover id or ISBN and
-/// nothing else. See docs/library.md, "Covers".
+/// Loads covers from Open Library and from ESTER and keeps them on the phone, along
+/// with the books that have none, so each is asked about once. It sends the cover
+/// id, ISBN or ESTER records and nothing else. See docs/library.md, "Covers".
 actor Covers {
     struct Loaded: Sendable, Equatable {
         let data: Data
@@ -22,6 +22,9 @@ actor Covers {
         var missRecheck: TimeInterval = 30 * 24 * 60 * 60
         /// Covers kept in memory. The rest are read back from the phone.
         var inMemory = 200
+        /// How long ESTER's covers wanted at one moment are gathered, so that a
+        /// shelf asks which of its books have one in a single request.
+        var gathering = Duration.milliseconds(100)
 
         static let standard = Limits()
     }
@@ -38,6 +41,11 @@ actor Covers {
     /// cancelled, so a book scrolled past is not asked about.
     private var wanting: [CoverArt: Set<UUID>] = [:]
     private var isbnLookups: [Date] = []
+    /// ESTER records waiting to go in the next request, and that request's answer.
+    private var esterWanted: Set<String> = []
+    private var esterAnswer: Task<[String: EPIK.Record]?, Never>?
+    /// The record's own summary that came with an ESTER cover.
+    private var descriptions: [CoverArt: String] = [:]
     private var active = 0
     private var waiting: [CheckedContinuation<Void, Never>] = []
 
@@ -62,15 +70,20 @@ actor Covers {
     static let live: Covers = {
         #if DEBUG
         // Journeys never touch the network: every cover id has a plain green
-        // cover, and no ISBN has one.
+        // cover, no ISBN has one, and ESTER has a plain blue one for one book.
         if NetworkStub.isOn {
             return Covers(directory: nil) { request in
-                guard request.url?.path().contains("/b/id/") == true else { return (Data(), 404) }
-                let image = UIGraphicsImageRenderer(size: CGSize(width: 120, height: 180)).jpegData(withCompressionQuality: 0.8) { context in
-                    UIColor(red: 0.2, green: 0.45, blue: 0.3, alpha: 1).setFill()
-                    context.fill(CGRect(x: 0, y: 0, width: 120, height: 180))
+                func plain(_ color: UIColor) -> Data {
+                    UIGraphicsImageRenderer(size: CGSize(width: 120, height: 180)).jpegData(withCompressionQuality: 0.8) { context in
+                        color.setFill()
+                        context.fill(CGRect(x: 0, y: 0, width: 120, height: 180))
+                    }
                 }
-                return (image, 200)
+                if request.url?.host() == "epik.ester.ee" {
+                    return (EPIK.stubbedAnswer(to: request, cover: plain(UIColor(red: 0.2, green: 0.3, blue: 0.55, alpha: 1))), 200)
+                }
+                guard request.url?.path().contains("/b/id/") == true else { return (Data(), 404) }
+                return (plain(UIColor(red: 0.2, green: 0.45, blue: 0.3, alpha: 1)), 200)
             }
         }
         #endif
@@ -82,8 +95,8 @@ actor Covers {
         }
     }()
 
-    /// The cover, or nil when Open Library has none, can't be reached, or has been
-    /// asked about by ISBN too often lately.
+    /// The cover, or nil when there is none, its source can't be reached, or Open
+    /// Library has been asked about by ISBN too often lately.
     func cover(_ art: CoverArt) async -> Loaded? {
         if let known = memory[art] { return known }
         if missing.contains(art) { return nil }
@@ -118,7 +131,19 @@ actor Covers {
         loading[art]?.cancel()
     }
 
+    /// The record's own summary that ESTER had with a catalogue book's cover, or
+    /// nil. Asks as `cover` does when nothing is known about the book yet.
+    func description(for art: CoverArt) async -> String? {
+        guard art.isESTERs else { return nil }
+        _ = await cover(art)
+        if let known = descriptions[art] { return known }
+        guard let file = file(art, "txt"), let text = try? String(contentsOf: file, encoding: .utf8), !text.isEmpty else { return nil }
+        descriptions[art] = text
+        return text
+    }
+
     private func download(_ art: CoverArt) async -> Loaded? {
+        if case .ester(let codes) = art { return await downloadFromESTER(art, codes) }
         await acquire()
         defer { release() }
         // Cancelled while it waited for a free download: nobody wants it any more.
@@ -130,7 +155,7 @@ actor Covers {
             guard isbnLookups.count < limits.isbnLookups else { return nil }
             isbnLookups.append(now())
         }
-        guard let (data, status) = try? await fetch(URLRequest(url: art.url)) else { return nil }
+        guard let url = art.url, let (data, status) = try? await fetch(URLRequest(url: url)) else { return nil }
         switch status {
         case 200:
             guard let loaded = Self.loaded(from: data) else {
@@ -148,6 +173,89 @@ actor Covers {
             // Rate limited or a server error: not remembered, so it is asked again.
             return nil
         }
+    }
+
+    /// A catalogue book's cover: the first of its records, in the order given, that
+    /// ESTER has one for. A record's own summary is kept beside it.
+    private func downloadFromESTER(_ art: CoverArt, _ codes: [String]) async -> Loaded? {
+        guard let records = await records(for: codes), !Task.isCancelled else { return nil }
+        let known = codes.compactMap { records[$0] }
+        let withCover = known.first(where: \.hasCover)?.id
+        let withDescription = known.first(where: \.hasDescription)?.id
+        var cover: Loaded?
+        var answered = true
+        if let withCover {
+            if let details = await details(of: withCover) {
+                cover = details.cover.flatMap(Self.front).flatMap(Self.loaded)
+                if let description = details.description { keep(description: description, for: art) }
+            } else {
+                answered = false
+            }
+        }
+        if let withDescription, withDescription != withCover, let description = await details(of: withDescription)?.description {
+            keep(description: description, for: art)
+        }
+        guard !Task.isCancelled else { return nil }
+        if let cover {
+            // Kept for each edition too: a shelf asks by the one edition it holds,
+            // which may have no cover of its own, as an e-book's record often hasn't.
+            for owner in [art] + codes.map({ CoverArt.ester([$0]) }) where memory[owner] == nil {
+                keep(cover, for: owner)
+                missing.remove(owner)
+                if let miss = file(owner, "miss") { try? FileManager.default.removeItem(at: miss) }
+                if let file = file(owner, "jpg") { try? cover.data.write(to: file, options: .atomic) }
+            }
+        } else if answered {
+            // No record has one. A failure is not remembered, so it is asked again.
+            remember(missing: art)
+        }
+        return cover
+    }
+
+    /// What ESTER has for these records, asked together with whatever else is wanted
+    /// at that moment. Nil when it can't be reached or its answer can't be read.
+    private func records(for codes: [String]) async -> [String: EPIK.Record]? {
+        esterWanted.formUnion(codes)
+        let answer = esterAnswer ?? Task { await self.askESTER() }
+        esterAnswer = answer
+        return await answer.value
+    }
+
+    private func askESTER() async -> [String: EPIK.Record]? {
+        try? await Task.sleep(for: limits.gathering)
+        let codes = esterWanted.sorted()
+        esterWanted = []
+        esterAnswer = nil
+        guard let request = EPIK.recordsRequest(for: codes),
+              let (data, status) = try? await fetch(request), status == 200,
+              let records = EPIK.records(in: data)
+        else { return nil }
+        return Dictionary(records.map { ($0.code, $0) }, uniquingKeysWith: { first, _ in first })
+    }
+
+    private func details(of id: String) async -> EPIK.Details? {
+        await acquire()
+        defer { release() }
+        guard !Task.isCancelled, let request = EPIK.detailsRequest(for: id),
+              let (data, status) = try? await fetch(request), status == 200
+        else { return nil }
+        return EPIK.details(in: data)
+    }
+
+    private func keep(description: String, for art: CoverArt) {
+        descriptions[art] = description
+        if let file = file(art, "txt") { try? Data(description.utf8).write(to: file, options: .atomic) }
+    }
+
+    /// The front of a cover. ESTER has some as the whole jacket, back and spine
+    /// first, which is wider than it is tall: the front is its right half.
+    nonisolated static func front(of data: Data) -> Data? {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil),
+              let image = CGImageSourceCreateImageAtIndex(source, 0, nil)
+        else { return nil }
+        guard image.width > image.height else { return data }
+        let half = CGRect(x: image.width - image.width / 2, y: 0, width: image.width / 2, height: image.height)
+        return image.cropping(to: half).flatMap { UIImage(cgImage: $0).jpegData(compressionQuality: 0.9) }
     }
 
     private func keep(_ loaded: Loaded, for art: CoverArt) {

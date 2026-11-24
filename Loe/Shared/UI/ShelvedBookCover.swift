@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// A shelved book's cover: the reader's photo, else Open Library's for a book
-/// found there. Any other book shows its card.
+/// A shelved book's cover: the reader's photo, else the one Open Library or ESTER
+/// has for it. A book with neither shows its card.
 struct ShelvedBookCover: View {
     let book: ShelvedBook
     let width: CGFloat

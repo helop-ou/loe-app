@@ -181,10 +181,15 @@ final class ShelvedBook {
         return OpenLibraryRecord(workKey: openLibraryKey, isbn: isbn, coverID: coverID)
     }
 
-    /// Open Library's cover for a book found there. A catalogue book and one
-    /// entered by hand have none, so nothing is asked about them.
+    /// The cover to look for: Open Library's for a book found there, and ESTER's
+    /// for a catalogue book, by the edition that was shelved. A book entered by
+    /// hand has none, so nothing is asked about it.
     var coverArt: CoverArt? {
-        openLibraryRecord.flatMap(CoverArt.init)
+        switch source {
+        case .openLibrary: openLibraryRecord.flatMap(CoverArt.init)
+        case .catalogue: CoverArt(erbIDs: [erbID])
+        case .hand: nil
+        }
     }
 }
 
