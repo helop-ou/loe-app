@@ -2,12 +2,13 @@ import Foundation
 
 /// A cover to ask for. On Open Library by its id, which every search answer
 /// carries and which is not rate limited, or by ISBN, which is. On ESTER by the
-/// records of a catalogue book's editions, the one to prefer first. See
+/// records of a catalogue book's editions, the one to prefer first, and the
+/// book's title, to tell its cover from one filed under it by mistake. See
 /// docs/library.md, "Covers".
 nonisolated enum CoverArt: Hashable, Sendable {
     case id(Int)
     case isbn(String)
-    case ester([String])
+    case ester([String], title: String)
 
     /// A book from Open Library's cover: its own id, else its ISBN.
     init?(_ record: OpenLibraryRecord) {
@@ -22,11 +23,11 @@ nonisolated enum CoverArt: Hashable, Sendable {
 
     /// A catalogue book's cover, from the ESTER records of these editions. Nil when
     /// none of them has a record, as for a book entered by hand.
-    init?(erbIDs: [String]) {
+    init?(erbIDs: [String], title: String) {
         var seen: Set<String> = []
         let codes = erbIDs.compactMap(EPIK.code(erbID:)).filter { seen.insert($0).inserted }
         guard !codes.isEmpty else { return nil }
-        self = .ester(Array(codes.prefix(EPIK.most)))
+        self = .ester(Array(codes.prefix(EPIK.most)), title: title)
     }
 
     /// Open Library's large size, which a book's page needs. `default=false` answers
@@ -54,7 +55,7 @@ nonisolated enum CoverArt: Hashable, Sendable {
         case .id(let id): "id-\(id)"
         case .isbn(let isbn): "isbn-\(isbn)"
         // Every record, so a book's page and a shelf holding one edition differ.
-        case .ester(let codes): "ester-\(codes.joined(separator: "-"))"
+        case .ester(let codes, _): "ester-\(codes.joined(separator: "-"))"
         }
     }
 }

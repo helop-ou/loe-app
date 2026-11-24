@@ -19,7 +19,7 @@ struct BookCoverArtTests {
             CatalogueEdition(id: 2, erbID: "b46590080", title: "Tõde ja õigus"),
             CatalogueEdition(id: 1, erbID: "b1210534x", title: "Tõde ja õigus"),
         ])
-        #expect(BookView.coverArt(for: tode) == .ester(["b4659008", "b1210534"]))
+        #expect(BookView.coverArt(for: tode) == .ester(["b4659008", "b1210534"], title: "Tõde ja õigus"))
     }
 
     @Test func aBookEnteredByHandAsksForNothing() {

@@ -43,7 +43,7 @@ struct ShelvedOpenLibraryBookTests {
         let kross = CatalogueEdition(id: 1, erbID: "b10544215", title: "Keisri hull", authors: "Jaan Kross")
         let newer = CatalogueEdition(id: 2, erbID: "b46590080", title: "Keisri hull", authors: "Jaan Kross")
         let book = try ShelvedBook.shelve(CatalogueWork(id: CatalogueWork.key(for: kross), editions: [newer, kross]), edition: kross, on: .read, in: context)
-        #expect(book.coverArt == .ester(["b1054421"]))
+        #expect(book.coverArt == .ester(["b1054421"], title: "Keisri hull"))
     }
 
     @Test func aBookEnteredByHandHasNoCover() {

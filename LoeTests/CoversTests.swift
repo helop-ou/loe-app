@@ -28,15 +28,15 @@ struct CoverArtTests {
     /// The record is the edition's number without its check digit, each once, the
     /// one to prefer first, and no more than a page asks about.
     @Test func aCatalogueBookIsAskedForByItsEditionsRecords() {
-        #expect(CoverArt(erbIDs: ["b54543241", "b5469104x", "b54543241"]) == .ester(["b5454324", "b5469104"]))
-        #expect(CoverArt(erbIDs: ["", "hand:1", "b1"]) == nil)
+        #expect(CoverArt(erbIDs: ["b54543241", "b5469104x", "b54543241"], title: "Keisri hull") == .ester(["b5454324", "b5469104"], title: "Keisri hull"))
+        #expect(CoverArt(erbIDs: ["", "hand:1", "b1"], title: "Keisri hull") == nil)
         let many = (10...40).map { "b10000\($0)1" }
-        #expect(CoverArt(erbIDs: many) == .ester((10...21).map { "b10000\($0)" }))
-        #expect(CoverArt.ester(["b5454324"]).url == nil)
-        #expect(CoverArt.ester(["b5454324"]).isESTERs)
+        #expect(CoverArt(erbIDs: many, title: "Keisri hull") == .ester((10...21).map { "b10000\($0)" }, title: "Keisri hull"))
+        #expect(CoverArt.ester(["b5454324"], title: "Keisri hull").url == nil)
+        #expect(CoverArt.ester(["b5454324"], title: "Keisri hull").isESTERs)
         #expect(!CoverArt.id(1).isESTERs)
-        #expect(CoverArt.ester(["b5454324", "b5469104"]).fileName == "ester-b5454324-b5469104")
-        #expect(CoverArt.ester(["b5454324"]).fileName == "ester-b5454324")
+        #expect(CoverArt.ester(["b5454324", "b5469104"], title: "Keisri hull").fileName == "ester-b5454324-b5469104")
+        #expect(CoverArt.ester(["b5454324"], title: "Keisri hull").fileName == "ester-b5454324")
     }
 }
 
@@ -159,6 +159,8 @@ struct ESTERCoversTests {
     private struct Has: Sendable {
         var cover: Data?
         var description: String?
+        /// The title EPIK has the record under. Every test asks about „Keisri hull“.
+        var title = "Keisri hull : romaan"
     }
 
     private static let blue = EPIKTests.picture(width: 160, height: 240)
@@ -187,7 +189,7 @@ struct ESTERCoversTests {
             }
             let id = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)?.queryItems?.first?.value ?? ""
             let known = has["b" + id.dropFirst(5)]
-            return (EPIKTests.details(cover: known?.cover, description: known?.description), 200)
+            return (EPIKTests.details(cover: known?.cover, description: known?.description, title: known?.title ?? ""), 200)
         }
     }
 
@@ -205,7 +207,7 @@ struct ESTERCoversTests {
 
     @Test func theFirstEditionWithACoverGivesIt() async throws {
         let has = ["b2000002": Has(cover: Self.blue), "b1000001": Has(cover: EPIKTests.picture(width: 100, height: 150))]
-        let loaded = try #require(await covers(has).cover(.ester(["b3000003", "b2000002", "b1000001"])))
+        let loaded = try #require(await covers(has).cover(.ester(["b3000003", "b2000002", "b1000001"], title: "Keisri hull")))
         #expect(loaded.data == Self.blue)
         #expect(loaded.sample != nil)
         #expect(await posts == [["b1000001", "b2000002", "b3000003"]])
@@ -214,7 +216,7 @@ struct ESTERCoversTests {
 
     @Test func aCoverAndTheRecordsSummaryAreKeptOnThePhone() async throws {
         let has = ["b1000001": Has(cover: Self.blue, description: "Kroonik kirjutab üles oma õemehe loo.")]
-        let art = CoverArt.ester(["b1000001"])
+        let art = CoverArt.ester(["b1000001"], title: "Keisri hull")
         let first = covers(has)
         let loaded = try #require(await first.cover(art))
         #expect(await first.description(for: art) == "Kroonik kirjutab üles oma õemehe loo.")
@@ -229,9 +231,9 @@ struct ESTERCoversTests {
     @Test func coversWantedAtTheSameMomentGoInOneRequest() async {
         let has = ["b1000001": Has(cover: Self.blue), "b2000002": Has(cover: Self.blue), "b3000003": Has()]
         let covers = covers(has)
-        async let first = covers.cover(.ester(["b1000001"]))
-        async let second = covers.cover(.ester(["b2000002"]))
-        async let third = covers.cover(.ester(["b3000003"]))
+        async let first = covers.cover(.ester(["b1000001"], title: "Keisri hull"))
+        async let second = covers.cover(.ester(["b2000002"], title: "Keisri hull"))
+        async let third = covers.cover(.ester(["b3000003"], title: "Keisri hull"))
         #expect(await first != nil)
         #expect(await second != nil)
         #expect(await third == nil)
@@ -239,14 +241,28 @@ struct ESTERCoversTests {
         #expect(await detailsAsked.sorted() == ["idUuid=0000-1000001", "idUuid=0000-2000002"])
     }
 
+    /// EPIK files some records under another book, and gives that book's cover.
+    @Test func aCoverFiledUnderAnotherBookIsPassedOver() async throws {
+        let wrong = Has(cover: EPIKTests.picture(width: 100, height: 150), description: "Teise raamatu lugu.", title: "Betti, kibuvits õitseb")
+        // The newest edition has another book's cover, and an older one has its own.
+        let covers = covers(["b2000002": wrong, "b1000001": Has(cover: Self.blue)])
+        let art = CoverArt.ester(["b2000002", "b1000001"], title: "Keisri hull")
+        let loaded = try #require(await covers.cover(art))
+        #expect(loaded.data == Self.blue)
+        #expect(await covers.description(for: art) == nil)
+        #expect(await detailsAsked == ["idUuid=0000-2000002", "idUuid=0000-1000001"])
+        // With no edition of its own to fall back on, the book shows its card.
+        #expect(await self.covers(["b3000003": wrong]).cover(.ester(["b3000003"], title: "Keisri hull")) == nil)
+    }
+
     /// A shelf holds one edition, often an e-book with no cover of its own.
     @Test func theShelfShowsTheCoverTheBooksPageFound() async throws {
         let has = ["b1000001": Has(cover: Self.blue)]
-        let shelved = CoverArt.ester(["b2000002"])
+        let shelved = CoverArt.ester(["b2000002"], title: "Keisri hull")
         // Asked by its own edition first, the shelf finds none.
         #expect(await covers(has).cover(shelved) == nil)
         let page = covers(has)
-        let found = try #require(await page.cover(.ester(["b2000002", "b1000001"])))
+        let found = try #require(await page.cover(.ester(["b2000002", "b1000001"], title: "Keisri hull")))
         let before = await asked.count
         #expect(await page.cover(shelved) == found)
         // And so does the next launch, with nothing more asked.
@@ -255,7 +271,7 @@ struct ESTERCoversTests {
     }
 
     @Test func aBookWithNoCoverIsNotAskedAboutAgainForAMonth() async {
-        let art = CoverArt.ester(["b1000001"])
+        let art = CoverArt.ester(["b1000001"], title: "Keisri hull")
         #expect(await covers([:]).cover(art) == nil)
         #expect(await covers([:]).cover(art) == nil)
         #expect(await asked.count == 1)
@@ -265,7 +281,7 @@ struct ESTERCoversTests {
     }
 
     @Test func anOutageIsNotTakenForABookWithNoCover() async {
-        let art = CoverArt.ester(["b1000001"])
+        let art = CoverArt.ester(["b1000001"], title: "Keisri hull")
         #expect(await covers([:], status: 503).cover(art) == nil)
         #expect(await covers(["b1000001": Has(cover: Self.blue)]).cover(art) != nil)
         #expect(await posts.count == 2)
@@ -273,7 +289,7 @@ struct ESTERCoversTests {
 
     @Test func aCoverThatCouldNotBeFetchedIsAskedForAgain() async {
         let has = ["b1000001": Has(cover: Self.blue)]
-        let art = CoverArt.ester(["b1000001"])
+        let art = CoverArt.ester(["b1000001"], title: "Keisri hull")
         #expect(await covers(has, detailsStatus: 500).cover(art) == nil)
         #expect(await covers(has).cover(art) != nil)
         #expect(await posts.count == 2)
@@ -282,7 +298,7 @@ struct ESTERCoversTests {
     @Test func aWholeJacketIsCutToItsFront() async throws {
         // Back and spine first, in red, and the front in blue.
         let jacket = EPIKTests.picture(width: 340, height: 240, left: .red, right: .blue)
-        let loaded = try #require(await covers(["b1000001": Has(cover: jacket)]).cover(.ester(["b1000001"])))
+        let loaded = try #require(await covers(["b1000001": Has(cover: jacket)]).cover(.ester(["b1000001"], title: "Keisri hull")))
         let image = try #require(UIImage(data: loaded.data)?.cgImage)
         #expect(image.width == 170)
         #expect(image.height == 240)
@@ -296,7 +312,7 @@ struct ESTERCoversTests {
     @Test func aSummaryOnAnotherEditionIsFoundToo() async {
         let has = ["b2000002": Has(cover: Self.blue), "b1000001": Has(description: "Kroonik kirjutab üles oma õemehe loo.")]
         let covers = covers(has)
-        let art = CoverArt.ester(["b2000002", "b1000001"])
+        let art = CoverArt.ester(["b2000002", "b1000001"], title: "Keisri hull")
         #expect(await covers.cover(art) != nil)
         #expect(await covers.description(for: art) == "Kroonik kirjutab üles oma õemehe loo.")
         #expect(await detailsAsked == ["idUuid=0000-2000002", "idUuid=0000-1000001"])
@@ -304,7 +320,7 @@ struct ESTERCoversTests {
 
     @Test func aSummaryShowsForABookWithNoCover() async {
         let has = ["b1000001": Has(description: "Kroonik kirjutab üles oma õemehe loo.")]
-        let art = CoverArt.ester(["b1000001"])
+        let art = CoverArt.ester(["b1000001"], title: "Keisri hull")
         let first = covers(has)
         #expect(await first.description(for: art) == "Kroonik kirjutab üles oma õemehe loo.")
         #expect(await first.cover(art) == nil)
