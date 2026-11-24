@@ -28,6 +28,12 @@ struct NetworkStubTests {
         try #require(NetworkStub.isOn)
         let halo = try await OpenLibrary.live.search("halo")
         #expect(halo.map(\.title) == ["Halo: The Fall of Reach"])
+        // One book from abroad says what it is about and one, as on Open Library, doesn't.
+        let hailMary = try await OpenLibrary.live.description(of: OpenLibraryRecord(workKey: "/works/OL21745884W"))
+        #expect(hailMary?.hasPrefix("A teacher wakes up alone") == true)
+        #expect(hailMary?.contains("Also contained in") == false)
+        #expect(hailMary.map { $0.count > BookDescription.short } == true)
+        #expect(try await OpenLibrary.live.description(of: try #require(halo.first).record) == nil)
         #expect(await Covers.live.cover(.id(210551)) != nil)
         #expect(await Covers.live.cover(.isbn("9780345451323")) == nil)
         let edition = CatalogueEdition(id: 1, erbID: "b10544215", title: "Keisri hull")

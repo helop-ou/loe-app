@@ -92,6 +92,12 @@ final class OpenLibraryJourneyTests: JourneyTestCase {
         result.tap()
 
         XCTAssertTrue(app.staticTexts["Andy Weir"].waitForExistence(timeout: 5))
+        // What the book is about, as Open Library has it, cut short until asked for.
+        let description = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'A teacher wakes up alone'")).firstMatch
+        XCTAssertTrue(description.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["From Open Library"].exists)
+        app.buttons["More"].tap()
+        XCTAssertTrue(app.buttons["Less"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.staticTexts["Translations"].waitForExistence(timeout: 5))
         let translation = app.buttons.matching(NSPredicate(format: "label CONTAINS 'Ave Maria'")).firstMatch
         XCTAssertTrue(translation.waitForExistence(timeout: 2))

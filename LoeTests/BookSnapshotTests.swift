@@ -35,6 +35,24 @@ struct BookSnapshotTests {
         try Snapshot.verify(page.padding(20), named: "book", look: look, on: .window)
     }
 
+    // A long description cut until asked for, and a short one that shows whole
+    // with nothing to ask for. The text is Open Library's, so it stays as written.
+    @Test(arguments: Snapshot.Look.all)
+    func aBooksDescription(look: Snapshot.Look) throws {
+        let long = """
+            A teacher wakes up alone on a spaceship, far from home, with no memory of how he got there.
+
+            Piece by piece he works out that he was sent to save the Earth, and that he may not be as alone as he \
+            thought. It is a story of science, friendship and stubborn hope, told by a man who would much rather be \
+            marking homework.
+            """
+        let descriptions = VStack(alignment: .leading, spacing: 32) {
+            BookDescription(text: long)
+            BookDescription(text: "A fox outwits three farmers who are tired of being robbed.")
+        }
+        try Snapshot.verify(descriptions.padding(20), named: "book-description", look: look, on: .window)
+    }
+
     // Genres Loe names in English, and subjects that read as the bibliography has
     // them, enough of them to take a second row.
     @Test(arguments: Snapshot.Look.all)

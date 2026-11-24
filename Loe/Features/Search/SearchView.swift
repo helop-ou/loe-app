@@ -173,7 +173,7 @@ struct SearchView: View {
                 .listRowBackground(Color.loeBackground)
             // A row rather than the section's footer, which a plain list paints in
             // the system's own colour.
-            Text("Books published abroad. Loe asks Open Library about what you search for, and nothing else.")
+            Text("Books published abroad. Loe asks Open Library about what you search for and the books you open from it, and nothing else.")
                 .font(.footnote)
                 .foregroundStyle(.loeSecondary)
                 .listRowBackground(Color.loeBackground)

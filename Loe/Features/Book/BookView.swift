@@ -14,6 +14,8 @@ struct BookView: View {
     @State private var editing = false
     @State private var enteredByHand = false
     @State private var openLibraryCover: Covers.Loaded?
+    @State private var description: String?
+    var openLibrary = OpenLibrary.live
     @Query private var shelves: [ShelvedBook]
 
     /// The reader's copy of this book, found by its record before its title, which
@@ -60,6 +62,9 @@ struct BookView: View {
                 }
                 if let tags = details?.tags, !tags.isEmpty {
                     BookTagList(tags: tags)
+                }
+                if let description {
+                    BookDescription(text: description)
                 }
                 if newest.originalTitle != nil {
                     OriginalCard(edition: newest, original: details?.original)
@@ -129,6 +134,44 @@ struct BookView: View {
         .task(id: base) {
             guard case .ready(let catalogue) = catalogue.state else { return }
             details = try? await catalogue.details(for: base)
+        }
+        // A book from abroad says what it is about. With no network it says nothing.
+        .task(id: base.editions[0].openLibrary) {
+            description = nil
+            guard let record = base.editions[0].openLibrary else { return }
+            description = try? await openLibrary.description(of: record)
+        }
+    }
+}
+
+/// What a book from abroad is about, in Open Library's words. A long one is cut to
+/// a few lines until the reader asks for more, and a short one shows whole, so
+/// nothing is cut without a way to read on.
+struct BookDescription: View {
+    let text: String
+
+    @State private var showsAll = false
+
+    /// Longer than this many characters and the text is cut until asked for.
+    static let short = 280
+
+    var body: some View {
+        let long = text.count > Self.short
+        VStack(alignment: .leading, spacing: 8) {
+            Text(verbatim: text)
+                .foregroundStyle(.loeInk)
+                .lineLimit(long && !showsAll ? 5 : nil)
+                .fixedSize(horizontal: false, vertical: true)
+            HStack(alignment: .firstTextBaseline) {
+                if long {
+                    Button(showsAll ? "Less" : "More") { showsAll.toggle() }
+                        .tint(.loeAccent)
+                }
+                Spacer()
+                Text("From Open Library")
+                    .foregroundStyle(.loeSecondary)
+            }
+            .font(.footnote)
         }
     }
 }
