@@ -195,6 +195,8 @@ private struct StatusLine: View {
             .accessibilityHidden(true)
             text
                 .foregroundStyle(isGood ? Color.loeInk : Color.loeSecondary)
+                // Or a status that needs two lines is cut to one at a large text size.
+                .fixedSize(horizontal: false, vertical: true)
         }
         .font(.subheadline.weight(isGood ? .semibold : .regular))
     }
