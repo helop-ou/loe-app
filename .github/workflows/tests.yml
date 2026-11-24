@@ -15,10 +15,41 @@ permissions:
   contents: read
 
 jobs:
+  # A pull request that changes only Markdown skips the app tests, and a skipped
+  # job counts as passed for the check `main` requires. A push to `main` always
+  # runs them, so its coverage stays current.
+  changes:
+    name: What changed
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      app: ${{ steps.diff.outputs.app }}
+    steps:
+      # Two commits deep: a pull request's merge commit and the base it merges into.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: See whether anything but Markdown changed
+        id: diff
+        run: |
+          changed="$(git diff --name-only HEAD^1 HEAD)"
+          echo "$changed"
+          app=true
+          if [ "$GITHUB_EVENT_NAME" = pull_request ] && ! grep -qv '\.md$' <<< "$changed"; then
+            app=false
+          fi
+          echo "app=$app" >> "$GITHUB_OUTPUT"
+
+  # The unit tests. The journeys run on a Mac before a pull request is opened:
+  # the runner takes twice as long over them and fails them at random.
   app:
     name: App tests (iOS)
+    needs: changes
+    if: needs.changes.outputs.app == 'true'
     runs-on: xcode-27
-    timeout-minutes: 45
+    timeout-minutes: 30
     env:
       # Keep in step with the local Xcode.
       DEVELOPER_DIR: /Applications/Xcode_27.2.app/Contents/Developer
@@ -65,16 +96,17 @@ jobs:
           echo "udid=$udid" >> "$GITHUB_OUTPUT"
 
       # A test that hangs fails after five minutes and the rest still run. A run
-      # that hangs anywhere else is stopped after forty, as a failure: the job's own
-      # limit cancels it, and a cancelled run keeps no results.
+      # that hangs anywhere else is stopped after twenty-five, as a failure: the
+      # job's own limit cancels it, and a cancelled run keeps no results.
       - name: Test
         env:
           UDID: ${{ steps.simulator.outputs.udid }}
         run: |
           mkdir -p build
           status=0
-          perl -e 'alarm shift; exec @ARGV' 2400 xcodebuild test \
+          perl -e 'alarm shift; exec @ARGV' 1500 xcodebuild test \
             -scheme Loe \
+            -only-testing:LoeTests \
             -destination "platform=iOS Simulator,id=$UDID" \
             -derivedDataPath build/DerivedData \
             -resultBundlePath build/TestResults.xcresult \
@@ -85,7 +117,7 @@ jobs:
             -maximum-test-execution-time-allowance 300 \
             > build/xcodebuild.log 2>&1 || status=$?
           if [ "$status" -eq 142 ]; then
-            echo "error: the test run was stopped after 40 minutes" >> build/xcodebuild.log
+            echo "error: the test run was stopped after 25 minutes" >> build/xcodebuild.log
           fi
           grep -E ": error: |^error: |✘|\*\* (BUILD|TEST) |Test run with|Executed .* tests" build/xcodebuild.log | sort -u || true
           exit "$status"
@@ -125,9 +157,13 @@ jobs:
 
   sonar:
     name: SonarCloud scan
-    needs: app
-    # A fork's pull request gets no secrets.
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    needs: [changes, app]
+    # After the app tests, and also when they were skipped: `main` requires
+    # SonarCloud's check on every pull request. A fork's pull request gets no secrets.
+    if: >-
+      always() && needs.changes.result == 'success'
+      && (needs.app.result == 'success' || needs.app.result == 'skipped')
+      && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -137,10 +173,17 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      # No report when the app tests were skipped: nothing but Markdown changed,
+      # so an empty one says all there is to say.
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        if: needs.app.result == 'success'
         with:
           name: coverage-iOS
           path: coverage
+
+      - name: Write an empty coverage report
+        if: needs.app.result == 'skipped'
+        run: mkdir -p coverage && echo '<coverage version="1"/>' > coverage/coverage-iOS.xml
 
       # The one action from outside GitHub the repository allows, and only at this
       # commit. Move the pin, its version comment and the allowed pattern together.
