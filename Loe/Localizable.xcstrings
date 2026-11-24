@@ -151,6 +151,26 @@
         }
       }
     },
+    "Activity books": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tegelusraamatud"
+          }
+        }
+      }
+    },
+    "Adaptations": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mugandused"
+          }
+        }
+      }
+    },
     "Add a book": {
       "localizations": {
         "et": {
@@ -201,12 +221,42 @@
         }
       }
     },
+    "Adventure novels": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seiklusromaanid"
+          }
+        }
+      }
+    },
+    "Advice": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nõuanded"
+          }
+        }
+      }
+    },
     "Allow Loe to use the camera in Settings, or type the ISBN into Search.": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Luba Loel seadetes kaamerat kasutada või sisesta ISBN otsingusse."
+          }
+        }
+      }
+    },
+    "Animal stories": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loomajutud"
           }
         }
       }
@@ -221,12 +271,42 @@
         }
       }
     },
+    "Anthologies": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Antoloogiad"
+          }
+        }
+      }
+    },
+    "Aphorisms": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aforismid"
+          }
+        }
+      }
+    },
     "Appearance": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Välimus"
+          }
+        }
+      }
+    },
+    "Art books": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kunstialbumid"
           }
         }
       }
@@ -241,12 +321,42 @@
         }
       }
     },
+    "Autobiographies": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autobiograafiad"
+          }
+        }
+      }
+    },
     "Availability comes from ESTER, the catalogue Estonian libraries share, run by the ELNET Consortium.": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Saadavus tuleb ESTERist, Eesti raamatukogude ühisest kataloogist, mida peab ELNET Konsortsium."
+          }
+        }
+      }
+    },
+    "Biographical novels": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Biograafilised romaanid"
+          }
+        }
+      }
+    },
+    "Biographies": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Biograafiad"
           }
         }
       }
@@ -421,12 +531,82 @@
         }
       }
     },
+    "Children's books": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lastekirjandus"
+          }
+        }
+      }
+    },
     "Choose a photo": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Vali pilt"
+          }
+        }
+      }
+    },
+    "Collected articles": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Artiklikogumikud"
+          }
+        }
+      }
+    },
+    "Colouring books": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Värvimisraamatud"
+          }
+        }
+      }
+    },
+    "Comedies": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Komöödiad"
+          }
+        }
+      }
+    },
+    "Comics": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Koomiksid"
+          }
+        }
+      }
+    },
+    "Coming-of-age novels": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arenguromaanid"
+          }
+        }
+      }
+    },
+    "Cookbooks": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kokaraamatud"
           }
         }
       }
@@ -501,6 +681,26 @@
         }
       }
     },
+    "Crime novels": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kriminaalromaanid"
+          }
+        }
+      }
+    },
+    "Crime stories": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kriminaaljutud"
+          }
+        }
+      }
+    },
     "Dark": {
       "localizations": {
         "et": {
@@ -511,12 +711,52 @@
         }
       }
     },
+    "Diaries": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Päevikud"
+          }
+        }
+      }
+    },
+    "Diary novels": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Päevikromaanid"
+          }
+        }
+      }
+    },
+    "Dictionaries": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sõnaraamatud"
+          }
+        }
+      }
+    },
     "Didn't finish": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Jäi pooleli"
+          }
+        }
+      }
+    },
+    "Documentary writing": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dokumentaalkirjandus"
           }
         }
       }
@@ -651,12 +891,42 @@
         }
       }
     },
+    "Essays": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esseed"
+          }
+        }
+      }
+    },
     "Every book published in Estonia, from the National Library of Estonia, so search works offline.": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Kõik Eestis ilmunud raamatud, Eesti Rahvusraamatukogult, et otsing töötaks ka võrguta."
+          }
+        }
+      }
+    },
+    "Exhibition catalogues": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Näitusekataloogid"
+          }
+        }
+      }
+    },
+    "Fairy tales": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Muinasjutud"
           }
         }
       }
@@ -671,12 +941,32 @@
         }
       }
     },
+    "Family novels": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perekonnaromaanid"
+          }
+        }
+      }
+    },
     "Fantasy": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Fantaasia"
+          }
+        }
+      }
+    },
+    "Fantasy novels": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fantaasiaromaanid"
           }
         }
       }
@@ -751,12 +1041,52 @@
         }
       }
     },
+    "Guides": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Juhendid"
+          }
+        }
+      }
+    },
+    "Haiku": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Haikud"
+          }
+        }
+      }
+    },
+    "Handbooks": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Käsiraamatud"
+          }
+        }
+      }
+    },
     "Headings are set in Newsreader by Production Type. Copyright 2020 The Newsreader Project Authors.": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Pealkirjad on laotud Production Type'i kirjatüübis Newsreader. Copyright 2020 The Newsreader Project Authors."
+          }
+        }
+      }
+    },
+    "Health advice": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tervisenõuanded"
           }
         }
       }
@@ -771,12 +1101,72 @@
         }
       }
     },
+    "Historical novels": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajaloolised romaanid"
+          }
+        }
+      }
+    },
+    "Historical plays": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajaloolised näidendid"
+          }
+        }
+      }
+    },
     "Horror": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Õudus"
+          }
+        }
+      }
+    },
+    "Horror novels": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Õudusromaanid"
+          }
+        }
+      }
+    },
+    "Horror stories": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Õudusjutud"
+          }
+        }
+      }
+    },
+    "Hospital novels": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Haiglaromaanid"
+          }
+        }
+      }
+    },
+    "Humorous sketches": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Humoreskid (kirjandus)"
           }
         }
       }
@@ -811,6 +1201,16 @@
         }
       }
     },
+    "Interviews": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intervjuud"
+          }
+        }
+      }
+    },
     "It isn't in the catalogue or on Open Library. Try the title, or add the book yourself.": {
       "localizations": {
         "et": {
@@ -841,6 +1241,16 @@
         }
       }
     },
+    "Jokes": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anekdoodid"
+          }
+        }
+      }
+    },
     "Language": {
       "localizations": {
         "et": {
@@ -867,6 +1277,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Viimati sünkroonitud %@"
+          }
+        }
+      }
+    },
+    "Letters": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kirjad"
           }
         }
       }
@@ -991,12 +1411,42 @@
         }
       }
     },
+    "Love poetry": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Armastusluule"
+          }
+        }
+      }
+    },
+    "Memoirs": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mälestused"
+          }
+        }
+      }
+    },
     "More by the author of %@": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Veel %@ autorilt"
+          }
+        }
+      }
+    },
+    "Narrative poems": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Poeemid"
           }
         }
       }
@@ -1137,6 +1587,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Veel pole midagi soovitada"
+          }
+        }
+      }
+    },
+    "Novels": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Romaanid"
+          }
+        }
+      }
+    },
+    "Novelty books": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vigurraamatud"
           }
         }
       }
@@ -1291,12 +1761,62 @@
         }
       }
     },
+    "Parallel texts": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rööptekstid"
+          }
+        }
+      }
+    },
+    "Photo books": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fotoalbumid"
+          }
+        }
+      }
+    },
     "Pick a few and Loe will suggest books from them. It's worked out on your phone, and you can change it in Settings.": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Vali mõned ja Loe soovitab nende järgi raamatuid. See arvutatakse sinu telefonis ja seadetes saad valikut muuta."
+          }
+        }
+      }
+    },
+    "Picture books": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pildiraamatud"
+          }
+        }
+      }
+    },
+    "Plays": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Näidendid"
+          }
+        }
+      }
+    },
+    "Poems": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Luuletused"
           }
         }
       }
@@ -1321,6 +1841,16 @@
         }
       }
     },
+    "Popular science": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aimekirjandus"
+          }
+        }
+      }
+    },
     "Privacy": {
       "localizations": {
         "et": {
@@ -1331,12 +1861,42 @@
         }
       }
     },
+    "Prose poems": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Proosaluuletused"
+          }
+        }
+      }
+    },
     "Psychological": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Psühholoogiline"
+          }
+        }
+      }
+    },
+    "Psychological novels": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Psühholoogilised romaanid"
+          }
+        }
+      }
+    },
+    "Puzzles": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nuputamisülesanded"
           }
         }
       }
@@ -1387,6 +1947,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Loen praegu"
+          }
+        }
+      }
+    },
+    "Recipes": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toiduretseptid"
+          }
+        }
+      }
+    },
+    "Reference books": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teatmikud"
+          }
+        }
+      }
+    },
+    "Religious fiction": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vaimulik ilukirjandus"
           }
         }
       }
@@ -1481,12 +2071,42 @@
         }
       }
     },
+    "Romance novels": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Armastusromaanid"
+          }
+        }
+      }
+    },
     "Same as the phone": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Nagu telefonis"
+          }
+        }
+      }
+    },
+    "Satire": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Satiir"
+          }
+        }
+      }
+    },
+    "Satirical novels": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Satiirilised romaanid"
           }
         }
       }
@@ -1511,12 +2131,52 @@
         }
       }
     },
+    "School stories": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Koolijutud"
+          }
+        }
+      }
+    },
+    "School textbooks": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kooliõpikud"
+          }
+        }
+      }
+    },
     "Science fiction": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Ulme"
+          }
+        }
+      }
+    },
+    "Science fiction novels": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ulmeromaanid"
+          }
+        }
+      }
+    },
+    "Science fiction stories": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ulmejutud"
           }
         }
       }
@@ -1681,6 +2341,26 @@
         }
       }
     },
+    "Short novels": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lühiromaanid"
+          }
+        }
+      }
+    },
+    "Short stories": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Novellid"
+          }
+        }
+      }
+    },
     "Show all %lld editions": {
       "localizations": {
         "et": {
@@ -1711,12 +2391,72 @@
         }
       }
     },
+    "Song lyrics": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Laulutekstid"
+          }
+        }
+      }
+    },
+    "Songbooks": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Laulikud"
+          }
+        }
+      }
+    },
+    "Sonnets": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sonetid"
+          }
+        }
+      }
+    },
     "Source code": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Lähtekood"
+          }
+        }
+      }
+    },
+    "Spy novels": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spiooniromaanid"
+          }
+        }
+      }
+    },
+    "Stories": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jutud"
+          }
+        }
+      }
+    },
+    "Study materials": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Õppematerjalid"
           }
         }
       }
@@ -1747,6 +2487,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vasta küsimustikule uuesti"
+          }
+        }
+      }
+    },
+    "Tales": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jutustused"
+          }
+        }
+      }
+    },
+    "Textbooks": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Õpikud"
           }
         }
       }
@@ -1901,6 +2661,16 @@
         }
       }
     },
+    "Thriller novels": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Põnevusromaanid"
+          }
+        }
+      }
+    },
     "Thrillers": {
       "localizations": {
         "et": {
@@ -1971,12 +2741,42 @@
         }
       }
     },
+    "Travel guides": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reisijuhid"
+          }
+        }
+      }
+    },
+    "Travel writing": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reisikirjad"
+          }
+        }
+      }
+    },
     "Try again": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Proovi uuesti"
+          }
+        }
+      }
+    },
+    "University textbooks": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kõrgkooliõpikud"
           }
         }
       }
@@ -2011,12 +2811,32 @@
         }
       }
     },
+    "Verse novels": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Värssromaanid"
+          }
+        }
+      }
+    },
     "Version %@ (%@)": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Versioon %@ (%@)"
+          }
+        }
+      }
+    },
+    "Village novels": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Külaromaanid"
           }
         }
       }
@@ -2037,6 +2857,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tahan lugeda"
+          }
+        }
+      }
+    },
+    "War novels": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sõjaromaanid"
           }
         }
       }
@@ -2131,6 +2961,16 @@
         }
       }
     },
+    "Workbooks": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Töövihikud"
+          }
+        }
+      }
+    },
     "Write to us": {
       "localizations": {
         "et": {
@@ -2167,6 +3007,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Noortele"
+          }
+        }
+      }
+    },
+    "Young adult books": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noorsookirjandus"
           }
         }
       }
