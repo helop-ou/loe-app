@@ -31,7 +31,7 @@ enum Snapshot {
     /// What draws the view. The renderer is enough for a plain piece of a screen. A
     /// window draws what the renderer leaves out: native controls such as a progress
     /// bar, and rows that scroll sideways. It holds the view in a scroll view, as a
-    /// screen does, so text takes the lines it needs.
+    /// screen does, so text wraps or is cut short as it would be there.
     nonisolated enum Canvas: Sendable {
         case renderer
         case window
