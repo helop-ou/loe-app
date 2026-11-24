@@ -82,13 +82,17 @@ there is a photo. [`Covers`](../Loe/Shared/Covers/Covers.swift) loads them:
   shows it even when the shelved edition, often an e-book's record, has none
   of its own. [`EPIK`](../Loe/Shared/Covers/EPIK.swift) is ESTER's cover
   service, asked as ESTER's own pages ask it: which of some records have a
-  cover, then the details of the one that does. Its covers are 240 pixels
-  tall, soft on a book's page and fine on a shelf. Some are the whole jacket,
-  wider than tall, and Loe keeps the right half, which is the front.
+  cover, then the details of the one that does. EPIK files some records under
+  another book and gives that book's cover, so a cover is taken only when the
+  title EPIK has the record under is the book's, with or without its
+  subtitle, and up to three of a book's records are tried. Its covers are 240
+  pixels tall, soft on a book's page and fine on a shelf. Some are the whole
+  jacket, wider than tall, and Loe keeps the right half, which is the front.
 - **A summary with it.** The details also carry the record's own summary when
   it has one, which a book's page shows as its description, credited to ESTER
-  (see [Catalogue](catalogue.md#books-from-abroad)). EPIK also holds text it
-  took from elsewhere, which can be another book's, and that is left out.
+  (see [Catalogue](catalogue.md#books-from-abroad)), under the same rule for
+  the title. EPIK also holds text it took from elsewhere, which can be another
+  book's, and that is left out.
 - **Where.** Search results ask only by Open Library's cover id. Lookups by
   ISBN, for a book from Open Library with no cover id, wait for a book's own
   page and the shelves: Open Library allows 100 every five minutes from one
