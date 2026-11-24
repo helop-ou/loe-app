@@ -61,37 +61,61 @@ JPEG (tens of kilobytes) so it syncs quickly, and reads its colour once, which
 `ShelvedBook` keeps beside it. The book's page and the card for the book being
 read take a wash of that colour, and Sinu toon will read the same values.
 
-Without a photo, a book found on Open Library shows Open Library's cover when
-it has one, and the plain card with its title otherwise. A catalogue book and
-one entered by hand always show the plain card: Open Library has next to no
-covers for books published in Estonia, so Loe doesn't ask, and doesn't tell it
-which of them the reader has. The reader's photo always wins, and
-removing it brings Open Library's cover back. The cover is credited under it
-on the book's page, and its colour gives the wash until there is a photo.
-[`Covers`](../Loe/Shared/Covers/Covers.swift) loads them:
+Without a photo, a book shows the cover found for it, and the plain card with
+its title when there is none. A book found on Open Library shows Open
+Library's cover. A catalogue book shows ESTER's: Open Library has next to no
+covers for books published in Estonia, so it is not asked about them. A book
+entered by hand always shows the card. The reader's photo always wins, and
+removing it brings the found cover back. The cover is credited under it on the
+book's page, to Open Library or to ESTER, and its colour gives the wash until
+there is a photo. [`Covers`](../Loe/Shared/Covers/Covers.swift) loads them:
 
-- **Which cover.** A book from Open Library by its cover id, which every
-  search answer carries and which Open Library does not rate limit, else its
-  ISBN. The id is the cover of the English edition Loe shows, else the work's:
-  a work can wear another book's cover, as *Halo: First Strike* wears *The
-  Fall of Reach*'s. A catalogue book and a book entered by hand have none.
-- **Where.** Search results ask only by cover id. Lookups by ISBN, for a book
-  from Open Library with no cover id, wait for a book's own page and the
-  shelves: Open Library allows 100 every five minutes from one address, so
-  lists would spend that, and tell it about every book scrolled past.
+- **Which cover, from Open Library.** A book from Open Library by its cover
+  id, which every search answer carries and which Open Library does not rate
+  limit, else its ISBN. The id is the cover of the English edition Loe shows,
+  else the work's: a work can wear another book's cover, as *Halo: First
+  Strike* wears *The Fall of Reach*'s.
+- **Which cover, from ESTER.** A catalogue book by the ESTER records of its
+  editions: a book's page asks about up to twelve, newest first, and takes the
+  first that has a cover, and a shelf asks about the edition that was shelved.
+  The cover a page found is kept for each of its editions too, so the shelf
+  shows it even when the shelved edition, often an e-book's record, has none
+  of its own. [`EPIK`](../Loe/Shared/Covers/EPIK.swift) is ESTER's cover
+  service, asked as ESTER's own pages ask it: which of some records have a
+  cover, then the details of the one that does. Its covers are 240 pixels
+  tall, soft on a book's page and fine on a shelf. Some are the whole jacket,
+  wider than tall, and Loe keeps the right half, which is the front.
+- **A summary with it.** The details also carry the record's own summary when
+  it has one, which a book's page shows as its description, credited to ESTER
+  (see [Catalogue](catalogue.md#books-from-abroad)). EPIK also holds text it
+  took from elsewhere, which can be another book's, and that is left out.
+- **Where.** Search results ask only by Open Library's cover id. Lookups by
+  ISBN, for a book from Open Library with no cover id, wait for a book's own
+  page and the shelves: Open Library allows 100 every five minutes from one
+  address, so lists would spend that, and tell it about every book scrolled
+  past. ESTER is asked only from a catalogue book's own page and the shelves,
+  never from search results or the rows of covers on a page.
 - **How often.** Only covers on screen are asked for (the shelf rails are
   lazy), four at a time, and one scrolled past while it waited is dropped
   before it is sent. Lookups by ISBN are counted as they are sent and stop
   short of 90 every five minutes, skipped rather than blocked. A cover is kept
   in the caches folder, and the 200 most recent in memory. A book with none
-  (404) is not asked about again for 30 days. A failure, a rate limit or an
-  answer that is not an image is not remembered past the session.
+  (404 from Open Library, or no record with a cover on ESTER) is not asked
+  about again for 30 days. A failure, a rate limit or an answer that is not
+  what was asked for is not remembered past the session. ESTER's covers
+  wanted at the same moment, a shelf's worth, are asked about in one request.
 - **What is sent.** The cover id or ISBN of a book from Open Library, to
   `covers.openlibrary.org`, with the same `User-Agent` as search and no
   cookies. Open Library redirects to the Internet Archive (`archive.org`),
-  which serves the image and so sees the same request. Debug builds launched
-  with `-networkStub YES` give every cover id a plain green cover and no
-  ISBN one, from memory only.
+  which serves the image and so sees the same request. For a catalogue book,
+  the record numbers of its editions, to `epik.ester.ee`, on the same kind of
+  session. Debug builds launched with `-networkStub YES` give every cover id a
+  plain green cover and no ISBN one, and give the print edition of „Ave Maria“
+  a plain blue cover and a summary from ESTER, all from memory only.
+- **Permission.** ESTER's statutes put copying its data under ELNET's
+  permission, which has been asked for. Until it is given, ESTER's covers and
+  summaries are for internal builds only (see
+  [Release](release.md#before-the-app-store)).
 
 ## Books entered by hand
 
