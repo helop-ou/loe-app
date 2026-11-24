@@ -54,8 +54,8 @@ struct EPIKTests {
         #expect(EPIK.records(in: Data("[]".utf8)) == [])
     }
 
-    nonisolated static func details(cover: Data?, description: String? = nil, source: String = "ESTER") -> Data {
-        var record: [String: Any] = ["autor": "Kross, Jaan, 1920-2007", "pealkiri": "Keisri hull", "taiskomplekt": false]
+    nonisolated static func details(cover: Data?, description: String? = nil, source: String = "ESTER", title: String = "Keisri hull : romaan") -> Data {
+        var record: [String: Any] = ["autor": "Kross, Jaan, 1920-2007", "pealkiri": title, "taiskomplekt": false]
         if let cover {
             record["pildiFailid"] = ["coverImages": ["large": ["data": cover.base64EncodedString(), "andmeallikas": "DIGAR"]]]
         }
@@ -81,13 +81,30 @@ struct EPIKTests {
         let details = EPIK.details(in: Self.details(cover: cover, description: "  Kroonik kirjutab üles oma õemehe loo.\n"))
         #expect(details.cover == cover)
         #expect(details.description == "Kroonik kirjutab üles oma õemehe loo.")
+        #expect(details.title == "Keisri hull : romaan")
+    }
+
+    /// Of 24 covers looked at in November 2026, the one whose title differed was
+    /// another book's, and so was one seen in the app.
+    @Test func aRecordsTitleHasToBeTheBooks() {
+        #expect(EPIK.sameTitle("Keisri hull : romaan", "Keisri hull"))
+        #expect(EPIK.sameTitle("Sapiens : inimkonna lühiajalugu", "Sapiens"))
+        #expect(EPIK.sameTitle("KEISRI HULL", "Keisri hull"))
+        #expect(EPIK.sameTitle("Tode ja oigus", "Tõde ja õigus"))
+        #expect(EPIK.sameTitle("Kevade", "Kevade. Pildikesi koolipõlvest"))
+        #expect(!EPIK.sameTitle("Betti, kibuvits õitseb : dialooge", "Saar"))
+        #expect(!EPIK.sameTitle("Maestro", "Ärata surnud"))
+        #expect(!EPIK.sameTitle("Saarepiiga", "Saar"))
+        #expect(!EPIK.sameTitle(nil, "Saar"))
+        #expect(!EPIK.sameTitle(" : ", "Saar"))
+        #expect(!EPIK.sameTitle("Saar", ""))
     }
 
     @Test func aSummaryTakenFromElsewhereIsLeftOut() {
         // EPIK had a Dutch blurb for another book on one record, from LibraryThing.
         let borrowed = EPIK.details(in: Self.details(cover: nil, description: "De zestienjarige wordt gevonden.", source: "Library Things"))
-        #expect(borrowed == EPIK.Details(cover: nil, description: nil))
-        #expect(EPIK.details(in: Self.details(cover: nil, description: "   ")) == EPIK.Details())
+        #expect(borrowed == EPIK.Details(title: "Keisri hull : romaan", cover: nil, description: nil))
+        #expect(EPIK.details(in: Self.details(cover: nil, description: "   ")).description == nil)
     }
 
     @Test func anAnswerThatCannotBeReadHasNothing() {

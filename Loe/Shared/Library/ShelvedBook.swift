@@ -187,7 +187,7 @@ final class ShelvedBook {
     var coverArt: CoverArt? {
         switch source {
         case .openLibrary: openLibraryRecord.flatMap(CoverArt.init)
-        case .catalogue: CoverArt(erbIDs: [erbID])
+        case .catalogue: CoverArt(erbIDs: [erbID], title: title)
         case .hand: nil
         }
     }

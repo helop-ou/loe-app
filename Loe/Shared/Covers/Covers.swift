@@ -143,7 +143,7 @@ actor Covers {
     }
 
     private func download(_ art: CoverArt) async -> Loaded? {
-        if case .ester(let codes) = art { return await downloadFromESTER(art, codes) }
+        if case .ester(let codes, let title) = art { return await downloadFromESTER(art, codes, title) }
         await acquire()
         defer { release() }
         // Cancelled while it waited for a free download: nobody wants it any more.
@@ -176,30 +176,34 @@ actor Covers {
     }
 
     /// A catalogue book's cover: the first of its records, in the order given, that
-    /// ESTER has one for. A record's own summary is kept beside it.
-    private func downloadFromESTER(_ art: CoverArt, _ codes: [String]) async -> Loaded? {
+    /// ESTER has one for under the book's own title. A record's own summary is
+    /// kept beside it.
+    private func downloadFromESTER(_ art: CoverArt, _ codes: [String], _ title: String) async -> Loaded? {
         guard let records = await records(for: codes), !Task.isCancelled else { return nil }
         let known = codes.compactMap { records[$0] }
-        let withCover = known.first(where: \.hasCover)?.id
-        let withDescription = known.first(where: \.hasDescription)?.id
         var cover: Loaded?
         var answered = true
-        if let withCover {
-            if let details = await details(of: withCover) {
-                cover = details.cover.flatMap(Self.front).flatMap(Self.loaded)
-                if let description = details.description { keep(description: description, for: art) }
-            } else {
+        var asked: Set<String> = []
+        for id in known.filter(\.hasCover).compactMap(\.id).prefix(EPIK.tries) where cover == nil {
+            asked.insert(id)
+            guard let details = await details(of: id) else {
                 answered = false
+                break
             }
+            // Another book's cover, filed under this record.
+            guard EPIK.sameTitle(details.title, title) else { continue }
+            cover = details.cover.flatMap(Self.front).flatMap(Self.loaded)
+            if let description = details.description { keep(description: description, for: art) }
         }
-        if let withDescription, withDescription != withCover, let description = await details(of: withDescription)?.description {
+        if descriptions[art] == nil, let id = known.first(where: \.hasDescription)?.id, !asked.contains(id),
+           let details = await details(of: id), EPIK.sameTitle(details.title, title), let description = details.description {
             keep(description: description, for: art)
         }
         guard !Task.isCancelled else { return nil }
         if let cover {
             // Kept for each edition too: a shelf asks by the one edition it holds,
             // which may have no cover of its own, as an e-book's record often hasn't.
-            for owner in [art] + codes.map({ CoverArt.ester([$0]) }) where memory[owner] == nil {
+            for owner in [art] + codes.map({ CoverArt.ester([$0], title: title) }) where memory[owner] == nil {
                 keep(cover, for: owner)
                 missing.remove(owner)
                 if let miss = file(owner, "miss") { try? FileManager.default.removeItem(at: miss) }

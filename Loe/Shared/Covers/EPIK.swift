@@ -16,6 +16,8 @@ nonisolated enum EPIK {
     }
 
     struct Details: Sendable, Equatable {
+        /// The title EPIK has the record under, with its subtitle.
+        var title: String?
         /// A JPEG, 240 pixels tall, sometimes of the whole jacket.
         var cover: Data?
         /// The record's own summary. Text EPIK took from elsewhere is left out: it
@@ -25,6 +27,18 @@ nonisolated enum EPIK {
 
     /// The most records one book's page asks about, newest first.
     static let most = 12
+    /// How many of a book's records are asked for a cover before giving up.
+    static let tries = 3
+
+    /// Whether the title EPIK has a record under is this book's. EPIK files some
+    /// records under another book, whose cover and summary it then gives, and it
+    /// writes a title with its subtitle.
+    static func sameTitle(_ theirs: String?, _ ours: String) -> Bool {
+        let theirs = CatalogueQuery.folded(theirs ?? "")
+        let ours = CatalogueQuery.folded(ours)
+        guard !theirs.isEmpty, !ours.isEmpty else { return false }
+        return theirs == ours || theirs.hasPrefix(ours + " ") || ours.hasPrefix(theirs + " ")
+    }
 
     /// The record an edition's number names: "b10544215" is "b1054421". Nil for a
     /// book with no record.
@@ -74,6 +88,7 @@ nonisolated enum EPIK {
         let own = written?["andmeallikas"] as? String == "ESTER"
         let text = (written?["kirjeSisu"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
         return Details(
+            title: record["pealkiri"] as? String,
             cover: large.flatMap { Data(base64Encoded: $0, options: .ignoreUnknownCharacters) },
             description: own && text?.isEmpty == false ? text : nil
         )
@@ -98,6 +113,7 @@ nonisolated extension EPIK {
             return (try? JSONSerialization.data(withJSONObject: items)) ?? Data()
         }
         let details: [String: Any] = ["data": [
+            "pealkiri": "Ave Maria",
             "pildiFailid": ["coverImages": ["large": ["data": cover.base64EncodedString(), "andmeallikas": "DIGAR"]]],
             "sisukirjeldus": [
                 "kirjeSisu": "Õpetaja ärkab üksi kosmoselaevas ega mäleta, kuidas ta sinna sai. Tasapisi selgub, et ta saadeti Maad päästma.",

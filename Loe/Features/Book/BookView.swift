@@ -51,7 +51,7 @@ struct BookView: View {
     /// hand has none.
     static func coverArt(for work: CatalogueWork) -> CoverArt? {
         if let abroad = work.editions[0].openLibrary { return CoverArt(abroad) }
-        return CoverArt(erbIDs: work.editions.map(\.erbID))
+        return CoverArt(erbIDs: work.editions.map(\.erbID), title: work.title)
     }
 
     /// A catalogue book waits for all its editions, newest first, so that ESTER is
