@@ -129,6 +129,19 @@ final class ShelvedBook {
         updatedAt = now
     }
 
+    var readingDates: ReadingDates {
+        ReadingDates(started: startedAt, finished: finishedAt)
+    }
+
+    /// Sets when the reader started and finished the book, or clears either.
+    func setReadingDates(_ dates: ReadingDates, now: Date = .now, calendar: Calendar = .current) {
+        let settled = dates.settled(replacing: readingDates, now: now, calendar: calendar)
+        guard settled != readingDates else { return }
+        startedAt = settled.started
+        finishedAt = settled.finished
+        updatedAt = now
+    }
+
     func rate(_ stars: Int?, now: Date = .now) {
         rating = stars.map { min(max($0, 1), 5) }
         updatedAt = now

@@ -67,6 +67,67 @@ final class ShelvesJourneyTests: JourneyTestCase {
         attach("shelves-shelf", app)
     }
 
+    /// A book shelved as read was finished today, until the reader says when.
+    @MainActor
+    func testSetsWhenABookWasRead() {
+        let app = launch()
+
+        app.tabBars.buttons["Search"].tap()
+        let field = app.searchFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        field.tap()
+        field.typeText("keisri hull")
+        let result = app.staticTexts["Keisri hull"].firstMatch
+        XCTAssertTrue(result.waitForExistence(timeout: 5))
+        result.tap()
+        let add = app.buttons["Add to shelf"]
+        XCTAssertTrue(add.waitForExistence(timeout: 5))
+        add.tap()
+        app.buttons["Read"].firstMatch.tap()
+
+        // Days as the journeys' region writes them, English in Estonia.
+        let english = Locale(identifier: "en_EE")
+        let long = Date.FormatStyle(date: .long, time: .omitted, locale: english)
+        let today = Date.now
+        let finished = app.staticTexts["Finished \(today.formatted(long))"]
+        XCTAssertTrue(finished.waitForExistence(timeout: 5))
+
+        app.buttons["Change dates"].tap()
+        let addStart = app.buttons["Add a start date"]
+        XCTAssertTrue(addStart.waitForExistence(timeout: 5))
+        addStart.tap()
+        // The first of this month, picked in the system's calendar, which offers
+        // no day after today.
+        let start = app.datePickers.element(boundBy: 0)
+        XCTAssertTrue(start.waitForExistence(timeout: 5))
+        start.tap()
+        let calendar = Calendar.current
+        let first = calendar.date(from: calendar.dateComponents([.year, .month], from: today))!
+        let month = first.formatted(.dateTime.month(.wide).locale(english))
+        let day = app.buttons.matching(NSPredicate(format: "label ENDSWITH %@", ", 1. \(month)")).firstMatch
+        XCTAssertTrue(day.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["Next Month"].isEnabled)
+        day.tap()
+        attach("shelves-reading-dates-calendar", app)
+        app.buttons["PopoverDismissRegion"].tap()
+        attach("shelves-reading-dates-sheet", app)
+        app.buttons["Save"].tap()
+
+        let started = app.staticTexts["Started \(first.formatted(long))"]
+        XCTAssertTrue(started.waitForExistence(timeout: 5))
+        XCTAssertTrue(finished.exists)
+        attach("shelves-book-reading-dates", app)
+
+        // Taking the finish away leaves the start.
+        app.buttons["Change dates"].tap()
+        let removeFinish = app.buttons["Remove the finish date"]
+        XCTAssertTrue(removeFinish.waitForExistence(timeout: 5))
+        removeFinish.tap()
+        app.buttons["Save"].tap()
+        XCTAssertTrue(finished.waitForNonExistence(timeout: 5))
+        XCTAssertTrue(started.exists)
+    }
+
     /// A book that is only on a shelf has nothing of the reader's to lose, so
     /// removing it does not ask.
     @MainActor

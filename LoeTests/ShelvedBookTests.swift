@@ -78,6 +78,24 @@ struct ShelvedBookTests {
         #expect(book.finishedAt == friday)
     }
 
+    @Test func settingTheDatesIsAChangeOnlyWhenADayChanges() throws {
+        var greenwich = Calendar(identifier: .gregorian)
+        greenwich.timeZone = .gmt
+        let book = try ShelvedBook.shelve(work, edition: edition, on: .read, in: context, now: monday)
+        book.setReadingDates(ReadingDates(finished: monday.addingTimeInterval(3_600)), now: friday, calendar: greenwich)
+        #expect(book.finishedAt == monday)
+        #expect(book.updatedAt == monday)
+
+        let lastWeek = monday.addingTimeInterval(-7 * 86_400)
+        book.setReadingDates(ReadingDates(started: lastWeek, finished: monday), now: friday, calendar: greenwich)
+        #expect(book.startedAt.map { greenwich.isDate($0, inSameDayAs: lastWeek) } == true)
+        #expect(book.finishedAt == monday)
+        #expect(book.updatedAt == friday)
+
+        book.setReadingDates(ReadingDates(), now: friday, calendar: greenwich)
+        #expect(book.readingDates == ReadingDates())
+    }
+
     @Test func ratingsStayBetweenOneAndFiveStars() throws {
         let book = try ShelvedBook.shelve(work, edition: edition, on: .read, in: context)
         book.rate(7)
