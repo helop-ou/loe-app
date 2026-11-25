@@ -56,6 +56,28 @@ struct ShelvedBookTests {
         #expect(book.progress == 1)
     }
 
+    /// The reader may have set it, so a book moved back and finished again keeps it.
+    @Test func finishingAgainKeepsTheFinishTheBookHas() throws {
+        let book = try ShelvedBook.shelve(work, edition: edition, on: .reading, in: context, now: monday)
+        let wednesday = monday.addingTimeInterval(2 * 86_400)
+        book.move(to: .read, now: wednesday)
+        book.move(to: .reading, now: friday)
+        book.move(to: .read, now: friday)
+        #expect(book.startedAt == monday)
+        #expect(book.finishedAt == wednesday)
+        #expect(book.currentPage == 352)
+    }
+
+    /// Shelved as read and started later: that finish is from a reading before this one.
+    @Test func aFinishFromBeforeTheStartIsReplaced() throws {
+        let book = try ShelvedBook.shelve(work, edition: edition, on: .read, in: context, now: monday)
+        let wednesday = monday.addingTimeInterval(2 * 86_400)
+        book.move(to: .reading, now: wednesday)
+        book.move(to: .read, now: friday)
+        #expect(book.startedAt == wednesday)
+        #expect(book.finishedAt == friday)
+    }
+
     @Test func ratingsStayBetweenOneAndFiveStars() throws {
         let book = try ShelvedBook.shelve(work, edition: edition, on: .read, in: context)
         book.rate(7)
