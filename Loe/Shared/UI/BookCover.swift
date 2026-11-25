@@ -11,23 +11,38 @@ struct BookCover: View {
     var art: CoverArt?
     let width: CGFloat
     var covers: Covers = .live
+    var pictures: CoverPictures = .shared
     /// Told when the cover that was looked for arrives, or nil when there is none.
     var onCover: ((Covers.Loaded?) -> Void)?
 
     @Environment(\.colorScheme) private var colorScheme
-    /// The cover that was found, decoded once when it arrives.
-    @State private var loaded: UIImage?
+    @Environment(\.displayScale) private var displayScale
+    @State private var found: Found?
+
+    /// The cover that was found, with the cover it was found for: a view can be
+    /// given another book before that book's own cover arrives.
+    private struct Found {
+        let art: CoverArt
+        let picture: UIImage
+    }
 
     private struct Request: Equatable {
         let art: CoverArt?
         let hasPhoto: Bool
     }
 
+    private var foundPicture: UIImage? {
+        guard let art, photo == nil else { return nil }
+        if let found, found.art == art { return found.picture }
+        return pictures.ready(art, width: width)
+    }
+
     var body: some View {
+        let foundPicture = foundPicture
         Group {
-            switch CoverChoice.of(hasPhoto: photo != nil, hasFound: loaded != nil) {
+            switch CoverChoice.of(hasPhoto: photo != nil, hasFound: foundPicture != nil) {
             case .photo: picture(photo.flatMap(UIImage.init(data:)))
-            case .found: picture(loaded)
+            case .found: picture(foundPicture)
             case .card: BlankCover(title: title, width: width)
             }
         }
@@ -36,7 +51,12 @@ struct BookCover: View {
             guard let art, photo == nil else { return }
             let cover = await covers.cover(art)
             guard !Task.isCancelled else { return }
-            loaded = cover.flatMap { UIImage(data: $0.data) }
+            var picture: UIImage?
+            if let cover {
+                picture = await pictures.picture(of: cover.data, for: art, width: width, scale: displayScale)
+                guard !Task.isCancelled else { return }
+            }
+            found = picture.map { Found(art: art, picture: $0) }
             onCover?(cover)
         }
     }
