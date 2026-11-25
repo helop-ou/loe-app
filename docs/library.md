@@ -93,12 +93,22 @@ there is a photo. [`Covers`](../Loe/Shared/Covers/Covers.swift) loads them:
   (see [Catalogue](catalogue.md#books-from-abroad)), under the same rule for
   the title. EPIK also holds text it took from elsewhere, which can be another
   book's, and that is left out.
-- **Where.** Search results ask only by Open Library's cover id. Lookups by
-  ISBN, for a book from Open Library with no cover id, wait for a book's own
-  page and the shelves: Open Library allows 100 every five minutes from one
-  address, so lists would spend that, and tell it about every book scrolled
-  past. ESTER is asked only from a catalogue book's own page and the shelves,
-  never from search results or the rows of covers on a page.
+- **Where.** A book's own page and the shelves ask for its cover. Where books
+  are listed, in search results, the rows of covers on a page and Read next,
+  [`ListedCover`](../Loe/Shared/UI/ListedCover.swift) shows the cover the
+  phone already has and asks only by Open Library's cover id. Lookups by
+  ISBN, for a book from Open Library with no cover id, wait for the page and
+  the shelves: Open Library allows 100 every five minutes from one address,
+  so lists would spend that, and tell it about every book scrolled past.
+  ESTER is asked only from a catalogue book's own page and the shelves, never
+  from a list.
+- **What a list has.** The reader's own photo, for a book that is on a shelf.
+  Otherwise the cover the book's page or a shelf found, read from memory or
+  the caches folder with nobody asked. A page keeps a cover under its
+  editions together and under each alone, and a shelf under the edition it
+  holds, so a list looks under every edition of the book it shows, however
+  many its page asked about. A book whose page was never opened shows its
+  card until it is.
 - **How often.** Only covers on screen are asked for (the shelf rails are
   lazy), four at a time, and one scrolled past while it waited is dropped
   before it is sent. Lookups by ISBN are counted as they are sent and stop
