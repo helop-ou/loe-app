@@ -2,12 +2,14 @@ import SwiftUI
 
 struct SearchResultRow: View {
     let work: CatalogueWork
+    /// The reader's own photo, for a book that is on a shelf.
+    var photo: Data?
 
     @Environment(\.locale) private var locale
 
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
-            ListedCover(work: work, width: 56)
+            ListedCover(work: work, photo: photo, width: 56)
             VStack(alignment: .leading, spacing: 3) {
                 Text(work.title)
                     .loeHeading(.inline)
