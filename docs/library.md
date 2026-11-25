@@ -108,6 +108,16 @@ there is a photo. [`Covers`](../Loe/Shared/Covers/Covers.swift) loads them:
   about again for 30 days. A failure, a rate limit or an answer that is not
   what was asked for is not remembered past the session. ESTER's covers
   wanted at the same moment, a shelf's worth, are asked about in one request.
+- **How it shows.** A book shows its card until its cover is ready, and the
+  cover then fades in over the card, briefly.
+  [`CoverPictures`](../Loe/Shared/UI/CoverPictures.swift) decodes it first,
+  off the main thread and no larger than it shows, so a list keeps scrolling
+  smoothly while its covers arrive. The decoded picture is kept in memory
+  while the phone has room. One that is there shows with a view's first
+  frame, with no card and no fade, so a cover seen once does not flicker when
+  it scrolls back into view. The wash and the credit a cover brings ease in
+  with it. The fade stays when Reduce Motion is on, because it moves nothing.
+  The reader's own photo is on the phone already and shows at once.
 - **What is sent.** The cover id or ISBN of a book from Open Library, to
   `covers.openlibrary.org`, with the same `User-Agent` as search and no
   cookies. Open Library redirects to the Internet Archive (`archive.org`),
