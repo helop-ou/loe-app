@@ -1,8 +1,8 @@
 import SwiftData
 import SwiftUI
 
-/// On a book's page: which shelf it is on, its rating once read, and how far
-/// the reader has got while reading it.
+/// On a book's page: which shelf it is on, its rating once read, how far the
+/// reader has got while reading it, and when they read it.
 struct ShelfControls: View {
     let work: CatalogueWork
     let edition: CatalogueEdition
@@ -38,6 +38,9 @@ struct ShelfControls: View {
                 }
                 if book.shelf == .reading {
                     ReadingProgress(book: book) { editingPage = true }
+                }
+                if book.readingDates.isOffered(on: book.shelf) {
+                    ReadingDatesRow(book: book)
                 }
             }
             .sheet(isPresented: $editingPage) {

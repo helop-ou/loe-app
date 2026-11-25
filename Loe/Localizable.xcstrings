@@ -191,12 +191,42 @@
         }
       }
     },
+    "Add a finish date": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lisa lõpukuupäev"
+          }
+        }
+      }
+    },
     "Add a library or bookshop": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Lisa raamatukogu või raamatupood"
+          }
+        }
+      }
+    },
+    "Add a start date": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lisa alguskuupäev"
+          }
+        }
+      }
+    },
+    "Add dates": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lisa kuupäevad"
           }
         }
       }
@@ -457,6 +487,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kataloog"
+          }
+        }
+      }
+    },
+    "Change dates": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Muuda kuupäevi"
           }
         }
       }
@@ -1027,6 +1067,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Otsi raamatukogu"
+          }
+        }
+      }
+    },
+    "Finished": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lõpetatud"
+          }
+        }
+      }
+    },
+    "Finished %@": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lõpetatud %@"
           }
         }
       }
@@ -2011,6 +2071,16 @@
         }
       }
     },
+    "Reading dates": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lugemise kuupäevad"
+          }
+        }
+      }
+    },
     "Recipes": {
       "localizations": {
         "et": {
@@ -2097,6 +2167,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kas eemaldada kataloog?"
+          }
+        }
+      }
+    },
+    "Remove the finish date": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eemalda lõpukuupäev"
+          }
+        }
+      }
+    },
+    "Remove the start date": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eemalda alguskuupäev"
           }
         }
       }
@@ -2497,6 +2587,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Spiooniromaanid"
+          }
+        }
+      }
+    },
+    "Started": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alustatud"
+          }
+        }
+      }
+    },
+    "Started %@": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alustatud %@"
           }
         }
       }
