@@ -85,9 +85,18 @@ SonarCloud's analysis token.
 
 The repository is public. It stays safe to be:
 
-- Rulesets protect `main` (pull request required, the required checks, linear
-  history, no force push or deletion) and every tag (no update or deletion),
-  so a catalogue release can never change under the apps that use it.
+- Rulesets protect `main` (pull request required, rebase merges only, the
+  required checks, linear history, no force push or deletion) and every tag
+  (no update or deletion).
+- Releases are immutable: once one is published, its tag and its files cannot
+  be changed, so a catalogue can never change under the apps that use it.
+  `catalogue-2026-11` was published before that was turned on, and its file
+  can still be replaced. The app checks every download against the manifest's
+  SHA-256, so a replaced file would fail to install and never be read.
+- Secret scanning and push protection are on. GitHub refuses a push that holds
+  a key it recognises, and reports one it finds in the history.
+- Private vulnerability reporting is on, which is where `SECURITY.md` sends
+  reporters.
 - Only GitHub-owned actions may run, plus SonarCloud's scan action at the one
   commit the workflow pins, and the default workflow token can only read.
 - Workflows run on `pull_request`, never `pull_request_target`, with
@@ -97,7 +106,9 @@ The repository is public. It stays safe to be:
 - A workflow that uploads would get its secrets from an environment limited to
   `main` (Settings → Environments), never from repository secrets, and run only
   on `workflow_dispatch`. Uploads happen locally for now.
-- Before anything that could hold a secret merges, run the history scan:
+- Push protection catches the kinds of key GitHub recognises, not every
+  private key. So before anything that could hold a secret merges, run the
+  history scan:
   `git rev-list --all | while read c; do git grep -I -l -E 'BEGIN ([A-Z]+ )?PRIVATE KEY|ghp_|github_pat_|AKIA' "$c"; done`.
 
 ## README screens
