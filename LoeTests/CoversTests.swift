@@ -38,6 +38,17 @@ struct CoverArtTests {
         #expect(CoverArt.ester(["b5454324", "b5469104"], title: "Keisri hull").fileName == "ester-b5454324-b5469104")
         #expect(CoverArt.ester(["b5454324"], title: "Keisri hull").fileName == "ester-b5454324")
     }
+
+    /// A page keeps the cover it found under its twelve newest editions together
+    /// and under each alone, and a shelf keeps one under the edition it holds.
+    @Test func aBooksCoverMayBeKeptUnderAnyOfItsEditions() {
+        let many = (10...24).map { "b10000\($0)" }
+        let whole = CoverArt.ester(Array(many.prefix(12)), title: "Keisri hull")
+        #expect(CoverArt.ester(many, title: "Keisri hull").keptUnder == [whole] + many.map { .ester([$0], title: "Keisri hull") })
+        #expect(CoverArt.ester(["b5454324"], title: "Keisri hull").keptUnder == [.ester(["b5454324"], title: "Keisri hull")])
+        #expect(CoverArt.id(7).keptUnder == [.id(7)])
+        #expect(CoverArt.isbn("9780345451323").keptUnder == [.isbn("9780345451323")])
+    }
 }
 
 struct CoversTests {
@@ -64,6 +75,19 @@ struct CoversTests {
         #expect(await asked.count == 1)
         // Next launch, it comes from the phone.
         #expect(await covers(200).cover(.id(1)) == loaded)
+        #expect(await asked.count == 1)
+    }
+
+    /// A list shows what the phone has, and asks nobody about the rest.
+    @Test func aKeptCoverIsGivenWithoutAsking() async throws {
+        #expect(await covers(200).kept(.id(1)) == nil)
+        #expect(await covers(200).kept(.isbn("9780345451323")) == nil)
+        #expect(await asked.count == 0)
+        let asking = covers(200)
+        let loaded = try #require(await asking.cover(.id(1)))
+        #expect(await asking.kept(.id(1)) == loaded)
+        // Next launch, it comes from the phone.
+        #expect(await covers(200).kept(.id(1)) == loaded)
         #expect(await asked.count == 1)
     }
 
@@ -267,6 +291,33 @@ struct ESTERCoversTests {
         #expect(await page.cover(shelved) == found)
         // And so does the next launch, with nothing more asked.
         #expect(await covers(has).cover(shelved) == found)
+        #expect(await asked.count == before)
+    }
+
+    /// A list has a book's editions as its search found them, which need not be
+    /// the ones its page asked about, or in that order.
+    @Test func aListShowsTheCoverTheBooksPageFound() async throws {
+        let has = ["b1000001": Has(cover: Self.blue)]
+        let listed = CoverArt.ester(["b3000003", "b1000001"], title: "Keisri hull")
+        #expect(await covers(has).kept(listed) == nil)
+        #expect(await asked.count == 0)
+        let page = covers(has)
+        let found = try #require(await page.cover(.ester(["b2000002", "b1000001"], title: "Keisri hull")))
+        let before = await asked.count
+        #expect(await page.kept(listed) == found)
+        // And so does the next launch, with nobody asked.
+        #expect(await covers(has).kept(listed) == found)
+        #expect(await asked.count == before)
+    }
+
+    /// A shelf keeps a cover under the edition it holds, which a book with many
+    /// editions lists after the twelve its page asks about.
+    @Test func aListShowsTheCoverAShelfFound() async throws {
+        let has = ["b1000024": Has(cover: Self.blue)]
+        let found = try #require(await covers(has).cover(.ester(["b1000024"], title: "Keisri hull")))
+        let before = await asked.count
+        let listed = CoverArt.ester((10...24).map { "b10000\($0)" }, title: "Keisri hull")
+        #expect(await covers(has).kept(listed) == found)
         #expect(await asked.count == before)
     }
 

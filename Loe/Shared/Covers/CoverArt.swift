@@ -21,13 +21,22 @@ nonisolated enum CoverArt: Hashable, Sendable {
         }
     }
 
-    /// A catalogue book's cover, from the ESTER records of these editions. Nil when
-    /// none of them has a record, as for a book entered by hand.
-    init?(erbIDs: [String], title: String) {
+    /// A catalogue book's cover, from the ESTER records of these editions, no more
+    /// of them than a page asks about. Nil when none of them has a record, as for
+    /// a book entered by hand.
+    init?(erbIDs: [String], title: String, most: Int = EPIK.most) {
         var seen: Set<String> = []
         let codes = erbIDs.compactMap(EPIK.code(erbID:)).filter { seen.insert($0).inserted }
         guard !codes.isEmpty else { return nil }
-        self = .ester(Array(codes.prefix(EPIK.most)), title: title)
+        self = .ester(Array(codes.prefix(most)), title: title)
+    }
+
+    /// Where a cover of this book may be kept already: under what its page asks
+    /// by, and under each edition alone, because a page keeps the cover it found
+    /// for every edition and a shelf asks by the one it holds.
+    var keptUnder: [CoverArt] {
+        guard case .ester(let codes, let title) = self, codes.count > 1 else { return [self] }
+        return [.ester(Array(codes.prefix(EPIK.most)), title: title)] + codes.map { .ester([$0], title: title) }
     }
 
     /// Open Library's large size, which a book's page needs. `default=false` answers

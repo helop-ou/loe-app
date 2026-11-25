@@ -126,6 +126,20 @@ actor Covers {
         return Task.isCancelled ? nil : loaded
     }
 
+    /// The cover when the phone already has it, and nil otherwise. Nobody is asked,
+    /// so a list shows what a book's page or a shelf found without telling anyone
+    /// which books were scrolled past.
+    func kept(_ art: CoverArt) -> Loaded? {
+        for owner in art.keptUnder {
+            if let known = memory[owner] { return known }
+            if let stored = stored(owner) {
+                keep(stored, for: owner)
+                return stored
+            }
+        }
+        return nil
+    }
+
     private func unwant(_ art: CoverArt, _ id: UUID) {
         guard wanting[art]?.remove(id) != nil, wanting[art]?.isEmpty == true else { return }
         loading[art]?.cancel()
