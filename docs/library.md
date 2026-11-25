@@ -329,7 +329,21 @@ picks that library sees it answer.
   which finds the book by its ESTER number when the title or authors it was
   shelved under are no longer the catalogue's.
 - Moving to Reading records when it started, once. Moving to Read records when
-  it finished and turns to the last page.
+  it finished and turns to the last page. A move never replaces a date the
+  book has, since the reader may have set it. The one exception is a finish
+  from before the start, which is from an earlier reading and is replaced.
+- The reader can change or clear either date on the book's page, with the
+  system's date picker
+  ([`ReadingDates`](../Loe/Shared/Library/ReadingDates.swift)). No day is
+  after today, and the finish is never before the start. A day the reader
+  changed is kept at noon, so it stays the same day when the phone moves to
+  another time zone, and a day they left alone keeps its moment. The page
+  shows the finish, and offers to change it, only for a book on Read. The
+  dates are offered once a book was started, and on every shelf but Want to
+  read.
+- Reading a book twice is not handled. A book has one start and one finish:
+  read again, it keeps the dates of the first reading until the reader
+  changes them.
 - Ratings are one to five stars, or none. The page stays between zero and the
   page count.
 - Removing a book asks first when it keeps something of the reader's: a
@@ -360,7 +374,8 @@ one.
 ## Testing
 
 `ShelvedBookTests`, `ShelvedEnteredBookTests`, `ShelvedOpenLibraryBookTests`
-and `TasteTests` cover the rules on an in-memory store, `CloudSyncTests` the
+and `TasteTests` cover the rules on an in-memory store, `ReadingDatesTests`
+the rules for the dates, `CloudSyncTests` the
 iCloud status, and `AddBookJourneyTests` adds, edits and removes a book by
 hand in the app. `StoredNamesTests` pins every stored name and raw value of
 the synced models and reads them back from a store on disk, so a rename fails
