@@ -124,7 +124,7 @@ private struct FeaturedSuggestion: View {
     var body: some View {
         CoverBeside(stacked: dynamicTypeSize.isAccessibilitySize) {
             Button(action: open) {
-                BlankCover(title: suggestion.work.title, width: 112)
+                ListedCover(work: suggestion.work, width: 112)
             }
             .buttonStyle(.plain)
             .accessibilityHidden(true)
@@ -173,7 +173,7 @@ private struct SuggestionRow: View {
     var body: some View {
         Button(action: open) {
             CoverBeside(stacked: dynamicTypeSize.isAccessibilitySize) {
-                BlankCover(title: suggestion.work.title, width: 72)
+                ListedCover(work: suggestion.work, width: 72)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(suggestion.work.title)
                         .loeHeading(.inline)

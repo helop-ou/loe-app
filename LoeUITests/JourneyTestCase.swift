@@ -64,6 +64,44 @@ class JourneyTestCase: XCTestCase {
         photo.tap()
     }
 
+    /// Whether the element shows the plain blue cover that `-networkStub YES` gives
+    /// ESTER for „Ave Maria“. A cover is hidden from accessibility, so this looks
+    /// at the picture: nothing else on a list is blue.
+    @MainActor
+    func showsESTERsCover(_ element: XCUIElement) -> Bool {
+        guard let image = element.screenshot().image.cgImage else { return false }
+        let width = image.width
+        let height = image.height
+        var bytes = [UInt8](repeating: 0, count: width * height * 4)
+        let drawn = bytes.withUnsafeMutableBytes { buffer -> Bool in
+            guard let context = CGContext(
+                data: buffer.baseAddress, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width * 4,
+                space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+            ) else { return false }
+            context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+            return true
+        }
+        guard drawn else { return false }
+        var blue = 0
+        for pixel in stride(from: 0, to: bytes.count, by: 4)
+        where Int(bytes[pixel + 2]) > Int(bytes[pixel]) + 50 && Int(bytes[pixel + 2]) > Int(bytes[pixel + 1]) + 30 {
+            blue += 1
+        }
+        // A cover is a good part of its row. A stray pixel or two is not one.
+        return blue * 20 > width * height
+    }
+
+    /// A cover fades in, so it is looked for until it is there.
+    @MainActor
+    func waitForESTERsCover(on element: XCUIElement, timeout: TimeInterval = 5) -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if showsESTERsCover(element) { return true }
+            usleep(200_000)
+        }
+        return showsESTERsCover(element)
+    }
+
     @MainActor
     func attach(_ name: String, _ app: XCUIApplication) {
         let attachment = XCTAttachment(screenshot: app.screenshot())

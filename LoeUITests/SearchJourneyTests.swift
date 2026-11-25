@@ -32,6 +32,26 @@ final class SearchJourneyTests: JourneyTestCase {
         attach("search-isbn-missing", app)
     }
 
+    /// A result shows its card until the book's own page has found its cover.
+    /// `-networkStub YES` gives ESTER a plain blue one for „Ave Maria“.
+    @MainActor
+    func testAResultShowsTheCoverItsPageFound() {
+        let app = openSearch()
+        search("ave maria", in: app)
+        let result = app.buttons.matching(NSPredicate(format: "label CONTAINS 'Ave Maria'")).firstMatch
+        XCTAssertTrue(result.waitForExistence(timeout: 5))
+        // Search asks ESTER nothing, so the result has only its card.
+        sleep(1)
+        XCTAssertFalse(showsESTERsCover(result))
+        result.tap()
+        XCTAssertTrue(app.staticTexts["Cover: ESTER"].waitForExistence(timeout: 5))
+
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(result.waitForExistence(timeout: 5))
+        XCTAssertTrue(waitForESTERsCover(on: result))
+        attach("search-results-kept-cover", app)
+    }
+
     @MainActor
     func testOpensABookAndFollowsATranslation() {
         let app = openSearch()

@@ -7,7 +7,7 @@ struct SearchResultRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
-            BookCover(title: work.title, art: Self.art(for: work), width: 56)
+            ListedCover(work: work, width: 56)
             VStack(alignment: .leading, spacing: 3) {
                 Text(work.title)
                     .loeHeading(.inline)
@@ -23,13 +23,6 @@ struct SearchResultRow: View {
         }
         .padding(.vertical, 6)
         .accessibilityElement(children: .combine)
-    }
-
-    /// Only by cover id, which Open Library does not limit. Lookups by ISBN, for a
-    /// catalogue book or one from Open Library with no cover id, are limited, so
-    /// they wait for the book's own page and the shelves.
-    static func art(for work: CatalogueWork) -> CoverArt? {
-        work.editions[0].openLibrary?.coverID.map(CoverArt.id)
     }
 
     private var details: String {
