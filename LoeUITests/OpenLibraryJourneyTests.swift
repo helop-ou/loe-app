@@ -102,6 +102,9 @@ final class OpenLibraryJourneyTests: JourneyTestCase {
         let translation = app.buttons.matching(NSPredicate(format: "label CONTAINS 'Ave Maria'")).firstMatch
         XCTAssertTrue(translation.waitForExistence(timeout: 2))
         attach("openlibrary-book-translations", app)
+        // A row of covers asks ESTER nothing, so the translation has only its card.
+        sleep(1)
+        XCTAssertFalse(showsESTERsCover(translation))
         translation.tap()
 
         // The Estonian edition is the catalogue's, with its libraries and its ESTER record.
@@ -114,6 +117,12 @@ final class OpenLibraryJourneyTests: JourneyTestCase {
         app.swipeUp()
         XCTAssertTrue(app.staticTexts["Where to get it"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.links.matching(NSPredicate(format: "label CONTAINS 'ESTER'")).firstMatch.exists)
+
+        // Back on the book from abroad, the row shows the cover that page found.
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(translation.waitForExistence(timeout: 5))
+        XCTAssertTrue(waitForESTERsCover(on: translation))
+        attach("openlibrary-book-translation-cover", app)
     }
 
     @MainActor

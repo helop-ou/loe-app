@@ -313,7 +313,7 @@ struct OriginalCard: View {
             if let original {
                 NavigationLink(value: original) {
                     HStack(spacing: 14) {
-                        BlankCover(title: original.title, width: 44)
+                        ListedCover(work: original, width: 44)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(original.title)
                                 .loeHeading(.inline)
@@ -496,7 +496,7 @@ private struct WorkRail: View {
                     ForEach(works) { work in
                         NavigationLink(value: work) {
                             VStack(alignment: .leading, spacing: 6) {
-                                BlankCover(title: work.title, width: 96)
+                                ListedCover(work: work, width: 96)
                                 Text(work.title)
                                     .font(.subheadline)
                                     .foregroundStyle(.loeInk)

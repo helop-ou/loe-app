@@ -31,6 +31,13 @@ nonisolated enum CoverArt: Hashable, Sendable {
         self = .ester(Array(codes.prefix(most)), title: title)
     }
 
+    /// Whether a list asks for it. Only a cover id is asked for there: Open
+    /// Library does not limit those, and gave the id with the search answer. Any
+    /// other cover shows in a list once a book's page or a shelf has found it.
+    var isAskedForInLists: Bool {
+        if case .id = self { true } else { false }
+    }
+
     /// Where a cover of this book may be kept already: under what its page asks
     /// by, and under each edition alone, because a page keeps the cover it found
     /// for every edition and a shelf asks by the one it holds.

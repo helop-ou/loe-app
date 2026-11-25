@@ -9,6 +9,9 @@ struct BookCover: View {
     var photo: Data?
     /// The cover to look for, asked for only when there is no photo.
     var art: CoverArt?
+    /// False where books are listed: the cover shows when the phone has it, and
+    /// nobody is asked for it.
+    var asks = true
     let width: CGFloat
     var covers: Covers = .live
     var pictures: CoverPictures = .shared
@@ -32,6 +35,7 @@ struct BookCover: View {
 
     private struct Request: Equatable {
         let art: CoverArt?
+        let asks: Bool
         let hasPhoto: Bool
     }
 
@@ -56,10 +60,10 @@ struct BookCover: View {
                     .transition(.opacity)
             }
         }
-        .task(id: Request(art: art, hasPhoto: photo != nil)) {
+        .task(id: Request(art: art, asks: asks, hasPhoto: photo != nil)) {
             // A photo hides the cover, so it is not asked for until the photo goes.
             guard let art, photo == nil else { return }
-            let cover = await covers.cover(art)
+            let cover = asks ? await covers.cover(art) : await covers.kept(art)
             guard !Task.isCancelled else { return }
             var picture: UIImage?
             if let cover {
