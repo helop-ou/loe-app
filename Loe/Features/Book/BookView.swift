@@ -88,12 +88,15 @@ struct BookView: View {
                     BookDescription(text: description.text, source: description.source)
                 }
                 if newest.originalTitle != nil {
-                    OriginalCard(edition: newest, original: details?.original)
+                    OriginalCard(
+                        edition: newest, original: details?.original,
+                        photo: details?.original.flatMap { ShelvedBook.find($0, among: shelves)?.coverPhoto }
+                    )
                 }
                 if let details {
                     // With no author, a title alone would match unrelated books.
                     if !details.translations.isEmpty && (shown.authors != nil || fromCatalogue) {
-                        WorkRail(title: "Translations", works: details.translations) { work in
+                        WorkRail(title: "Translations", works: details.translations, shelves: shelves) { work in
                             LanguageName.of(work.language, in: locale).map { locale.localized("In \($0)") }
                         }
                     }
@@ -102,7 +105,7 @@ struct BookView: View {
                     }
                     WhereToGetIt(work: shown, edition: newest)
                     if !details.sameAuthor.isEmpty {
-                        WorkRail(title: "By the same author", works: details.sameAuthor) { work in
+                        WorkRail(title: "By the same author", works: details.sameAuthor, shelves: shelves) { work in
                             work.firstYear.map(String.init)
                         }
                     }
@@ -110,7 +113,7 @@ struct BookView: View {
                         // The caption is what the book shares with this one: a subject
                         // heading, genre or series, as the library names it.
                         let reasons = Dictionary(details.similar.map { ($0.work.id, $0.reason) }, uniquingKeysWith: { first, _ in first })
-                        WorkRail(title: "Similar books", works: details.similar.map(\.work)) { work in
+                        WorkRail(title: "Similar books", works: details.similar.map(\.work), shelves: shelves) { work in
                             reasons[work.id]
                         }
                     }
@@ -297,6 +300,8 @@ struct BookHeader: View {
 struct OriginalCard: View {
     let edition: CatalogueEdition
     let original: CatalogueWork?
+    /// The reader's own photo of the original, when it is on a shelf.
+    var photo: Data?
 
     @Environment(\.locale) private var locale
 
@@ -313,7 +318,7 @@ struct OriginalCard: View {
             if let original {
                 NavigationLink(value: original) {
                     HStack(spacing: 14) {
-                        ListedCover(work: original, width: 44)
+                        ListedCover(work: original, photo: photo, width: 44)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(original.title)
                                 .loeHeading(.inline)
@@ -484,6 +489,8 @@ private struct EditionRow: View {
 private struct WorkRail: View {
     let title: LocalizedStringKey
     let works: [CatalogueWork]
+    /// The reader's books, for the photo of one that is on a shelf.
+    let shelves: [ShelvedBook]
     let caption: (CatalogueWork) -> String?
 
     var body: some View {
@@ -496,7 +503,7 @@ private struct WorkRail: View {
                     ForEach(works) { work in
                         NavigationLink(value: work) {
                             VStack(alignment: .leading, spacing: 6) {
-                                ListedCover(work: work, width: 96)
+                                ListedCover(work: work, photo: ShelvedBook.find(work, among: shelves)?.coverPhoto, width: 96)
                                 Text(work.title)
                                     .font(.subheadline)
                                     .foregroundStyle(.loeInk)

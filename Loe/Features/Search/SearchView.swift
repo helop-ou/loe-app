@@ -34,6 +34,7 @@ struct SearchView: View {
 
     @Environment(CatalogueStore.self) private var catalogue
     @Environment(\.modelContext) private var context
+    @Query private var shelves: [ShelvedBook]
     @State private var query = ""
     @State private var results: [CatalogueWork] = []
     @State private var resultsQuery = ""
@@ -115,7 +116,7 @@ struct SearchView: View {
         List {
             ForEach(results) { work in
                 NavigationLink(value: work) {
-                    SearchResultRow(work: work)
+                    SearchResultRow(work: work, photo: ShelvedBook.find(work, among: shelves)?.coverPhoto)
                 }
                 .listRowBackground(Color.loeBackground)
                 .listRowSeparatorTint(.loeHairline)
@@ -159,7 +160,7 @@ struct SearchView: View {
             onlineSection {
                 ForEach(books) { book in
                     NavigationLink(value: book.work) {
-                        SearchResultRow(work: book.work)
+                        SearchResultRow(work: book.work, photo: ShelvedBook.find(book.work, among: shelves)?.coverPhoto)
                     }
                     .listRowSeparatorTint(.loeHairline)
                 }
