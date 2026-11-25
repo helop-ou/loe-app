@@ -111,14 +111,17 @@ final class ShelvedBook {
     }
 
     /// Starting a book records when, once. Finishing one records when and puts the
-    /// bookmark on the last page.
+    /// bookmark on the last page. A move never replaces a date the book has, which
+    /// the reader may have set. A finish from before the start is not one: it is
+    /// from an earlier reading.
     func move(to shelf: Shelf, now: Date = .now) {
         shelfName = shelf.rawValue
         switch shelf {
         case .reading:
             startedAt = startedAt ?? now
         case .read:
-            finishedAt = now
+            if let startedAt, let finished = finishedAt, finished < startedAt { finishedAt = nil }
+            finishedAt = finishedAt ?? now
             if let pageCount { currentPage = pageCount }
         case .wantToRead, .setAside, .didNotFinish:
             break
