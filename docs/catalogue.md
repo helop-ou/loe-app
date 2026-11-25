@@ -213,10 +213,11 @@ SHA-256, its size and its schema version.
 ### Publishing a new catalogue
 
 1. Rebuild it as above, then `xz -9 -k` it.
-2. Create a release for it and never change it afterwards. Replacing an asset
-   in place can leave a release broken. Its notes name the source files and
-   the SHA-256 of each, which the build recorded in `meta` (`source_1`,
-   `source_1_sha256` and so on):
+2. Create a release for it, with its file in the same command. Releases are
+   immutable ([Release](release.md#keeping-the-public-repository-safe)), so
+   once one is published nothing can be added to it or replaced in it. Its
+   notes name the source files and the SHA-256 of each, which the build
+   recorded in `meta` (`source_1`, `source_1_sha256` and so on):
 
    ```sh
    gh release create catalogue-2026-12 /tmp/erb/catalogue.sqlite.xz --latest=false \
