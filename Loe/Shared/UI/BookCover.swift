@@ -15,6 +15,10 @@ struct BookCover: View {
     /// Told when the cover that was looked for arrives, or nil when there is none.
     var onCover: ((Covers.Loaded?) -> Void)?
 
+    /// How a cover that arrives takes its card's place, and how what it colours
+    /// follows. One that is ready shows with the first frame, with nothing to fade from.
+    static let arrival = Animation.easeOut(duration: 0.25)
+
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.displayScale) private var displayScale
     @State private var found: Found?
@@ -39,11 +43,17 @@ struct BookCover: View {
 
     var body: some View {
         let foundPicture = foundPicture
-        Group {
+        // One on top of the other, so a cover fades in over its card.
+        ZStack {
             switch CoverChoice.of(hasPhoto: photo != nil, hasFound: foundPicture != nil) {
-            case .photo: picture(photo.flatMap(UIImage.init(data:)))
-            case .found: picture(foundPicture)
-            case .card: BlankCover(title: title, width: width)
+            case .photo:
+                picture(photo.flatMap(UIImage.init(data:)))
+            case .found:
+                picture(foundPicture)
+                    .transition(.opacity)
+            case .card:
+                BlankCover(title: title, width: width)
+                    .transition(.opacity)
             }
         }
         .task(id: Request(art: art, hasPhoto: photo != nil)) {
@@ -56,8 +66,10 @@ struct BookCover: View {
                 picture = await pictures.picture(of: cover.data, for: art, width: width, scale: displayScale)
                 guard !Task.isCancelled else { return }
             }
-            found = picture.map { Found(art: art, picture: $0) }
-            onCover?(cover)
+            withAnimation(Self.arrival) {
+                found = picture.map { Found(art: art, picture: $0) }
+                onCover?(cover)
+            }
         }
     }
 
