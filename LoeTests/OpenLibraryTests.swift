@@ -199,8 +199,9 @@ struct OpenLibraryTests {
             await calls.add()
             return Data(#"{"docs": []}"#.utf8)
         }
-        // Typed on while the pause ran: the wait had begun, and nothing went out.
-        let typedOn = Task { try await client.search(afterPause: .seconds(30), for: "halo") }
+        // Typed on while the pause ran: the wait had begun, and nothing went out. The
+        // pause is an hour, so that no machine is slow enough to wait it out first.
+        let typedOn = Task { try await client.search(afterPause: .seconds(3600), for: "halo") }
         try await Task.sleep(for: .milliseconds(100))
         #expect(await calls.count == 0)
         typedOn.cancel()
