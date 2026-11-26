@@ -134,11 +134,11 @@ struct CoversTests {
         #expect(await asked.count == 3)
     }
 
-    /// A book scrolled past while its cover waited for a free download is not asked about.
-    @Test func aCoverNobodyWantsAnyMoreIsNotSent() async throws {
+    /// Covers that download one at a time, with cover 1 on its way and held there
+    /// until the gate opens, so the next cover asked for waits its turn.
+    private func oneAtATime(_ gate: Gate) async throws -> (covers: Covers, first: Task<Covers.Loaded?, Never>) {
         var limits = Covers.Limits.standard
         limits.concurrent = 1
-        let gate = Gate()
         let asked = asked
         let green = CoversTests.green
         let one = Covers(directory: nil, limits: limits, now: clock.now) { request in
@@ -148,6 +148,17 @@ struct CoversTests {
         }
         let first = Task { await one.cover(.id(1)) }
         while await asked.count == 0 { try await Task.sleep(for: .milliseconds(5)) }
+        return (one, first)
+    }
+
+    private func askedForCoverTwo() async -> Int {
+        await asked.requests.compactMap(\.url).filter { $0.path().contains("/id/2-") }.count
+    }
+
+    /// A book scrolled past while its cover waited for a free download is not asked about.
+    @Test func aCoverNobodyWantsAnyMoreIsNotSent() async throws {
+        let gate = Gate()
+        let (one, first) = try await oneAtATime(gate)
         let second = Task { await one.cover(.id(2)) }
         try await Task.sleep(for: .milliseconds(50))
         second.cancel()
@@ -157,7 +168,43 @@ struct CoversTests {
         #expect(await first.value != nil)
         #expect(await second.value == nil)
         try await Task.sleep(for: .milliseconds(50))
-        #expect(await asked.requests.compactMap(\.url).allSatisfy { !$0.path().contains("/id/2-") })
+        #expect(await askedForCoverTwo() == 0)
+    }
+
+    /// A book shows in two places, and one of them is scrolled away while its
+    /// cover waits for a free download.
+    @Test func aCoverTwoViewsWantOutlivesTheOneScrolledAway() async throws {
+        let gate = Gate()
+        let (one, first) = try await oneAtATime(gate)
+        let scrolledAway = Task { await one.cover(.id(2)) }
+        let stillShowing = Task { await one.cover(.id(2)) }
+        try await Task.sleep(for: .milliseconds(50))
+        scrolledAway.cancel()
+        try await Task.sleep(for: .milliseconds(50))
+        await gate.open()
+        #expect(await first.value != nil)
+        #expect(await scrolledAway.value == nil)
+        #expect(await stillShowing.value != nil)
+        // Wanted twice, asked for once.
+        #expect(await askedForCoverTwo() == 1)
+    }
+
+    /// Scrolled away and back before its turn came: the download given up on is
+    /// not the one the book waits for.
+    @Test func aCoverScrolledBackToIsAskedForAfterAll() async throws {
+        let gate = Gate()
+        let (one, first) = try await oneAtATime(gate)
+        let scrolledAway = Task { await one.cover(.id(2)) }
+        try await Task.sleep(for: .milliseconds(50))
+        scrolledAway.cancel()
+        try await Task.sleep(for: .milliseconds(50))
+        let back = Task { await one.cover(.id(2)) }
+        try await Task.sleep(for: .milliseconds(50))
+        await gate.open()
+        #expect(await first.value != nil)
+        #expect(await scrolledAway.value == nil)
+        #expect(await back.value != nil)
+        #expect(await askedForCoverTwo() == 1)
     }
 
     @Test func lookupsByISBNStayUnderOpenLibrarysLimit() async {
