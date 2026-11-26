@@ -260,7 +260,10 @@ every file, whose review GitHub requests on each pull request.
 ### Continuous integration
 
 `.github/workflows/tests.yml` runs on every pull request and every push to
-`main`, never on a schedule:
+`main`, never on a schedule. A pull request's newer push replaces the run of
+its older one. A push to `main` always keeps its run, because an
+[upload](release.md#uploading-to-testflight) needs the result on the commit it
+builds:
 
 - **App tests (iOS)**: the unit tests, `LoeTests`, on GitHub's `xcode-27`
   image with Xcode 27.2, on a regular iPhone on the iOS the snapshot
@@ -268,7 +271,9 @@ every file, whose review GitHub requests on each pull request.
   has a runtime for. A newer iOS on the image is left alone until its
   references are recorded, and the job fails when the image has a runtime for
   none of the folders. When the local Xcode moves, move `DEVELOPER_DIR` in the
-  same change. A test that runs past five minutes fails and the rest still
+  same change. The job first runs the upload script's tests,
+  `scripts/test_upload_testflight.py`, on the Mac the script is written for.
+  A test that runs past five minutes fails and the rest still
   run. A run past 25 minutes is stopped as a failure, because the job's own
   limit would cancel it, and a cancelled run keeps nothing. A failed run keeps
   its result bundle and log for 14 days.

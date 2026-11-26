@@ -40,7 +40,8 @@ guide is right and this file needs fixing.
   the unit tests, so this run on the Mac is the only check the journeys get:
   run the whole scheme before opening a pull request, and say that it ran. The
   catalogue build has its own tests:
-  `python3 -I -m unittest discover -s tools/catalogue`.
+  `python3 -I -m unittest discover -s tools/catalogue`. So has the upload
+  script: `python3 -I -m unittest discover -s scripts`.
 
   Without `-collect-test-diagnostics never`, a failing run hangs about ten
   minutes collecting simulator diagnostics. Run builds one after the other,
