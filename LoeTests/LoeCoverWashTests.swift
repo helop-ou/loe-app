@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import UIKit
 @testable import Loe
 
 /// The brand promises readable text on any cover's wash: ink at 8.8:1 or better, and
@@ -7,8 +8,14 @@ import Testing
 struct LoeCoverWashTests {
     private typealias RGB = (red: Double, green: Double, blue: Double)
 
-    private static let ink: [Bool: RGB] = [false: hex(0x2E1C2B), true: hex(0xF8EEDC)]
-    private static let secondary: [Bool: RGB] = [false: hex(0x6F5C69), true: hex(0xBDAAB7)]
+    /// A brand colour as the app draws it, so a change to the colour is held to
+    /// the promise too.
+    private static func rgb(_ colour: ColorResource, dark: Bool) -> RGB {
+        let theme = UITraitCollection(userInterfaceStyle: dark ? .dark : .light)
+        var (red, green, blue): (CGFloat, CGFloat, CGFloat) = (0, 0, 0)
+        UIColor(resource: colour).resolvedColor(with: theme).getRed(&red, green: &green, blue: &blue, alpha: nil)
+        return (red, green, blue)
+    }
 
     @Test func aGreyCoverGetsNoWash() {
         #expect(LoeCover.washRGB(hue: 0.3, saturation: 0.03, dark: false, surface: .page) == nil)
@@ -22,22 +29,20 @@ struct LoeCoverWashTests {
 
     @Test(arguments: [false, true])
     func inkStaysReadableOnEveryPageWash(dark: Bool) throws {
+        let ink = Self.rgb(.loeInk, dark: dark)
         for degree in 0..<360 {
             let wash = try #require(LoeCover.washRGB(hue: Double(degree) / 360, saturation: 1, dark: dark, surface: .page))
-            #expect(contrast(Self.ink[dark]!, wash) >= 8.8, "hue \(degree)°")
+            #expect(contrast(ink, wash) >= 8.8, "hue \(degree)°")
         }
     }
 
     @Test(arguments: [false, true])
     func secondaryTextStaysReadableOnEveryCardWash(dark: Bool) throws {
+        let secondary = Self.rgb(.loeSecondary, dark: dark)
         for degree in 0..<360 {
             let wash = try #require(LoeCover.washRGB(hue: Double(degree) / 360, saturation: 1, dark: dark, surface: .card))
-            #expect(contrast(Self.secondary[dark]!, wash) >= 4.9, "hue \(degree)°")
+            #expect(contrast(secondary, wash) >= 4.9, "hue \(degree)°")
         }
-    }
-
-    private static func hex(_ value: Int) -> RGB {
-        (Double(value >> 16 & 0xFF) / 255, Double(value >> 8 & 0xFF) / 255, Double(value & 0xFF) / 255)
     }
 
     private func contrast(_ a: RGB, _ b: RGB) -> Double {
