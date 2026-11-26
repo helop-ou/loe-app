@@ -4,8 +4,8 @@
 
 Inputs are the National Library's MARC21XML exports, as a ZIP or plain XML.
 docs/catalogue.md says where they come from and how each field is read.
-A build that kept nothing, or under 90% of the editions in manifest.json, fails
-and leaves no file. --allow-small turns the 90% check off for a sample.
+A build that kept nothing, or under 90% of the editions of the newest catalogue
+in manifest.json, fails and leaves no file. --allow-small turns the 90% check off for a sample.
 
 Beside OUT.sqlite it writes fiction-headings.json: the headings on the
 catalogue's fiction in Estonian, which the app's tests read.
@@ -381,6 +381,20 @@ def check_integrity(db):
         raise BuildError("the catalogue file failed its integrity check: " + "; ".join(answer[:5]))
 
 
+def catalogues(manifest):
+    """Every catalogue a manifest names, one for each schema.
+
+    Its top level is the first schema's, which is all the first builds of the app
+    read, and the catalogues of later schemas are listed under it.
+    """
+    return [manifest, *manifest.get("catalogues", [])]
+
+
+def newest(manifest):
+    """The catalogue of the latest schema a manifest names."""
+    return max(catalogues(manifest), key=lambda catalogue: catalogue["schema_version"])
+
+
 def check_size(kept, allow_small):
     """Fails a build that kept nothing, or far fewer editions than the published one."""
     if not kept:
@@ -388,7 +402,7 @@ def check_size(kept, allow_small):
     if allow_small:
         return
     with open(MANIFEST, encoding="utf-8") as manifest:
-        published = json.load(manifest)["editions"]
+        published = newest(json.load(manifest))["editions"]
     if kept < published * MINIMUM_SHARE:
         raise BuildError(
             f"kept {kept} records, under {MINIMUM_SHARE:.0%} of the {published} last published "
