@@ -1,5 +1,6 @@
 """python3 -I -m unittest discover -s tools/catalogue"""
 import hashlib
+import json
 import os
 import pathlib
 import re
@@ -15,6 +16,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build  # noqa: E402
 
 FIXED = "740101s1974    et a          000 1 est d"  # 008: 1974, fiction, Estonian
+NOT_FICTION = FIXED[:33] + "0" + FIXED[34:]
+IN_ENGLISH = FIXED[:35] + "eng" + FIXED[38:]
 
 
 def field(tag, *subs, ind1=" ", ind2=" "):
@@ -411,6 +414,47 @@ class SourceTests(unittest.TestCase):
         (qualifier,) = db.execute("SELECT qualifier FROM isbn").fetchone()
         self.assertIn("vale", qualifier)
         self.assertIn("köites", qualifier)
+
+
+class FictionHeadingsTests(unittest.TestCase):
+    def setUp(self):
+        self.directory = tempfile.TemporaryDirectory()
+        self.addCleanup(self.directory.cleanup)
+        self.out = os.path.join(self.directory.name, "catalogue.sqlite")
+
+    def build(self, *records, allow_small=True):
+        source = os.path.join(self.directory.name, "erb.xml")
+        with open(source, "w", encoding="utf-8") as f:
+            f.write(collection(*records))
+        build.build(self.out, [source], latest_year=2026, log=lambda _: None, allow_small=allow_small)
+
+    @staticmethod
+    def book(id, *headings, fixed=FIXED):
+        return record(id, field("245", ("a", f"Raamat {id}.")), *(field(tag, ("a", name)) for tag, name in headings), fixed=fixed)
+
+    def test_a_build_writes_the_headings_on_its_estonian_fiction_beside_the_catalogue(self):
+        self.build(
+            # A name that is both a subject and a genre on one edition counts once.
+            self.book("b1", ("655", "kriminaalromaanid"), ("650", "kriminaalromaanid")),
+            self.book("b2", ("650", "kriminaalromaanid"), ("655", "õudusjutud (vormimärksõna)")),
+            self.book("b3", ("655", "kriminaalromaanid"), ("655", "käsiraamatud"), fixed=NOT_FICTION),
+            self.book("b4", ("655", "kriminaalromaanid"), ("655", "ulmeromaanid"), fixed=IN_ENGLISH),
+        )
+        with open(os.path.join(self.directory.name, "fiction-headings.json"), encoding="utf-8") as f:
+            written = json.load(f)
+        self.assertEqual(
+            written,
+            {"editions": 4, "language": "est", "headings": {"kriminaalromaanid": 2, "õudusjutud": 1}},
+        )
+
+    def test_a_build_that_fails_leaves_no_headings_either(self):
+        records = (self.book("b1", ("655", "kriminaalromaanid")), self.book("b2"))
+        self.build(*records)
+        self.assertTrue(os.path.exists(build.headings_path(self.out)))
+        with self.assertRaisesRegex(build.BuildError, "under 90%"):
+            self.build(*records, allow_small=False)
+        self.assertFalse(os.path.exists(build.headings_path(self.out)))
+        self.assertFalse(os.path.exists(self.out))
 
 
 class SchemaVersionTests(unittest.TestCase):

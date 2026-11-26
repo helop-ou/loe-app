@@ -6,6 +6,9 @@ Inputs are the National Library's MARC21XML exports, as a ZIP or plain XML.
 docs/catalogue.md says where they come from and how each field is read.
 A build that kept nothing, or under 90% of the editions in manifest.json, fails
 and leaves no file. --allow-small turns the 90% check off for a sample.
+
+Beside OUT.sqlite it writes fiction-headings.json: the headings on the
+catalogue's fiction in Estonian, which the app's tests read.
 """
 import datetime
 import hashlib
@@ -22,6 +25,10 @@ from dataclasses import dataclass, field
 SCHEMA_VERSION = 1
 SCHEMA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "schema.sql")
 MANIFEST = os.path.join(os.path.dirname(os.path.abspath(__file__)), "manifest.json")
+HEADINGS = "fiction-headings.json"
+# The app's genres are checked against fiction in Estonian: genre headings are rare
+# in other languages.
+HEADINGS_LANGUAGE = "est"
 MINIMUM_SHARE = 0.9
 MARC = "{http://www.loc.gov/MARC21/slim}"
 SUBJECT, GENRE = 1, 2
@@ -389,16 +396,47 @@ def check_size(kept, allow_small):
         )
 
 
+def headings_path(out):
+    """Where a build writes the headings on its fiction: beside the catalogue."""
+    return os.path.join(os.path.dirname(out), HEADINGS)
+
+
+def fiction_headings(db):
+    """Each heading name on fiction in Estonian, and how many editions carry it.
+
+    The app's genres find their books by these names, as subjects or as genres, so
+    an edition that carries a name as both counts once.
+    """
+    rows = db.execute(
+        "SELECT h.name, COUNT(DISTINCT e.id) FROM heading h "
+        "JOIN edition_heading eh ON eh.heading_id = h.id JOIN edition e ON e.id = eh.edition_id "
+        "WHERE e.fiction = 1 AND e.language = ? GROUP BY h.name",
+        (HEADINGS_LANGUAGE,),
+    )
+    return dict(sorted(rows))
+
+
+def write_headings(path, kept, headings):
+    """Writes the headings with the catalogue's edition count, which says whose they are."""
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump({"editions": kept, "language": HEADINGS_LANGUAGE, "headings": headings}, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+
+
+def remove(*paths):
+    for path in paths:
+        if os.path.exists(path):
+            os.remove(path)
+
+
 def build(out, inputs, latest_year=None, log=print, allow_small=False):
     """Writes the catalogue to out and raises BuildError, leaving no file, if it is not fit to publish."""
-    if os.path.exists(out):
-        os.remove(out)
+    remove(out)
     try:
         kept, skipped = write(out, inputs, latest_year, log)
         check_size(kept, allow_small)
     except BaseException:
-        if os.path.exists(out):
-            os.remove(out)
+        remove(out, headings_path(out))
         raise
     return kept, skipped
 
@@ -451,6 +489,7 @@ def write(out, inputs, latest_year, log):
     db.commit()
     db.execute("VACUUM")
     check_integrity(db)
+    write_headings(headings_path(out), kept, fiction_headings(db))
     db.close()
     log(f"kept {kept}")
     for reason, count in sorted(skipped.items()):
