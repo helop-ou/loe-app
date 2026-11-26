@@ -47,6 +47,32 @@ struct AvailabilityCheckerTests {
         #expect(copies?["b10000130"] == nil)
     }
 
+    /// How many requests are out at once, and the most there ever were.
+    private actor Busy {
+        private var out = 0
+        private(set) var most = 0
+
+        func enter() {
+            out += 1
+            most = max(most, out)
+        }
+
+        func leave() { out -= 1 }
+    }
+
+    @Test func asksAboutFourAtATime() async {
+        let server = Server()
+        let busy = Busy()
+        let checker = AvailabilityChecker { url in
+            await busy.enter()
+            try? await Task.sleep(for: .milliseconds(20))
+            await busy.leave()
+            return try await server.answer(url)
+        }
+        #expect(await checker.copies(of: Self.editions(12))?.count == 12)
+        #expect(await busy.most == 4)
+    }
+
     @Test func reusesAnAnswerForTenMinutes() async {
         let server = Server()
         let clock = Mutex(Date(timeIntervalSince1970: 1_800_000_000))
