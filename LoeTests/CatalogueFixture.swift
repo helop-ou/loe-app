@@ -15,6 +15,12 @@ enum CatalogueFixture {
         .deletingLastPathComponent().deletingLastPathComponent()
         .appending(path: "tools/catalogue/manifest.json")
 
+    /// The headings on the published catalogue's fiction in Estonian, as its build
+    /// counted them.
+    static let fictionHeadings = URL(filePath: #filePath)
+        .deletingLastPathComponent().deletingLastPathComponent()
+        .appending(path: "tools/catalogue/fiction-headings.json")
+
     static let standardBooks = """
         (1, 'b1', 'Tõde ja õigus', 'A. H. Tammsaare', 1926, 1, 0, NULL, 'est', NULL, NULL),
         (2, 'b2', 'Tõde ja õigus', 'A. H. Tammsaare', 2019, 1, 0, NULL, 'est', NULL, NULL),

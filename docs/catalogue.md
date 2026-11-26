@@ -46,8 +46,14 @@ A build takes about a minute. It prints how many records it kept, why it
 skipped the rest and how many ISBN values it dropped as invalid. Run the tests
 with `python3 -I -m unittest discover -s tools/catalogue`.
 
+Beside the catalogue it writes `fiction-headings.json`: every heading name on
+the catalogue's fiction in Estonian, with how many editions carry it, and the
+catalogue's count of editions. The copy of it in `tools/catalogue` is the
+published catalogue's, and the app's tests check the quiz's
+[genres](#genres) against it.
+
 The build fails, with a message on stderr, a non-zero exit status and no output
-file, when it kept nothing or fewer than 90% of the `editions` in
+file or headings, when it kept nothing or fewer than 90% of the `editions` in
 `manifest.json`, the last published count. It also fails when SQLite's
 integrity check does not pass, and it records the name and SHA-256 of each
 source file in `meta`. To try the tool on a sample, add `--allow-small`, which
@@ -174,10 +180,16 @@ first.
 - Genre headings arrived around 1990 and are rare outside Estonian, so a genre
   finds mostly Estonian fiction from the last thirty years. A novel with no
   genre beyond „romaanid“ or „ilukirjandus“ is not found by any.
+- A name finds fiction whether the bibliography uses it as a genre or as a
+  subject. „Fantaasiakirjandus“, „ulmekirjandus“ and „düstoopiad“ are subject
+  headings only.
 
-`GenreTests` checks every heading against the catalogue installed on the
-simulator, where there is one, so a misspelt name fails instead of finding
-nothing.
+A misspelt name would find nothing and say nothing. So `GenreTests` looks each
+heading up in
+[`tools/catalogue/fiction-headings.json`](../tools/catalogue/fiction-headings.json),
+the headings the published catalogue has on its fiction in Estonian, and fails
+on a name that is not there. It needs no catalogue on the simulator, so it runs
+on CI too.
 
 The page links each edition's ESTER record (the 001 number without its final
 check digit, so `b10500820` is `record=b1050082`) and searches Rahva Raamat and
@@ -212,7 +224,11 @@ SHA-256, its size and its schema version.
 
 ### Publishing a new catalogue
 
-1. Rebuild it as above, then `xz -9 -k` it.
+1. Rebuild it as above, then `xz -9 -k` it. Copy its `fiction-headings.json`
+   over the one in `tools/catalogue` and run `GenreTests`
+   (`-only-testing:LoeTests/GenreTests`) before going on: a heading the
+   bibliography has renamed fails there, and a release cannot be changed once
+   it is published.
 2. Create a release for it, with its file in the same command. Releases are
    immutable ([Release](release.md#keeping-the-public-repository-safe)), so
    once one is published nothing can be added to it or replaced in it. Its
@@ -225,9 +241,12 @@ SHA-256, its size and its schema version.
    ```
 
 3. Update `manifest.json` with the new `version`, `url`, `sha256`
-   (`shasum -a 256`), `size` and `editions`, in a pull request. Apps pick it up
-   within a week of it reaching `main`. `CatalogueDownloadTests` checks that the
-   manifest is one this app can read.
+   (`shasum -a 256`), `size` and `editions`, in a pull request, with the new
+   `fiction-headings.json`. Apps pick it up within a week of it reaching
+   `main`. `CatalogueDownloadTests` checks that the manifest is one this app
+   can read, and the catalogue build's tests fail when the headings are of
+   another catalogue than the manifest names: one with a different count of
+   editions.
 
 ### Trying it in the simulator
 

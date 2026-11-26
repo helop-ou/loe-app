@@ -51,15 +51,18 @@ struct GenreTests {
         #expect(Set(all).isDisjoint(with: Catalogue.genericHeadings.union(["romaanid", "jutud", "e-raamatud"])))
     }
 
-    /// Checks the table against the real catalogue where there is one: a misspelt
-    /// heading would quietly find nothing.
-    @Test(.enabled(if: FileManager.default.fileExists(atPath: CatalogueStore.defaultURL.path)))
-    func everyHeadingIsInTheInstalledCatalogueOnFiction() async throws {
-        let catalogue = try Catalogue(url: CatalogueStore.defaultURL)
+    private struct PublishedHeadings: Decodable {
+        /// Each heading name, and how many editions of Estonian fiction carry it.
+        let headings: [String: Int]
+    }
+
+    /// A misspelt heading would quietly find nothing, so each one is looked up among
+    /// the headings the published catalogue has on its fiction in Estonian.
+    @Test func everyHeadingIsOnFictionInThePublishedCatalogue() throws {
+        let published = try JSONDecoder().decode(PublishedHeadings.self, from: Data(contentsOf: CatalogueFixture.fictionHeadings))
         for genre in Genre.allCases {
             for heading in genre.headings {
-                let works = try await catalogue.works(withHeadings: [heading], language: "est", limit: 1)
-                #expect(!works.isEmpty, "\(heading) for \(genre)")
+                #expect(published.headings[heading] != nil, "\(heading) for \(genre)")
             }
         }
     }
