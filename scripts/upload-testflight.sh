@@ -3,7 +3,7 @@
 # Archives the newest commit of main and uploads it to TestFlight. See
 # docs/release.md.
 #
-#   scripts/upload-testflight.sh            # archive and upload
+#   scripts/upload-testflight.sh            # archive, upload and tag
 #   scripts/upload-testflight.sh --dry-run  # check everything, upload nothing
 #
 # Needs an App Store Connect API key, in .env (see .env.example) or exported:
@@ -75,6 +75,14 @@ version="$(on_main Loe.xcodeproj/project.pbxproj | awk -F' = ' '/MARKETING_VERSI
 archive="$root/build/Loe-$version-$build.xcarchive"
 echo "Loe $version ($build) from $short"
 
+# A build number is uploaded once, and its tag is the record of that. App
+# Store Connect would refuse a second one too, but only after a whole archive.
+tag="build-$build"
+pushed="$(git ls-remote --tags origin "refs/tags/$tag")" || fail "Could not read the tags of origin"
+[[ -z "$pushed" ]] || fail "Build $build was already uploaded: $tag exists"
+[[ -z "$(git tag --list "$tag")" ]] \
+    || fail "Build $build was already uploaded, and $tag is still to push: git push origin refs/tags/$tag"
+
 auth=(-allowProvisioningUpdates
       -authenticationKeyPath "$key"
       -authenticationKeyID "$ASC_KEY_ID"
@@ -106,4 +114,11 @@ xcodebuild -exportArchive \
     -exportPath "$root/build/export-$build" \
     "${auth[@]}" > build/upload.log 2>&1 || { tail -30 build/upload.log; fail "Upload failed, see build/upload.log"; }
 
-echo "✔ Uploaded Loe $version ($build). It appears in TestFlight once App Store Connect has processed it."
+# The tag says this commit was uploaded as this build, not that App Store
+# Connect took it: processing comes later and can still turn a build down.
+git tag --annotate --message "Loe $version ($build)" "$tag" "$commit" \
+    || fail "Uploaded, but $short could not be tagged $tag. Tag it and push the tag"
+git push --quiet origin "refs/tags/$tag" \
+    || fail "Uploaded, but $tag did not reach origin. Push it: git push origin refs/tags/$tag"
+
+echo "✔ Uploaded Loe $version ($build) and tagged it $tag. It appears in TestFlight once App Store Connect has processed it."
