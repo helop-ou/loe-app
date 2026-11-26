@@ -22,16 +22,21 @@ final class TasteQuizJourneyTests: JourneyTestCase {
         leaveTheLanguageAsItIs(app)
         XCTAssertTrue(app.staticTexts["What do you like to read?"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["Done"].isEnabled)
+        // A pick counts only once Done is tapped.
+        app.buttons["Crime and mystery"].tap()
+        XCTAssertTrue(app.buttons["Crime and mystery"].isSelected)
         app.buttons["Skip"].tap()
         XCTAssertTrue(app.staticTexts["What do you like to read?"].waitForNonExistence(timeout: 5))
+        // Looked at before the relaunch, which starts on an empty library whatever was kept.
+        app.buttons["Settings"].tap()
+        XCTAssertTrue(app.staticTexts["Your tastes"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Crime and mystery"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["Crime and mystery"].isSelected)
 
         Self.quit(app)
         let again = launch(firstTime: false)
         XCTAssertTrue(again.tabBars.buttons["Shelves"].waitForExistence(timeout: 5))
         XCTAssertFalse(again.staticTexts["What do you like to read?"].waitForExistence(timeout: 2))
-        again.buttons["Settings"].tap()
-        XCTAssertTrue(again.staticTexts["Your tastes"].waitForExistence(timeout: 5))
-        XCTAssertFalse(again.buttons["Crime and mystery"].isSelected)
     }
 
     @MainActor
