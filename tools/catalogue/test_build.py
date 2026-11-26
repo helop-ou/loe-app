@@ -460,13 +460,28 @@ class FictionHeadingsTests(unittest.TestCase):
 class PublishedHeadingsTests(unittest.TestCase):
     """tools/catalogue/fiction-headings.json, which the app's tests check its genres against."""
 
-    def test_the_headings_are_of_the_catalogue_the_manifest_names(self):
+    def test_the_headings_are_of_the_newest_catalogue_the_manifest_names(self):
         with open(build.MANIFEST, encoding="utf-8") as f:
             manifest = json.load(f)
         with open(os.path.join(os.path.dirname(build.MANIFEST), build.HEADINGS), encoding="utf-8") as f:
             headings = json.load(f)
-        self.assertEqual(headings["editions"], manifest["editions"])
+        self.assertEqual(headings["editions"], build.newest(manifest)["editions"])
         self.assertTrue(headings["headings"])
+
+
+class ManifestTests(unittest.TestCase):
+    """tools/catalogue/manifest.json, which every build of the app reads."""
+
+    def test_the_manifest_names_one_catalogue_for_each_schema(self):
+        with open(build.MANIFEST, encoding="utf-8") as f:
+            schemas = [catalogue["schema_version"] for catalogue in build.catalogues(json.load(f))]
+        self.assertEqual(sorted(set(schemas)), sorted(schemas))
+
+    def test_the_newest_catalogue_is_the_one_of_the_latest_schema(self):
+        first = {"schema_version": 1, "editions": 20}
+        second = {"schema_version": 2, "editions": 40}
+        self.assertEqual(build.newest(first), first)
+        self.assertEqual(build.newest({**first, "catalogues": [second]}), second)
 
 
 class SchemaVersionTests(unittest.TestCase):
@@ -526,10 +541,17 @@ class RefusalTests(unittest.TestCase):
         self.assertTrue(os.path.exists(self.out))
 
     def test_the_limit_is_ninety_percent_of_the_published_count(self):
-        with mock.patch.object(build, "MANIFEST", self.source('{"editions": 20}', "manifest.json")):
+        with mock.patch.object(build, "MANIFEST", self.source('{"schema_version": 1, "editions": 20}', "manifest.json")):
             build.check_size(18, allow_small=False)
             with self.assertRaises(build.BuildError):
                 build.check_size(17, allow_small=False)
+
+    def test_the_limit_follows_the_newest_catalogue_once_a_later_schema_is_published(self):
+        manifest = '{"schema_version": 1, "editions": 20, "catalogues": [{"schema_version": 2, "editions": 40}]}'
+        with mock.patch.object(build, "MANIFEST", self.source(manifest, "manifest.json")):
+            build.check_size(36, allow_small=False)
+            with self.assertRaises(build.BuildError):
+                build.check_size(35, allow_small=False)
 
     def test_the_command_exits_non_zero_with_a_message_and_no_file(self):
         result = self.run_script(self.out, self.source(collection(THESIS)))
