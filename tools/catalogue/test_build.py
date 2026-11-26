@@ -457,6 +457,18 @@ class FictionHeadingsTests(unittest.TestCase):
         self.assertFalse(os.path.exists(self.out))
 
 
+class PublishedHeadingsTests(unittest.TestCase):
+    """tools/catalogue/fiction-headings.json, which the app's tests check its genres against."""
+
+    def test_the_headings_are_of_the_catalogue_the_manifest_names(self):
+        with open(build.MANIFEST, encoding="utf-8") as f:
+            manifest = json.load(f)
+        with open(os.path.join(os.path.dirname(build.MANIFEST), build.HEADINGS), encoding="utf-8") as f:
+            headings = json.load(f)
+        self.assertEqual(headings["editions"], manifest["editions"])
+        self.assertTrue(headings["headings"])
+
+
 class SchemaVersionTests(unittest.TestCase):
     def test_the_build_and_the_app_agree_on_the_schema_version(self):
         swift = pathlib.Path(__file__).resolve().parents[2] / "Loe" / "Shared" / "Catalogue" / "Catalogue.swift"
