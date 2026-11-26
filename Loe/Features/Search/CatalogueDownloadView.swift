@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Search before the catalogue is on the phone: the offer to download it, its
-/// progress, and a way to try again.
+/// progress, a way to try again, and word that Loe is too old for it.
 struct CatalogueDownloadView: View {
     @Environment(CatalogueStore.self) private var catalogue
 
@@ -27,6 +27,14 @@ struct CatalogueDownloadView: View {
                 title: "The download didn't finish",
                 systemImage: "wifi.exclamationmark",
                 description: "Check your connection and try again."
+            ) {
+                downloadButton("Try again")
+            }
+        case .needsNewerLoe:
+            EmptyState(
+                title: "Loe needs an update",
+                systemImage: "arrow.up.circle",
+                description: "The catalogue needs a newer version of Loe."
             ) {
                 downloadButton("Try again")
             }

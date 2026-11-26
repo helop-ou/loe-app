@@ -3,7 +3,7 @@ import CryptoKit
 import Foundation
 import Synchronization
 
-/// Fetches the manifest, then downloads, checks and unpacks the catalogue it names.
+/// Fetches the manifest, then downloads, checks and unpacks a catalogue it names.
 nonisolated struct CatalogueDownloader: Sendable {
     enum Failure: Error, Equatable {
         case badResponse(Int)
@@ -39,20 +39,20 @@ nonisolated struct CatalogueDownloader: Sendable {
     /// Replaces the file at `destination` only once the new catalogue has passed its
     /// checksum and opened, so a failed download never costs the reader the old one.
     func install(
-        _ manifest: CatalogueManifest,
+        _ published: PublishedCatalogue,
         at destination: URL,
         allowsCellular: Bool = true,
         progress: @escaping @Sendable (Double) -> Void = { _ in }
     ) async throws {
-        guard manifest.schemaVersion == Catalogue.schemaVersion else {
-            throw Failure.unsupportedSchema(manifest.schemaVersion)
+        guard published.schemaVersion == Catalogue.schemaVersion else {
+            throw Failure.unsupportedSchema(published.schemaVersion)
         }
-        var request = URLRequest(url: manifest.url)
+        var request = URLRequest(url: published.url)
         request.allowsExpensiveNetworkAccess = allowsCellular
         let (downloaded, response) = try await session.download(for: request, delegate: ProgressRelay(progress))
         defer { try? FileManager.default.removeItem(at: downloaded) }
         try Self.check(response)
-        guard try Self.sha256(of: downloaded) == manifest.sha256 else {
+        guard try Self.sha256(of: downloaded) == published.sha256 else {
             throw Failure.checksumMismatch
         }
 

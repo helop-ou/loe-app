@@ -14,6 +14,8 @@ final class CatalogueStore {
     enum Download: Equatable {
         case inProgress(Double)
         case failed
+        /// Every catalogue there is needs a newer Loe than this one.
+        case needsNewerLoe
     }
 
     /// What came of the reader asking for a new edition in Settings.
@@ -93,12 +95,16 @@ final class CatalogueStore {
         download = .inProgress(0)
         do {
             let manifest = try await downloader.manifest()
-            try await downloader.install(manifest, at: url) { fraction in
+            guard let published = manifest.catalogue(forSchema: Catalogue.schemaVersion) else {
+                download = manifest.hasCatalogue(newerThanSchema: Catalogue.schemaVersion) ? .needsNewerLoe : .failed
+                return
+            }
+            try await downloader.install(published, at: url) { fraction in
                 Task { @MainActor in
                     if case .inProgress = self.download { self.download = .inProgress(fraction) }
                 }
             }
-            defaults.set(manifest.version, forKey: Self.versionKey)
+            defaults.set(published.version, forKey: Self.versionKey)
             download = nil
             reload()
         } catch {
@@ -106,8 +112,9 @@ final class CatalogueStore {
         }
     }
 
-    /// Looks for a newer catalogue at most once a week, and fetches it quietly over
-    /// Wi-Fi. The catalogue in use stays until the new one is checked and in place.
+    /// Looks for a newer catalogue of the schema this build reads at most once a
+    /// week, and fetches it quietly over Wi-Fi. The catalogue in use stays until the
+    /// new one is checked and in place.
     func updateIfDue(now: Date = .now) async {
         guard case .ready = state, !isBusy, Self.isUpdateCheckDue(lastChecked: lastChecked, now: now) else { return }
         updatingQuietly = true
@@ -115,10 +122,12 @@ final class CatalogueStore {
         // Offline, the check counts for nothing and the next launch asks again.
         guard let manifest = try? await downloader.manifest() else { return }
         defaults.set(now, forKey: Self.checkedKey)
-        guard manifest.version != installedVersion, manifest.schemaVersion == Catalogue.schemaVersion else { return }
+        guard let published = manifest.catalogue(forSchema: Catalogue.schemaVersion), published.version != installedVersion else {
+            return
+        }
         do {
-            try await downloader.install(manifest, at: url, allowsCellular: false)
-            defaults.set(manifest.version, forKey: Self.versionKey)
+            try await downloader.install(published, at: url, allowsCellular: false)
+            defaults.set(published.version, forKey: Self.versionKey)
             reload()
         } catch {
             // The next check tries again. The reader keeps the catalogue they have.
@@ -126,31 +135,29 @@ final class CatalogueStore {
     }
 
     /// The reader asked for a new edition, so it may use mobile data, and says what
-    /// came of it.
+    /// came of it. A catalogue for a newer Loe is said so, whether or not this build
+    /// found a newer one of its own.
     func checkNow(now: Date = .now) async {
         guard case .ready = state, !isBusy else { return }
         check = .checking
         do {
             let manifest = try await downloader.manifest()
             defaults.set(now, forKey: Self.checkedKey)
-            guard manifest.schemaVersion == Catalogue.schemaVersion else {
-                check = .needsNewerLoe
-                return
-            }
-            guard manifest.version != installedVersion else {
-                check = .upToDate
+            let needsNewerLoe = manifest.hasCatalogue(newerThanSchema: Catalogue.schemaVersion)
+            guard let published = manifest.catalogue(forSchema: Catalogue.schemaVersion), published.version != installedVersion else {
+                check = needsNewerLoe ? .needsNewerLoe : .upToDate
                 return
             }
             download = .inProgress(0)
-            try await downloader.install(manifest, at: url) { fraction in
+            try await downloader.install(published, at: url) { fraction in
                 Task { @MainActor in
                     if case .inProgress = self.download { self.download = .inProgress(fraction) }
                 }
             }
-            defaults.set(manifest.version, forKey: Self.versionKey)
+            defaults.set(published.version, forKey: Self.versionKey)
             download = nil
             reload()
-            check = .updated
+            check = needsNewerLoe ? .needsNewerLoe : .updated
         } catch {
             download = nil
             check = .failed

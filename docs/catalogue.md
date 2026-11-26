@@ -53,8 +53,8 @@ published catalogue's, and the app's tests check the quiz's
 [genres](#genres) against it.
 
 The build fails, with a message on stderr, a non-zero exit status and no output
-file or headings, when it kept nothing or fewer than 90% of the `editions` in
-`manifest.json`, the last published count. It also fails when SQLite's
+file or headings, when it kept nothing or fewer than 90% of the `editions` of
+the newest catalogue in `manifest.json`. It also fails when SQLite's
 integrity check does not pass, and it records the name and SHA-256 of each
 source file in `meta`. To try the tool on a sample, add `--allow-small`, which
 turns the 90% check off. Set `SOURCE_DATE_EPOCH` to make a build repeatable:
@@ -70,7 +70,8 @@ The app opens the file read-only from
 `Application Support/Catalogue/catalogue.sqlite`. `CatalogueStore` says whether it
 is there, and `Catalogue`, an actor, runs every query off the main thread. A
 file whose `schema_version` differs from `Catalogue.schemaVersion` is refused,
-so bump both together. `CatalogueTests` builds its fixture from
+so bump both together, as [Changing the schema](#changing-the-schema) says.
+`CatalogueTests` builds its fixture from
 `schema.sql` itself, so a schema change the app does not follow fails the unit
 suite.
 
@@ -200,8 +201,36 @@ Apollo for the title and author.
 The app finds the current catalogue through
 [`tools/catalogue/manifest.json`](../tools/catalogue/manifest.json), read from
 this repository's `main` branch on GitHub. Shipped apps read that exact path,
-so never move or rename it. The manifest names a GitHub release asset, its
-SHA-256, its size and its schema version.
+so never move or rename it. For a catalogue the manifest names a GitHub
+release asset, its SHA-256, its size and its schema version.
+
+The manifest names one catalogue for each schema, so a build of any age finds
+one it can read. Its top level is the catalogue of schema 1, which is all the
+first builds read, and stays that for good. The catalogue of each later schema
+is listed under `catalogues`, a key the first builds ignore:
+
+```json
+{
+  "version": "2026-11", "schema_version": 1, "url": "…", "sha256": "…", "size": 30625080, "editions": 312349,
+  "catalogues": [
+    {"version": "2027-03", "schema_version": 2, "url": "…", "sha256": "…", "size": 31000000, "editions": 315000}
+  ]
+}
+```
+
+- A build installs the catalogue of its own schema and no other. Once a later
+  schema is published, the earlier one's entry stays as it is, naming the last
+  catalogue built for it. Its release is immutable, so the file stays too. A
+  build that old can still download its catalogue for the first time, or
+  again after removing it.
+- Of an entry that is not its own a build reads only the `schema_version`, so a
+  later schema may describe its file in another way.
+- When the manifest has a catalogue of a later schema, "Check for a new
+  edition" says the newest edition needs a newer Loe, after fetching the
+  newest of its own schema if it did not have it.
+- When the manifest has none of the build's schema and one of a later schema,
+  the first download says Loe needs an update, in Search and in Settings.
+  That takes an entry going missing, which the first rule forbids.
 
 - The first download is the reader's choice, from Search, and may use mobile
   data. `CatalogueDownloader` checks the SHA-256, unpacks the xz file, opens
@@ -219,8 +248,6 @@ SHA-256, its size and its schema version.
   catalogue deletes the file and forgets its version, and Search offers the
   download again. Neither runs while a download or update is replacing the
   file.
-- A manifest whose `schema_version` the app does not know is ignored, and
-  nothing is downloaded. Apps that old keep their catalogue until they update.
 
 ### Publishing a new catalogue
 
@@ -240,13 +267,30 @@ SHA-256, its size and its schema version.
      --title "Catalogue 2026-12" --notes "…"
    ```
 
-3. Update `manifest.json` with the new `version`, `url`, `sha256`
-   (`shasum -a 256`), `size` and `editions`, in a pull request, with the new
-   `fiction-headings.json`. Apps pick it up within a week of it reaching
-   `main`. `CatalogueDownloadTests` checks that the manifest is one this app
-   can read, and the catalogue build's tests fail when the headings are of
-   another catalogue than the manifest names: one with a different count of
-   editions.
+3. Update the newest schema's entry in `manifest.json` with the new `version`,
+   `url`, `sha256` (`shasum -a 256`), `size` and `editions`, in a pull
+   request, with the new `fiction-headings.json`. Apps pick it up within a
+   week of it reaching `main`. `CatalogueDownloadTests` checks that the
+   manifest has a catalogue this app can read, and the catalogue build's tests
+   fail when the headings are of another catalogue than the newest the
+   manifest names: one with a different count of editions.
+
+### Changing the schema
+
+One pull request carries all of it, so no build is ever without a catalogue:
+
+1. Change `schema.sql`, and raise `SCHEMA_VERSION` in `build.py`,
+   `Catalogue.schemaVersion` and the version in the journeys'
+   `LoeUITests/Fixtures/catalogue.sql` together. The build's tests fail when
+   the first two differ.
+2. Build the catalogue from that branch and publish its release, as above.
+3. Add its entry to `catalogues` in `manifest.json`, and leave the top level
+   and every other entry as they are. The app's tests fail when the manifest
+   has no catalogue of the app's schema or its top level is no longer
+   schema 1, and the build's tests when a schema is named twice.
+
+Builds that read an earlier schema keep the last catalogue published for it
+and get no newer one, so a schema change is the end of updates for them.
 
 ### Trying it in the simulator
 

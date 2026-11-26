@@ -35,4 +35,15 @@ struct SearchSnapshotTests {
             rows.padding(.horizontal, 20).frame(maxWidth: .infinity, alignment: .leading), named: "search-results", look: look
         )
     }
+
+    // Search with no catalogue on the phone, when every one there is needs a newer
+    // Loe. A window, for the button.
+    @Test(arguments: Snapshot.Look.all)
+    func aLoeTooOldForTheCatalogue(look: Snapshot.Look) async throws {
+        let scene = DownloadScene()
+        try scene.publish(CatalogueFixture.make(), version: "2027-01", schema: Catalogue.schemaVersion + 1)
+        let store = scene.store()
+        await store.downloadCatalogue()
+        try Snapshot.verify(CatalogueDownloadView().environment(store), named: "catalogue-too-old", look: look, on: .window)
+    }
 }

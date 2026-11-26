@@ -51,14 +51,14 @@ struct DownloadScene {
     var catalogueURL: URL { folder.appending(path: "Catalogue/catalogue.sqlite") }
     var downloader: CatalogueDownloader { CatalogueDownloader(manifestURL: manifestURL, session: StubServer.session) }
 
-    /// Publishes a catalogue the way a release does: the xz file and a manifest naming it.
-    @discardableResult
-    func publish(
+    /// Serves a catalogue's xz file the way a release does, and gives what a manifest
+    /// says of it.
+    func release(
         _ catalogue: URL,
         version: String,
         schema: Int = Catalogue.schemaVersion,
         sha256: String? = nil
-    ) throws -> URL {
+    ) throws -> (file: URL, entry: String) {
         let file = host.appending(path: "catalogue-\(version).sqlite.xz")
         let compressed = try CatalogueFixture.xz(of: catalogue)
         StubServer.serve(file, body: compressed)
@@ -67,11 +67,26 @@ struct DownloadScene {
             try compressed.write(to: temporary)
             return try CatalogueDownloader.sha256(of: temporary)
         }()
-        let manifest = """
-            {"version": "\(version)", "schema_version": \(schema), "url": "\(file.absoluteString)",
-             "sha256": "\(checksum)", "size": \(compressed.count)}
+        let entry = """
+            "version": "\(version)", "schema_version": \(schema), "url": "\(file.absoluteString)",
+            "sha256": "\(checksum)", "size": \(compressed.count)
             """
-        StubServer.serve(manifestURL, body: Data(manifest.utf8))
+        return (file, entry)
+    }
+
+    /// Publishes a catalogue as the manifest's top level, with the catalogues of
+    /// other schemas listed under it.
+    @discardableResult
+    func publish(
+        _ catalogue: URL,
+        version: String,
+        schema: Int = Catalogue.schemaVersion,
+        sha256: String? = nil,
+        listing others: [String] = []
+    ) throws -> URL {
+        let (file, entry) = try release(catalogue, version: version, schema: schema, sha256: sha256)
+        let list = others.isEmpty ? "" : #", "catalogues": [\#(others.map { "{\($0)}" }.joined(separator: ", "))]"#
+        StubServer.serve(manifestURL, body: Data("{\(entry)\(list)}".utf8))
         return file
     }
 
@@ -117,10 +132,10 @@ struct CatalogueDownloadTests {
         let scene = DownloadScene()
         try scene.install(CatalogueFixture.make(), version: "2026-10")
         try scene.publish(CatalogueFixture.make(books: Self.otherBooks), version: "2026-11", sha256: String(repeating: "0", count: 64))
-        let manifest = try await scene.downloader.manifest()
+        let published = try #require(try await scene.downloader.manifest().catalogue(forSchema: Catalogue.schemaVersion))
 
         await #expect(throws: CatalogueDownloader.Failure.checksumMismatch) {
-            try await scene.downloader.install(manifest, at: scene.catalogueURL)
+            try await scene.downloader.install(published, at: scene.catalogueURL)
         }
         let works = try await Catalogue(url: scene.catalogueURL).search("tammsaare")
         #expect(works.map(\.title) == ["Tõde ja õigus"])
@@ -132,10 +147,10 @@ struct CatalogueDownloadTests {
         let garbage = URL.temporaryDirectory.appending(path: UUID().uuidString)
         try Data("not a catalogue".utf8).write(to: garbage)
         try scene.publish(garbage, version: "2026-11")
-        let manifest = try await scene.downloader.manifest()
+        let published = try #require(try await scene.downloader.manifest().catalogue(forSchema: Catalogue.schemaVersion))
 
         await #expect(throws: (any Error).self) {
-            try await scene.downloader.install(manifest, at: scene.catalogueURL)
+            try await scene.downloader.install(published, at: scene.catalogueURL)
         }
         let works = try await Catalogue(url: scene.catalogueURL).search("tammsaare")
         #expect(works.map(\.title) == ["Tõde ja õigus"])
@@ -144,12 +159,97 @@ struct CatalogueDownloadTests {
     @Test func aCatalogueForANewerAppIsNotDownloaded() async throws {
         let scene = DownloadScene()
         let file = try scene.publish(CatalogueFixture.make(), version: "2027-01", schema: Catalogue.schemaVersion + 1)
-        let manifest = try await scene.downloader.manifest()
+        let published = try #require(try await scene.downloader.manifest().catalogue(forSchema: Catalogue.schemaVersion + 1))
 
         await #expect(throws: CatalogueDownloader.Failure.unsupportedSchema(Catalogue.schemaVersion + 1)) {
-            try await scene.downloader.install(manifest, at: scene.catalogueURL)
+            try await scene.downloader.install(published, at: scene.catalogueURL)
         }
         #expect(!StubServer.wasRequested(file))
+    }
+
+    // A catalogue of a newer schema is listed beside the one this build reads, which
+    // stays published. See docs/catalogue.md, "Download and updates".
+    @Test func aBuildStillInstallsItsOwnCatalogueOnceANewerSchemaIsPublished() async throws {
+        let scene = DownloadScene()
+        let newer = try scene.release(CatalogueFixture.make(books: Self.otherBooks), version: "2027-01", schema: Catalogue.schemaVersion + 1)
+        try scene.publish(CatalogueFixture.make(), version: "2026-11", listing: [newer.entry])
+        let store = scene.store()
+
+        await store.downloadCatalogue()
+
+        guard case .ready(let catalogue) = store.state else { Issue.record("expected ready"); return }
+        #expect(try await catalogue.search("tammsaare").map(\.title) == ["Tõde ja õigus"])
+        #expect(store.installedVersion == "2026-11")
+        #expect(!StubServer.wasRequested(newer.file))
+    }
+
+    @Test func aBuildOfALaterSchemaInstallsTheCatalogueListedForIt() async throws {
+        let scene = DownloadScene()
+        let own = try scene.release(CatalogueFixture.make(books: Self.otherBooks), version: "2027-01")
+        let older = try scene.publish(
+            CatalogueFixture.make(), version: "2026-11", schema: Catalogue.schemaVersion - 1, listing: [own.entry]
+        )
+        let store = scene.store()
+
+        await store.downloadCatalogue()
+
+        guard case .ready(let catalogue) = store.state else { Issue.record("expected ready"); return }
+        #expect(try await catalogue.search("kross").map(\.title) == ["Keisri hull"])
+        #expect(store.installedVersion == "2027-01")
+        #expect(!StubServer.wasRequested(older))
+    }
+
+    @Test func theFirstDownloadSaysWhenEveryCatalogueNeedsANewerLoe() async throws {
+        let scene = DownloadScene()
+        let file = try scene.publish(CatalogueFixture.make(), version: "2027-01", schema: Catalogue.schemaVersion + 1)
+        let store = scene.store()
+
+        await store.downloadCatalogue()
+
+        #expect(store.download == .needsNewerLoe)
+        guard case .missing = store.state else { Issue.record("expected missing"); return }
+        #expect(!StubServer.wasRequested(file))
+    }
+
+    @Test func aManifestWithOnlyOlderCataloguesIsADownloadThatFailed() async throws {
+        let scene = DownloadScene()
+        let file = try scene.publish(CatalogueFixture.make(), version: "2026-11", schema: Catalogue.schemaVersion - 1)
+        let store = scene.store()
+
+        await store.downloadCatalogue()
+
+        #expect(store.download == .failed)
+        #expect(!StubServer.wasRequested(file))
+    }
+
+    @Test func theWeeklyCheckFetchesTheCatalogueListedForThisSchema() async throws {
+        let scene = DownloadScene()
+        try scene.install(CatalogueFixture.make(), version: "2026-11")
+        let own = try scene.release(CatalogueFixture.make(books: Self.otherBooks), version: "2027-01")
+        try scene.publish(CatalogueFixture.make(), version: "2026-11", schema: Catalogue.schemaVersion - 1, listing: [own.entry])
+        let store = scene.store()
+
+        await store.updateIfDue()
+
+        guard case .ready(let catalogue) = store.state else { Issue.record("expected ready"); return }
+        #expect(try await catalogue.search("kross").map(\.title) == ["Keisri hull"])
+        #expect(store.installedVersion == "2027-01")
+    }
+
+    // A later schema may name its file in another way, and a build that cannot read
+    // that still has to find its own catalogue and know there is a newer one.
+    @Test func aCatalogueThisBuildCannotReadStillCountsForItsSchema() throws {
+        let json = """
+            {"version": "2026-11", "schema_version": 4, "url": "https://loe.test/four.xz", "sha256": "AB12",
+             "catalogues": [{"schema_version": 5, "files": ["https://loe.test/five.zst"]}]}
+            """
+        let manifest = try JSONDecoder().decode(CatalogueManifest.self, from: Data(json.utf8))
+
+        #expect(manifest.catalogue(forSchema: 4)?.version == "2026-11")
+        #expect(manifest.catalogue(forSchema: 4)?.sha256 == "ab12")
+        #expect(manifest.catalogue(forSchema: 5) == nil)
+        #expect(manifest.hasCatalogue(newerThanSchema: 4))
+        #expect(!manifest.hasCatalogue(newerThanSchema: 5))
     }
 
     @Test func anUpdateReplacesAnOlderCatalogue() async throws {
@@ -185,10 +285,17 @@ struct CatalogueDownloadTests {
         #expect(CatalogueStore.isUpdateCheckDue(lastChecked: now.addingTimeInterval(-7 * 86_400), now: now))
     }
 
-    @Test func thePublishedManifestIsOneThisAppCanUse() throws {
+    @Test func thePublishedManifestHasACatalogueThisAppCanUse() throws {
         let manifest = try JSONDecoder().decode(CatalogueManifest.self, from: Data(contentsOf: CatalogueFixture.manifest))
-        #expect(manifest.schemaVersion == Catalogue.schemaVersion)
-        #expect(manifest.sha256.count == 64)
-        #expect(manifest.url.absoluteString.contains(manifest.version))
+        let published = try #require(manifest.catalogue(forSchema: Catalogue.schemaVersion))
+        #expect(published.sha256.count == 64)
+        #expect(published.url.absoluteString.contains(published.version))
+    }
+
+    // The first builds read the file's top level and nothing else, and they read
+    // schema 1, so that is what the top level stays.
+    @Test func thePublishedManifestKeepsTheFirstSchemasCatalogueAtItsTopLevel() throws {
+        let top = try JSONDecoder().decode(PublishedCatalogue.self, from: Data(contentsOf: CatalogueFixture.manifest))
+        #expect(top.schemaVersion == 1)
     }
 }
