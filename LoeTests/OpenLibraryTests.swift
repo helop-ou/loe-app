@@ -199,12 +199,18 @@ struct OpenLibraryTests {
             await calls.add()
             return Data(#"{"docs": []}"#.utf8)
         }
-        let typedOn = Task { try await client.search(afterPause: .seconds(5), for: "halo") }
+        // Typed on while the pause ran: the wait had begun, and nothing went out.
+        let typedOn = Task { try await client.search(afterPause: .seconds(30), for: "halo") }
+        try await Task.sleep(for: .milliseconds(100))
+        #expect(await calls.count == 0)
         typedOn.cancel()
         #expect(try await typedOn.value == nil)
         #expect(await calls.count == 0)
 
-        #expect(try await client.search(afterPause: .milliseconds(1), for: "halo") == [])
+        // Left alone, a search waits out the app's whole pause before it asks.
+        let begun = ContinuousClock.now
+        #expect(try await client.search(for: "halo") == [])
+        #expect(ContinuousClock.now - begun >= OpenLibrary.pause)
         #expect(await calls.count == 1)
         // The same search again is answered from memory, and shown without waiting.
         #expect(await client.known(" Halo ") == [])
@@ -214,6 +220,11 @@ struct OpenLibraryTests {
         #expect(await client.known("C# in depth") == nil)
         _ = try await client.search("C in depth")
         #expect(await client.known("C# in depth") == nil)
+    }
+
+    /// Open Library allows three requests a second from an app that names itself.
+    @Test func thePauseKeepsAReaderUnderOpenLibrarysLimit() {
+        #expect(OpenLibrary.pause > .seconds(1) / 3)
     }
 
     @Test func aFailedAnswerIsAnError() async {
