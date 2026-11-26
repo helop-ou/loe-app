@@ -127,6 +127,9 @@ class Upload(unittest.TestCase):
             cwd=self.tmp, env={**self.env, **env}, capture_output=True, text=True,
         )
 
+    def tags(self):
+        return self.git("tag", "--list", cwd=self.origin).split()
+
     def refused(self, result, words):
         self.assertNotEqual(result.returncode, 0, result.stdout)
         self.assertIn(words, result.stderr)
@@ -169,11 +172,56 @@ class Upload(unittest.TestCase):
         self.assertNotIn("./Loe/Stray.swift", files)
         self.assertIn(" CURRENT_PROJECT_VERSION=2 ", self.calls.read_text())
 
-    def test_the_worktree_is_gone_after_an_upload_and_after_a_failed_one(self):
-        self.assertEqual(self.upload().returncode, 0)
-        self.assertEqual(len(self.git("worktree", "list").splitlines()), 1)
+    def test_the_worktree_is_gone_after_a_failed_upload_and_after_one_that_worked(self):
         self.assertNotEqual(self.upload(STUB_ARCHIVE_STATUS="65").returncode, 0)
         self.assertEqual(len(self.git("worktree", "list").splitlines()), 1)
+        self.assertEqual(self.upload().returncode, 0)
+        self.assertEqual(len(self.git("worktree", "list").splitlines()), 1)
+
+    def test_an_upload_tags_the_commit_on_main_with_its_build_number(self):
+        self.git("switch", "--quiet", "-c", "feat/elsewhere")
+        self.write("Loe/Unmerged.swift", "// not on main\n")
+        self.commit("third")
+
+        result = self.upload()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("tagged it build-2", result.stdout)
+        self.assertEqual(self.tags(), ["build-2"])
+        self.assertEqual(self.git("rev-parse", "build-2^{commit}", cwd=self.origin), self.git("rev-parse", "origin/main"))
+        self.assertEqual(
+            self.git("tag", "--list", "--format=%(contents:subject)", "build-2", cwd=self.origin), "Loe 0.1.0 (2)"
+        )
+
+    def test_nothing_is_tagged_by_a_dry_run_or_by_an_upload_that_failed(self):
+        self.assertEqual(self.upload("--dry-run").returncode, 0)
+        self.assertNotEqual(self.upload(STUB_ARCHIVE_STATUS="65").returncode, 0)
+        self.assertNotEqual(self.upload(STUB_UPLOAD_STATUS="70").returncode, 0)
+        self.assertEqual(self.tags(), [])
+        self.assertEqual(self.git("tag", "--list"), "")
+
+    def test_a_build_that_has_its_tag_is_not_uploaded_again(self):
+        self.assertEqual(self.upload().returncode, 0)
+        self.calls.unlink()
+        for args in ([], ["--dry-run"]):
+            with self.subTest(args=args):
+                self.refused(self.upload(*args), "Build 2 was already uploaded: build-2 exists")
+
+    def test_a_tag_that_could_not_be_made_is_said_after_the_upload(self):
+        result = self.upload(GIT_COMMITTER_NAME="", GIT_COMMITTER_EMAIL="")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("-exportArchive", self.calls.read_text())
+        self.assertIn("Uploaded, but", result.stderr)
+        self.assertIn("could not be tagged build-2", result.stderr)
+
+    def test_a_tag_that_did_not_reach_origin_is_said_and_stops_the_next_upload(self):
+        self.stub(self.origin / "hooks/pre-receive", "#!/bin/sh\nexit 1\n")
+        result = self.upload()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Uploaded, but build-2 did not reach origin", result.stderr)
+        self.assertEqual(self.tags(), [])
+
+        self.calls.unlink()
+        self.refused(self.upload(), "build-2 is still to push: git push origin refs/tags/build-2")
 
     def test_a_script_that_is_not_the_one_on_main_is_refused(self):
         with open(self.work / "scripts/upload-testflight.sh", "a") as script:
