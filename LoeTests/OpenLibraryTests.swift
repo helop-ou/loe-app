@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import Loe
 
-/// Answers saved from Open Library's search in November 2026, with the app's fields.
+/// Answers saved from Open Library's search, with the app's fields.
 struct OpenLibraryTests {
     private static let fixtures = URL(filePath: #filePath).deletingLastPathComponent().appending(path: "Fixtures")
 

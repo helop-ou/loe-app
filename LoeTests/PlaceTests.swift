@@ -45,7 +45,7 @@ struct PlaceTests {
         ])
     }
 
-    // Holdings rows as ESTER showed them for „Kevade“ in November 2026.
+    // Holdings rows as ESTER showed them for „Kevade“.
     @Test(arguments: [
         ("TlnRK Kännukuke lastekirjandus", "ester.tlnrk.kannukuke"),
         ("TlnRK Männi lastekirjandus", "ester.tlnrk.manni"),
