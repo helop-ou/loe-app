@@ -1,5 +1,6 @@
 import CloudKit
 import Foundation
+import Synchronization
 import Testing
 @testable import Loe
 
@@ -49,11 +50,22 @@ struct CloudSyncTests {
         #expect(sync.status == .on(lastSynced: later.addingTimeInterval(60)))
     }
 
-    @Test func theAccountIsAskedAgainWhenItChanges() async {
-        let sync = CloudSync { .noAccount }
+    /// The reader signs in to iCloud while Loe runs: iCloud says the account
+    /// changed, and Loe asks again.
+    @Test func theAccountIsAskedAgainWhenItChanges() async throws {
+        let account = Mutex(CKAccountStatus.noAccount)
+        let sync = CloudSync { account.withLock { $0 } }
         #expect(sync.status == .checking)
-        await sync.refreshAccount()
+        await sync.start()
         #expect(sync.status == .off)
+
+        account.withLock { $0 = .available }
+        NotificationCenter.default.post(name: .CKAccountChanged, object: nil)
+        let deadline = ContinuousClock.now + .seconds(5)
+        while sync.status == .off, ContinuousClock.now < deadline {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        #expect(sync.status == .on(lastSynced: nil))
     }
 
     @Test func anAccountThatNeverAnswersStopsBeingChecked() async {
