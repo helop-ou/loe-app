@@ -2,7 +2,9 @@
 
 Runs the upload script in a throwaway repository with a remote of its own.
 `xcodebuild` is a stand-in that writes down how it was called, so nothing is
-built or uploaded, and no key is read.
+built or uploaded, and no key is read. `gh` is a stand-in that answers with
+the checks a test gives it, one "name<tab>result" to a line, which is what the
+script asks GitHub for.
 """
 import os
 import pathlib
@@ -31,6 +33,19 @@ case "$1" in
 esac
 """
 
+GH = """#!/usr/bin/env bash
+echo "$*" > "$STUB_ASKED"
+cat "$STUB_CHECKS"
+"""
+
+PASSED = {
+    "SonarCloud Code Analysis": "success",
+    "SonarCloud scan": "success",
+    "App tests (iOS)": "success",
+    "Catalogue build tests": "success",
+    "What changed": "success",
+}
+
 
 class Upload(unittest.TestCase):
     def setUp(self):
@@ -44,6 +59,10 @@ class Upload(unittest.TestCase):
         stubs = self.tmp / "stubs"
         stubs.mkdir()
         self.stub(stubs / "xcodebuild", XCODEBUILD)
+        self.stub(stubs / "gh", GH)
+        self.asked = self.tmp / "asked"
+        self.checks = self.tmp / "checks"
+        self.check(PASSED)
         key = self.tmp / "key.p8"
         key.write_text("not a key")
         key.chmod(0o600)
@@ -61,6 +80,8 @@ class Upload(unittest.TestCase):
             "ASC_KEY_PATH": str(key),
             "STUB_CALLS": str(self.calls),
             "STUB_ARCHIVED": str(self.record),
+            "STUB_ASKED": str(self.asked),
+            "STUB_CHECKS": str(self.checks),
         }
 
         self.git("init", "--quiet", "--bare", "--initial-branch=main", str(self.origin), cwd=self.tmp)
@@ -82,6 +103,9 @@ class Upload(unittest.TestCase):
         path.write_text(text)
         path.chmod(path.stat().st_mode | stat.S_IXUSR)
 
+    def check(self, results):
+        self.checks.write_text("".join(f"{name}\t{result}\n" for name, result in results.items()))
+
     def git(self, *args, cwd=None):
         result = subprocess.run(
             ["git", *args], cwd=cwd or self.work, env=self.env, capture_output=True, text=True, check=True
@@ -97,9 +121,9 @@ class Upload(unittest.TestCase):
         self.git("add", "--all")
         self.git("commit", "--quiet", "-m", subject)
 
-    def upload(self, *args, **env):
+    def upload(self, *args, checkout=None, **env):
         return subprocess.run(
-            [str(self.work / "scripts/upload-testflight.sh"), *args],
+            [str((checkout or self.work) / "scripts/upload-testflight.sh"), *args],
             cwd=self.tmp, env={**self.env, **env}, capture_output=True, text=True,
         )
 
@@ -167,6 +191,48 @@ class Upload(unittest.TestCase):
     def test_the_deployed_record_is_read_from_main_and_not_from_the_checkout(self):
         self.write("scripts/synced-models.deployed.txt", "ShelvedBook.title\nShelvedBook.finished\n")
         self.assertEqual(self.upload("--dry-run").returncode, 0)
+
+    def test_a_shallow_clone_is_refused(self):
+        shallow = self.tmp / "shallow"
+        self.git("clone", "--quiet", "--depth", "1", self.origin.as_uri(), str(shallow), cwd=self.tmp)
+        self.refused(self.upload("--dry-run", checkout=shallow), "This clone is shallow")
+
+    def test_github_is_asked_about_the_commit_on_main(self):
+        self.git("switch", "--quiet", "-c", "feat/elsewhere")
+        self.write("Loe/Unmerged.swift", "// not on main\n")
+        self.commit("third")
+        self.assertEqual(self.upload("--dry-run").returncode, 0)
+        self.assertIn(f"/commits/{self.git('rev-parse', 'origin/main')}/check-runs", self.asked.read_text())
+
+    def test_a_commit_with_no_checks_is_refused(self):
+        self.check({})
+        self.refused(self.upload("--dry-run"), '"App tests (iOS)" has not passed')
+
+    def test_each_check_main_requires_has_to_have_passed(self):
+        for name in ("App tests (iOS)", "Catalogue build tests", "SonarCloud Code Analysis"):
+            for result in (None, "failure", "cancelled", "skipped", "in_progress", "queued"):
+                with self.subTest(name=name, result=result):
+                    checks = {**PASSED, name: result}
+                    if result is None:
+                        del checks[name]
+                    self.check(checks)
+                    self.refused(self.upload("--dry-run"), f'"{name}" has not passed')
+
+    def test_any_other_check_that_did_not_pass_is_refused(self):
+        for result in ("failure", "cancelled", "timed_out", "in_progress", "queued"):
+            with self.subTest(result=result):
+                self.check({**PASSED, "SonarCloud scan": result})
+                refusal = self.upload("--dry-run")
+                self.refused(refusal, "Not every check passed")
+                self.assertIn(f"SonarCloud scan\t{result}", refusal.stderr)
+
+    def test_a_check_that_was_skipped_beside_the_required_ones_is_no_refusal(self):
+        self.check({**PASSED, "What changed": "skipped", "Something else": "neutral"})
+        self.assertEqual(self.upload("--dry-run").returncode, 0)
+
+    def test_checks_that_cannot_be_read_are_a_refusal(self):
+        self.checks.unlink()
+        self.refused(self.upload("--dry-run"), "Could not read the checks")
 
     def test_a_key_others_can_read_is_refused(self):
         pathlib.Path(self.env["ASC_KEY_PATH"]).chmod(0o644)

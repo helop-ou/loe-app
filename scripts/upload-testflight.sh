@@ -18,10 +18,15 @@ dry_run=false
 
 fail() { echo "✘ $*" >&2; exit 1; }
 
+# The build number is a count of commits, and a shallow clone has too few.
+[[ "$(git rev-parse --is-shallow-repository)" == false ]] \
+    || fail "This clone is shallow, so it can't count the build number. Run git fetch --unshallow"
+
 # Every build is the newest commit of main, read from git and never from this
 # checkout, so a branch, a change or an ignored file here can't end up in it.
 git fetch --quiet origin main
 commit="$(git rev-parse origin/main)"
+short="$(git rev-parse --short "$commit")"
 on_main() { git show "$commit:$1"; }
 
 # What main says an upload checks is what gets checked.
@@ -50,12 +55,25 @@ key="${ASC_KEY_PATH/#\~/$HOME}"
 [[ -f "$key" ]] || fail "No key at ASC_KEY_PATH"
 [[ "$(stat -f %Lp "$key")" == 600 ]] || fail "The key should be readable only by you: chmod 600 it"
 
+# Only a commit CI passed is uploaded: the checks main requires that run on a
+# push have passed, and nothing else on the commit failed, was cancelled or is
+# still running. The journeys are not among them: they run on a Mac.
+checks="$(gh api "repos/{owner}/{repo}/commits/$commit/check-runs?per_page=100" \
+    --jq '.check_runs[] | "\(.name)\t\(.conclusion // .status)"')" \
+    || fail "Could not read the checks of $short from GitHub. Is gh signed in?"
+for check in "App tests (iOS)" "Catalogue build tests" "SonarCloud Code Analysis"; do
+    grep -qxF "$check"$'\t'success <<< "$checks" || fail "\"$check\" has not passed on $short"
+done
+if grep -vE $'\t(success|skipped|neutral)$' <<< "$checks" >&2; then
+    fail "Not every check passed on $short"
+fi
+
 # The build number is the commit count of main, which only grows because main
 # takes rebase merges and is never rewritten.
 build="$(git rev-list --count "$commit")"
 version="$(on_main Loe.xcodeproj/project.pbxproj | awk -F' = ' '/MARKETING_VERSION/ && !found { found = 1; sub(/;$/, "", $2); print $2 }')"
 archive="$root/build/Loe-$version-$build.xcarchive"
-echo "Loe $version ($build) from $(git rev-parse --short "$commit")"
+echo "Loe $version ($build) from $short"
 
 auth=(-allowProvisioningUpdates
       -authenticationKeyPath "$key"
