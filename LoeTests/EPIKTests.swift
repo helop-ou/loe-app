@@ -3,7 +3,7 @@ import Testing
 import UIKit
 @testable import Loe
 
-/// Answers shaped as EPIK gave them in November 2026, with a cover drawn here and
+/// Answers shaped as EPIK gives them, with a cover drawn here and
 /// words of Loe's own: a publisher's cover and blurb are not Loe's to keep.
 struct EPIKTests {
     @Test func aRecordIsAnEditionsNumberWithoutItsCheckDigit() {
@@ -84,8 +84,8 @@ struct EPIKTests {
         #expect(details.title == "Keisri hull : romaan")
     }
 
-    /// Of 24 covers looked at in November 2026, the one whose title differed was
-    /// another book's, and so was one seen in the app.
+    /// ESTER's cover service files some records under another book, and the
+    /// title it gives with the cover is how to tell.
     @Test func aRecordsTitleHasToBeTheBooks() {
         #expect(EPIK.sameTitle("Keisri hull : romaan", "Keisri hull"))
         #expect(EPIK.sameTitle("Sapiens : inimkonna lühiajalugu", "Sapiens"))

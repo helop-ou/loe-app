@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import Loe
 
-/// Work records shaped as Open Library answered in November 2026, with the text
+/// Work records shaped as Open Library answers, with the text
 /// replaced by Loe's own words: a publisher's blurb is not Loe's to keep here.
 struct OpenLibraryDescriptionTests {
     private func text(_ json: String) -> String? {
