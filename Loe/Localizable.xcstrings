@@ -1491,6 +1491,16 @@
         }
       }
     },
+    "Loe needs an update": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loe vajab uuendamist"
+          }
+        }
+      }
+    },
     "Loe's catalogue is built from the Estonian National Bibliography (Eesti rahvusbibliograafia) by the National Library of Estonia. Loe keeps the fields it needs and groups editions into works. The National Library publishes it as open data under CC0 1.0. One of its pages gives [CC BY-SA 3.0 EE](https://creativecommons.org/licenses/by-sa/3.0/ee/) instead, so this credit follows that licence too.": {
       "localizations": {
         "et": {
@@ -2737,6 +2747,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kataloogi pole veel siin"
+          }
+        }
+      }
+    },
+    "The catalogue needs a newer version of Loe.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kataloog vajab Loe uuemat versiooni."
           }
         }
       }

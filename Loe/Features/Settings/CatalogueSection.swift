@@ -24,7 +24,7 @@ struct CatalogueSection: View {
                 if case .inProgress(let fraction) = catalogue.download {
                     progress(fraction)
                 } else {
-                    Text(catalogue.download == .failed ? "The download didn't finish" : "Not on this phone")
+                    Text(missing)
                         .foregroundStyle(.loeSecondary)
                     downloadButton("Download the catalogue")
                 }
@@ -88,6 +88,14 @@ struct CatalogueSection: View {
                         .foregroundStyle(.loeSecondary)
                 }
             }
+        }
+    }
+
+    private var missing: LocalizedStringKey {
+        switch catalogue.download {
+        case .failed: "The download didn't finish"
+        case .needsNewerLoe: "The catalogue needs a newer version of Loe."
+        case .inProgress, nil: "Not on this phone"
         }
     }
 

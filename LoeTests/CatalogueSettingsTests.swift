@@ -53,6 +53,27 @@ struct CatalogueSettingsTests {
         #expect(!StubServer.wasRequested(file))
     }
 
+    @Test func checkingNowFetchesItsOwnNewestAndSaysWhenANewerOneNeedsANewerLoe() async throws {
+        let scene = DownloadScene()
+        try scene.install(CatalogueFixture.make(), version: "2026-10")
+        let newer = try scene.release(CatalogueFixture.make(), version: "2027-01", schema: Catalogue.schemaVersion + 1)
+        try scene.publish(CatalogueFixture.make(books: Self.otherBooks), version: "2026-11", listing: [newer.entry])
+        let store = scene.store()
+
+        await store.checkNow()
+
+        #expect(store.check == .needsNewerLoe)
+        #expect(store.download == nil)
+        #expect(store.installedVersion == "2026-11")
+        guard case .ready(let catalogue) = store.state else { Issue.record("expected ready"); return }
+        #expect(try await catalogue.search("kross").map(\.title) == ["Keisri hull"])
+
+        // With its own newest in place, the newer one is still what there is to say.
+        await store.checkNow()
+        #expect(store.check == .needsNewerLoe)
+        #expect(!StubServer.wasRequested(newer.file))
+    }
+
     @Test func aCheckThatFailsKeepsTheCatalogueAndIsNotCounted() async throws {
         let scene = DownloadScene()
         try scene.install(CatalogueFixture.make(), version: "2026-10")
