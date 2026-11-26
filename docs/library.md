@@ -60,6 +60,10 @@ the book is on a shelf. `CoverPhoto` shrinks it to at most 900 pixels tall as a
 JPEG (tens of kilobytes) so it syncs quickly, and reads its colour once, which
 `ShelvedBook` keeps beside it. The book's page and the card for the book being
 read take a wash of that colour, and Sinu toon will read the same values.
+Sinu toon is not built yet. `LoeTone.leaning`, which picks the tone a shelf's
+covers lean towards, came with the brand's tone values and waits for it:
+nothing in the app calls it, and its tests hold it to the brand's rules until
+something does.
 
 Without a photo, a book shows the cover found for it, and the plain card with
 its title when there is none. A book found on Open Library shows Open
