@@ -30,6 +30,7 @@ command line:
 xcodebuild -scheme Loe -destination 'generic/platform=iOS Simulator' build
 xcodebuild test -scheme Loe -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -collect-test-diagnostics never
 python3 -I -m unittest discover -s tools/catalogue
+python3 -I -m unittest discover -s scripts
 ```
 
 The second command runs the unit tests and the journeys through the real

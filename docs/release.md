@@ -10,23 +10,58 @@ make public.
 - **Build number** is the number of commits on `main` at the archived commit,
   set at archive time. It only grows, because `main` takes rebase merges and is
   never rewritten. A build number finds its commit:
-  `git rev-list --reverse origin/main | sed -n '<build>p'`. The project file
-  keeps 1, which only local builds use.
+  `git rev-list --reverse origin/main | sed -n '<build>p'`. An upload also
+  tags that commit `build-<build>`. The project file keeps 1, which only local
+  builds use.
 - `ExportOptions.plist` sets `manageAppVersionAndBuildNumber` to false, or
   Xcode would renumber the build on upload.
 
 ## Uploading to TestFlight
 
 ```sh
-scripts/upload-testflight.sh --dry-run   # checks the key and the checkout
-scripts/upload-testflight.sh             # archives main and uploads it
+scripts/upload-testflight.sh --dry-run   # checks everything, builds nothing
+scripts/upload-testflight.sh             # archives main, uploads it and tags it
 ```
 
-The script refuses a working tree with changes or a `HEAD` that is not
-`origin/main`, so every build comes from a commit anyone can see. It signs
-automatically with the App Store Connect key and uploads a build that can go to
-internal or external testers. Adding it to an external group, which needs Beta
-App Review the first time, stays a step in App Store Connect.
+Every build is the newest commit of `main` on GitHub, whatever the checkout
+the script runs from has on it. The script archives a fresh worktree of that
+commit, in `build/main`, so a branch, a local change or an ignored file never
+ends up in a build. What it checks, it reads from that commit too. It refuses,
+also with `--dry-run`:
+
+- A script that differs from the one on `main`, so what `main` says an upload
+  checks is what gets checked.
+- A shallow clone, which cannot count the build number.
+- A commit CI has not passed. `App tests (iOS)`, `Catalogue build tests` and
+  `SonarCloud Code Analysis` have to have passed on it: the checks `main`
+  requires that run on a push. No other check on it may have failed, been
+  cancelled or still be running. The script asks GitHub through `gh`, which
+  has to be signed in. When the checks `main` requires change, change the
+  list in the script. The journeys are not among them, because CI never runs
+  them ([standards](standards.md#continuous-integration)): a passed commit
+  says nothing about the journeys.
+- Synced models whose deploy to Production is not recorded, as described
+  below.
+- A build number that has its tag, because that build was uploaded already.
+
+After an upload the script tags the commit `build-<n>` and pushes the tag. The
+tag says the commit was uploaded as that build, not that App Store Connect
+took it: processing comes later, and a build it turns down keeps its tag. A
+tag is permanent, and the next upload needs a new commit, so no number is used
+twice. `git log --oneline build-<older>..build-<newer>` lists what changed
+between two builds. When the tag does not reach GitHub, the script says so
+with the command that pushes it, and refuses another upload until it is
+pushed. No GitHub release is made for a build.
+
+The script signs automatically with the App Store Connect key and uploads a
+build that can go to internal or external testers. Adding it to an external
+group, which needs Beta App Review the first time, stays a step in App Store
+Connect. `build/archive.log` starts with the version of Xcode that built the
+archive.
+
+`scripts/test_upload_testflight.py` runs the script in a throwaway repository
+with a remote of its own, and with stand-ins for `xcodebuild` and `gh`, so it
+builds and uploads nothing: `python3 -I -m unittest discover -s scripts`.
 
 TestFlight builds use CloudKit's Production environment. After a change to any
 synced model (`ShelvedBook`, `Taste`, `ChosenPlace`, or a new one), teach
@@ -37,7 +72,8 @@ See [Library](library.md).
 `scripts/synced-models.txt` lists every synced field and `StoredNamesTests`
 holds the models to it, so a pull request that changes a synced model changes
 that file too. `scripts/synced-models.deployed.txt` records what Production
-has. The upload script refuses, also with `--dry-run`, while the two differ.
+has. The upload script refuses, also with `--dry-run`, while the two differ
+on `main`.
 
 A debug build launched with `-initializeCloudKitSchema YES` pushes every synced
 model to Development from a throwaway store, so no shelves are touched and
