@@ -232,6 +232,20 @@ is listed under `catalogues`, a key the first builds ignore:
   the first download says Loe needs an update, in Search and in Settings.
   That takes an entry going missing, which the first rule forbids.
 
+An app trusts what the manifest says, and installs nothing that does not match
+it. So a wrong hash, size or address there stops the first download for every
+new reader and every update, and no test of the app can see it.
+[`check_manifest.py`](../tools/catalogue/check_manifest.py) asks GitHub about
+each catalogue in the manifest, and CI runs it on every pull request and every
+push to `main`. It fails unless the address is a file of a release of this
+repository, the release is immutable, and the file there has the manifest's
+SHA-256 and size. It needs the network, so it is no part of the build's tests.
+Run it before opening a pull request that changes the manifest:
+
+```sh
+python3 -I tools/catalogue/check_manifest.py
+```
+
 - The first download is the reader's choice, from Search, and may use mobile
   data. `CatalogueDownloader` checks the SHA-256, unpacks the xz file, opens
   the result, and only then puts it in place, so a failed download never costs
@@ -273,7 +287,8 @@ is listed under `catalogues`, a key the first builds ignore:
    week of it reaching `main`. `CatalogueDownloadTests` checks that the
    manifest has a catalogue this app can read, and the catalogue build's tests
    fail when the headings are of another catalogue than the newest the
-   manifest names: one with a different count of editions.
+   manifest names: one with a different count of editions. `check_manifest.py`
+   fails when the release does not hold the file the entry describes.
 
 ### Changing the schema
 

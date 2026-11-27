@@ -162,6 +162,12 @@ jobs:
       - name: Test
         run: python3 -I -m unittest discover -s tools/catalogue
 
+      # Asks GitHub, so it is a step of its own: the tests above need no network.
+      - name: Check the manifest against the releases it names
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 -I tools/catalogue/check_manifest.py
+
   sonar:
     name: SonarCloud scan
     needs: [changes, app]

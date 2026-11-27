@@ -284,7 +284,10 @@ builds:
 - A pull request that changes only Markdown skips the app tests, and a
   skipped job counts as passed for the check `main` requires. A push to `main`
   always runs them.
-- **Catalogue build tests**: `tools/catalogue` on Ubuntu.
+- **Catalogue build tests**: `tools/catalogue` on Ubuntu. The job then runs
+  `tools/catalogue/check_manifest.py`, which asks GitHub whether every
+  catalogue in the manifest is
+  [published as the manifest says](catalogue.md#download-and-updates).
 - **SonarCloud scan**: the app tests collect coverage, and
   `scripts/coverage-to-sonar.py` turns the result bundle into Sonar's format.
   A pull request that skipped the app tests is scanned with an empty report.
