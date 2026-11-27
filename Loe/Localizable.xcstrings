@@ -131,6 +131,16 @@
         }
       }
     },
+    "A file with every book on your shelves, to keep or to open in a spreadsheet. It's made on your phone and sent nowhere.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fail kõigi sinu riiulites olevate raamatutega, hoidmiseks või tabelarvutuses avamiseks. See tehakse sinu telefonis ja seda ei saadeta kuhugi."
+          }
+        }
+      }
+    },
     "A private reading tracker for Estonian and English books. No account, no ads, no tracking.": {
       "localizations": {
         "et": {
@@ -977,6 +987,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Näitusekataloogid"
+          }
+        }
+      }
+    },
+    "Export my shelves": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ekspordi minu riiulid"
           }
         }
       }
@@ -3227,6 +3247,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sinu iCloud on täis"
+          }
+        }
+      }
+    },
+    "Your shelves": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sinu riiulid"
           }
         }
       }

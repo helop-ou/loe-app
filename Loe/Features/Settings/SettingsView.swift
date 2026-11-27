@@ -2,7 +2,8 @@ import SwiftData
 import SwiftUI
 
 /// The reader's own settings: what they like to read, where they get books, Loe's
-/// language and how it looks, iCloud and the catalogue, with the About page at the end.
+/// language and how it looks, iCloud, a copy of their shelves and the catalogue, with
+/// the About page at the end.
 struct SettingsView: View {
     @Environment(\.modelContext) private var context
     @Environment(CloudSync.self) private var cloudSync
@@ -10,6 +11,7 @@ struct SettingsView: View {
     @AppStorage(LoeLanguage.storageKey) private var language = LoeLanguage.system
     @Query private var tastes: [Taste]
     @Query private var chosen: [ChosenPlace]
+    @Query private var books: [ShelvedBook]
     @State private var choosingPlaces = false
     @State private var retakingQuiz = false
     // The system's Edit button and Delete action have no Estonian, as iOS has no
@@ -105,6 +107,15 @@ struct SettingsView: View {
                 SettingsHeading("iCloud")
             } footer: {
                 Text("There's no Loe account. Your shelves, ratings, tastes and libraries go to your own iCloud and nowhere else.")
+            }
+
+            Section {
+                ExportRow(books: books.map(ShelvesExport.Book.init))
+                    .listRowBackground(Color.loeCard)
+            } header: {
+                SettingsHeading("Your shelves")
+            } footer: {
+                Text("A file with every book on your shelves, to keep or to open in a spreadsheet. It's made on your phone and sent nowhere.")
             }
 
             CatalogueSection()
