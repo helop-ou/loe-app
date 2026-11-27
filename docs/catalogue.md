@@ -237,13 +237,24 @@ is listed under `catalogues`, a key the first builds ignore:
 
 - The first download is the reader's choice, from Search, and may use mobile
   data. `CatalogueDownloader` checks the SHA-256, unpacks the xz file, opens
-  the result, and only then puts it in place, so a failed download never costs
-  the reader the catalogue they had. The file is excluded from iCloud backup,
-  since it can be downloaded again.
-- Updates are checked at launch, at most once a week, and download only over
-  Wi-Fi, without asking. The catalogue in use stays until the new one is in
-  place. A check that can't reach the manifest doesn't count, so the next
-  launch asks again.
+  the result, counts its editions against the manifest's `editions`, and only
+  then puts it in place, so a failed download never costs the reader the
+  catalogue they had. The file is excluded from iCloud backup, since it can be
+  downloaded again.
+- Updates are looked for at launch and when Loe comes back to the front, at
+  most once a week, and download without asking, on a network that is neither
+  mobile data nor in Low Data Mode. The catalogue in use stays until the new
+  one is in place.
+- A look counts once there is nothing left to fetch. One that can't reach the
+  manifest doesn't count, and neither does one whose catalogue could not be
+  fetched: on mobile data, with no network, or from a server that did not
+  serve it. So the next launch tries again, and a reader who opens Loe mostly
+  on mobile data is not kept a week behind each time. A file that arrived and
+  is wrong, by its hash, its schema or its count of editions, stays wrong
+  until the manifest changes, so that waits the week.
+- An install unpacks to a `.partial` file beside the catalogue and removes it
+  when it ends. One that was cut off leaves it there, as large as the
+  catalogue, so a launch clears any it finds.
 - Settings shows the edition (its version, `2026-11`, as a month), its size
   on the phone, the number of editions and when Loe last heard which edition
   is the newest. "Check for a new edition" asks straight away, may use mobile
