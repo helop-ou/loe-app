@@ -6,14 +6,26 @@ import Testing
 /// Serves canned responses to a URLSession, and records what was asked for.
 nonisolated final class StubServer: URLProtocol {
     private static let responses = Mutex<[URL: (status: Int, body: Data)]>([:])
-    private static let requested = Mutex<[URL]>([])
+    private static let failures = Mutex<[URL: URLError.Code]>([:])
+    private static let requested = Mutex<[URLRequest]>([])
 
     static func serve(_ url: URL, status: Int = 200, body: Data) {
+        failures.withLock { $0[url] = nil }
         responses.withLock { $0[url] = (status, body) }
     }
 
+    /// Fails every request for `url` as a network that can't be used does.
+    static func fail(_ url: URL, with code: URLError.Code) {
+        failures.withLock { $0[url] = code }
+    }
+
     static func wasRequested(_ url: URL) -> Bool {
-        requested.withLock { $0.contains(url) }
+        !requests(for: url).isEmpty
+    }
+
+    /// Every request for `url`, in the order they were made.
+    static func requests(for url: URL) -> [URLRequest] {
+        requested.withLock { $0.filter { $0.url == url } }
     }
 
     static var session: URLSession {
@@ -27,7 +39,11 @@ nonisolated final class StubServer: URLProtocol {
 
     override func startLoading() {
         let url = request.url!
-        Self.requested.withLock { $0.append(url) }
+        Self.requested.withLock { $0.append(request) }
+        if let code = Self.failures.withLock({ $0[url] }) {
+            client?.urlProtocol(self, didFailWithError: URLError(code))
+            return
+        }
         let (status, body) = Self.responses.withLock { $0[url] } ?? (404, Data())
         let response = HTTPURLResponse(
             url: url, statusCode: status, httpVersion: "HTTP/1.1",

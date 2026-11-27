@@ -125,26 +125,32 @@ final class CatalogueStore {
 
     /// Reads the manifest at most once a week, with or without a catalogue on the
     /// phone, since it also says whether ESTER may be asked. When there is a newer
-    /// catalogue of the schema this build reads, it is fetched quietly over Wi-Fi,
-    /// and the catalogue in use stays until the new one is checked and in place.
+    /// catalogue of the schema this build reads, it is fetched quietly over Wi-Fi, and the
+    /// catalogue in use stays until the new one is checked and in place. A check
+    /// counts once there is nothing left to fetch, so a catalogue that could not be
+    /// fetched is tried again at the next launch and not a week later.
     func updateIfDue(now: Date = .now) async {
         guard !isBusy, Self.isUpdateCheckDue(lastChecked: lastChecked, now: now) else { return }
         updatingQuietly = true
         defer { updatingQuietly = false }
         // Offline, the check counts for nothing and the next launch asks again.
         guard let manifest = try? await downloader.manifest() else { return }
-        defaults.set(now, forKey: Self.checkedKey)
         heard(manifest)
-        guard case .ready = state,
-              let published = manifest.catalogue(forSchema: Catalogue.schemaVersion), published.version != installedVersion
-        else { return }
-        do {
-            try await downloader.install(published, at: url, allowsCellular: false)
-            defaults.set(published.version, forKey: Self.versionKey)
-            reload()
-        } catch {
-            // The next check tries again. The reader keeps the catalogue they have.
+        if case .ready = state,
+           let published = manifest.catalogue(forSchema: Catalogue.schemaVersion), published.version != installedVersion {
+            do {
+                try await downloader.install(published, at: url, allowsCellular: false)
+                defaults.set(published.version, forKey: Self.versionKey)
+                reload()
+            } catch where CatalogueDownloader.couldNotFetch(error) {
+                // No network it may use, or one that dropped: not counted.
+                return
+            } catch {
+                // The file itself is wrong, and will be until the manifest changes,
+                // so it waits the week. The reader keeps the catalogue they have.
+            }
         }
+        defaults.set(now, forKey: Self.checkedKey)
     }
 
     /// The reader asked for a new edition, so it may use mobile data, and says what

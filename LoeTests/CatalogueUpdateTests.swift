@@ -1,0 +1,91 @@
+import Foundation
+import Testing
+@testable import Loe
+
+/// The quiet update: what happens when it fails. See docs/catalogue.md, "Download and updates".
+struct CatalogueUpdateTests {
+    private static let otherBooks = "(1, 'b9', 'Keisri hull', 'Jaan Kross', 1978, 1, 0, NULL, 'est', NULL, NULL)"
+
+    /// A phone with last month's catalogue, and this month's published.
+    private func sceneWithANewerEdition(sha256: String? = nil) throws -> (scene: DownloadScene, file: URL) {
+        let scene = DownloadScene()
+        try scene.install(CatalogueFixture.make(), version: "2026-10")
+        let file = try scene.publish(CatalogueFixture.make(books: Self.otherBooks), version: "2026-11", sha256: sha256)
+        return (scene, file)
+    }
+
+    // On mobile data the manifest answers and the download fails at once. Counting
+    // that as the week's check kept a reader a week behind for every such launch.
+    @Test(arguments: [URLError.Code.notConnectedToInternet, .dataNotAllowed, .networkConnectionLost, .timedOut, .cancelled])
+    func anUpdateThatCouldNotBeFetchedIsTriedAgainAtTheNextLaunch(code: URLError.Code) async throws {
+        let (scene, file) = try sceneWithANewerEdition()
+        StubServer.fail(file, with: code)
+        let store = scene.store()
+
+        await store.updateIfDue()
+
+        #expect(store.lastChecked == nil)
+        #expect(store.installedVersion == "2026-10")
+        #expect(!store.isBusy)
+
+        // The next launch, on a network it may use.
+        try scene.publish(CatalogueFixture.make(books: Self.otherBooks), version: "2026-11")
+        let next = scene.store()
+        let now = Date.now
+        await next.updateIfDue(now: now)
+
+        #expect(next.installedVersion == "2026-11")
+        #expect(next.lastChecked == now)
+        guard case .ready(let catalogue) = next.state else { Issue.record("expected ready"); return }
+        #expect(try await catalogue.search("kross").map(\.title) == ["Keisri hull"])
+    }
+
+    @Test func anUpdateTheServerDidNotServeIsTriedAgainToo() async throws {
+        let (scene, file) = try sceneWithANewerEdition()
+        StubServer.serve(file, status: 503, body: Data())
+        let store = scene.store()
+
+        await store.updateIfDue()
+
+        #expect(store.lastChecked == nil)
+        #expect(store.installedVersion == "2026-10")
+    }
+
+    // A file that arrived and is wrong stays wrong until the manifest changes, and
+    // fetching 30 MB at every launch to find that out again helps nobody.
+    @Test func anUpdateThatArrivedWrongWaitsTheWeek() async throws {
+        let (scene, file) = try sceneWithANewerEdition(sha256: String(repeating: "0", count: 64))
+        let store = scene.store()
+        let now = Date.now
+
+        await store.updateIfDue(now: now)
+
+        #expect(store.lastChecked == now)
+        #expect(store.installedVersion == "2026-10")
+
+        await scene.store().updateIfDue(now: now.addingTimeInterval(86_400))
+        #expect(StubServer.requests(for: file).count == 1)
+        #expect(StubServer.requests(for: scene.manifestURL).count == 1)
+    }
+
+    @Test func aCheckWithNothingNewerCountsAtOnce() async throws {
+        let scene = DownloadScene()
+        try scene.install(CatalogueFixture.make(), version: "2026-11")
+        let file = try scene.publish(CatalogueFixture.make(), version: "2026-11")
+        let store = scene.store()
+        let now = Date.now
+
+        await store.updateIfDue(now: now)
+
+        #expect(store.lastChecked == now)
+        #expect(!StubServer.wasRequested(file))
+    }
+
+    @Test func aNetworkFailureIsTheOnlyKindWorthTryingAgainSoon() {
+        #expect(CatalogueDownloader.couldNotFetch(URLError(.notConnectedToInternet)))
+        #expect(CatalogueDownloader.couldNotFetch(CatalogueDownloader.Failure.badResponse(404)))
+        #expect(!CatalogueDownloader.couldNotFetch(CatalogueDownloader.Failure.checksumMismatch))
+        #expect(!CatalogueDownloader.couldNotFetch(CatalogueDownloader.Failure.unsupportedSchema(2)))
+        #expect(!CatalogueDownloader.couldNotFetch(CocoaError(.fileWriteOutOfSpace)))
+    }
+}

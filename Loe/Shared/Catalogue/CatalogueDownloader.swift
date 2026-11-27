@@ -75,6 +75,14 @@ nonisolated struct CatalogueDownloader: Sendable {
         try installed.setResourceValues(values)
     }
 
+    /// Whether an install failed before the file arrived: no network it may use,
+    /// one that dropped, or a server that did not serve it. Such a download is
+    /// worth trying again soon. A file that arrived and is wrong is not.
+    static func couldNotFetch(_ error: any Error) -> Bool {
+        if case Failure.badResponse = error { return true }
+        return error is URLError
+    }
+
     private static func check(_ response: URLResponse) throws {
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
         guard status == 200 else { throw Failure.badResponse(status) }
