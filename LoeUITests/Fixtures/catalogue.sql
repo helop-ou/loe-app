@@ -88,6 +88,9 @@ INSERT INTO edition (id, erb_id, title, subtitle, authors, translators, year, pu
 (65, 'b54543241', 'Ave Maria', NULL, 'Andy Weir', 'Tiina Randus', 2021, 'Tänapäev', 'Tallinn', 'est', 'Project Hail Mary', 'eng', NULL, NULL, NULL, 558, 1, 0),
 (66, 'b54691047', 'Ave Maria', NULL, 'Andy Weir', 'Tiina Randus', 2021, 'Tänapäev', 'Tallinn', 'est', 'Project Hail Mary', 'eng', NULL, NULL, NULL, NULL, 0, 1),
 (67, 'b54691564', 'Ave Maria', NULL, 'Andy Weir', 'Tiina Randus', 2021, 'Tänapäev', 'Tallinn', 'est', 'Project Hail Mary', 'eng', NULL, NULL, NULL, NULL, 1, 1),
+-- Two more of Andy Weir's books in Estonian, which Project Hail Mary's page lists as by the same author.
+(74, 'b44875514', 'Marslane', NULL, 'Andy Weir', 'Krista Eek', 2015, 'Tänapäev', 'Tallinn', 'est', 'The martian', 'eng', NULL, 'New York Timesi bestseller', NULL, 354, 1, 0),
+(75, 'b51402890', 'Artemis', NULL, 'Andy Weir', 'Tiina Randus', 2018, 'Tänapäev', 'Tallinn', 'est', 'Artemis', 'eng', NULL, NULL, NULL, 343, 1, 0),
 -- Crime and fantasy in Estonian, which Read next suggests from the quiz's tastes.
 (68, 'b30773234', 'Detektiiv Luuker Leebesurm', NULL, 'Derek Landy', 'Mario Pulver', 2014, 'Pikoprint', 'Tallinn', 'est', 'Skulduggery Pleasant', 'eng', NULL, 'Luuker Leebesurma sari', '1', 374, 1, 0),
 (69, 'b47424539', 'Baskerville''ide koer', NULL, 'Arthur Conan Doyle', 'Pirjo Leek', 2017, 'Rahva Raamat', 'Tallinn', 'est', 'The hound of the Baskervilles', 'eng', 'Kordustr', NULL, NULL, 269, 1, 0),

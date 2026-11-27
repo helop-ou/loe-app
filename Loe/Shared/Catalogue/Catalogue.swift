@@ -16,7 +16,12 @@ actor Catalogue {
         /// The work this one was translated from, when the catalogue has it.
         var original: CatalogueWork?
         var translations: [CatalogueWork]
+        /// Other books by the lead author: in the page's language, or in Estonian
+        /// for a book from abroad, whose own language the catalogue mostly lacks.
         var sameAuthor: [CatalogueWork]
+        /// True when `sameAuthor` is in Estonian and the page is not, so the page
+        /// can say so.
+        var sameAuthorIsInEstonian = false
         var similar: [Suggestion] = []
         /// What kind of book it is, in the bibliography's headings. See `BookTags`.
         var tags: [String] = []
@@ -103,11 +108,15 @@ actor Catalogue {
 
         // A book opened from a shelf knows its title and authors but not its language.
         let language = (editions.first ?? work.editions[0]).language
+        // The catalogue has next to nothing in English by an author from abroad,
+        // and often has them in Estonian.
+        let abroad = work.editions[0].openLibrary != nil
+        let listed = abroad ? Self.estonian : language
         let related = Set([work.id] + (original.map { [$0.id] } ?? []))
         let translationKeys = Set(translated.map(CatalogueWork.key(for:)))
         let others = sameLead.filter {
             let key = CatalogueWork.key(for: $0)
-            return !related.contains(key) && !translationKeys.contains(key) && $0.language == language
+            return !related.contains(key) && !translationKeys.contains(key) && $0.language == listed
         }
         let allEditions = (editions.isEmpty ? work.editions : editions).sorted { ($0.year ?? 0) > ($1.year ?? 0) }
         return Details(
@@ -115,6 +124,7 @@ actor Catalogue {
             original: original,
             translations: CatalogueWork.grouped(translated),
             sameAuthor: Array(CatalogueWork.grouped(others).prefix(12)),
+            sameAuthorIsInEstonian: abroad && language != Self.estonian && !others.isEmpty,
             similar: try similar(to: CatalogueWork(id: work.id, editions: allEditions), limits: limits),
             tags: try tags(of: allEditions)
         )
@@ -314,6 +324,8 @@ actor Catalogue {
         }
         return total
     }
+
+    static let estonian = "est"
 
     /// Every edition whose first author is this one.
     private func byLeadAuthor(_ author: String?) throws -> [CatalogueEdition] {

@@ -22,7 +22,9 @@ struct ReadNextTests {
         (22, 'b22', 'Tõde ja õigus. III jagu', 'A. H. Tammsaare', 1931, 1, 0, NULL, 'est', NULL, NULL),
         (23, 'b23', 'Põrgupõhja uus Vanapagan', 'A. H. Tammsaare', 1939, 1, 0, NULL, 'est', NULL, NULL),
         (30, 'b30', 'Mees. 1. osa', 'Keegi Kirjanik', 2001, 1, 0, NULL, 'est', NULL, NULL),
-        (31, 'b31', 'Mees. 2. osa', 'Keegi Kirjanik', 2002, 1, 0, NULL, 'est', NULL, NULL)
+        (31, 'b31', 'Mees. 2. osa', 'Keegi Kirjanik', 2002, 1, 0, NULL, 'est', NULL, NULL),
+        (90, 'b90', 'Marslane', 'Andy Weir', 2015, 1, 0, 'The martian', 'est', 'eng', NULL),
+        (91, 'b91', 'Artemis', 'Andy Weir', 2018, 1, 0, 'Artemis', 'est', 'eng', NULL)
         """
 
     private static let extra = """
@@ -76,6 +78,44 @@ struct ReadNextTests {
         #expect(found["Agu Sihvka annab aru"] == .similar(to: [Self.book("Kevade")]))
         #expect(found["Kooliraamat"] == .similar(to: [Self.book("Kevade")]))
         #expect(found["Kevade"] == nil)
+    }
+
+    // MARK: From abroad
+
+    private static let hailMary = OpenLibraryBook(
+        record: OpenLibraryRecord(workKey: "/works/OL21745884W"), title: "Project Hail Mary", authors: ["Andy Weir"], language: "eng"
+    ).work
+
+    // A book from abroad lists its author's books in Estonian on its page, and a
+    // reader who reads mostly Estonian is suggested them.
+    @Test func aFavouriteFromAbroadBringsItsAuthorsEstonianBooksToAReaderOfEstonian() async throws {
+        let found = reasons(try await suggestions([
+            ReadNext.Source(work: Self.hailMary, shelf: .read, rating: 5),
+            Self.source("Kevade", by: "Oskar Luts", rating: 5),
+            Self.source("Põrgupõhja uus Vanapagan", by: "A. H. Tammsaare", rating: 4),
+        ]))
+        let hailMary = ReadNextSuggestion.Book(title: "Project Hail Mary", language: "eng")
+        #expect(found["Marslane"] == .sameAuthor(as: hailMary))
+        #expect(found["Artemis"] == .sameAuthor(as: hailMary))
+    }
+
+    // Read next keeps to the language the reader reads most, so one who reads
+    // English is not handed Estonian books for an English favourite.
+    @Test func aReaderOfEnglishIsNotHandedEstonianBooks() async throws {
+        let found = try await suggestions([ReadNext.Source(work: Self.hailMary, shelf: .read, rating: 5)])
+        #expect(found.isEmpty)
+
+        let mostly = try await suggestions([
+            ReadNext.Source(work: Self.hailMary, shelf: .read, rating: 5),
+            ReadNext.Source(
+                work: OpenLibraryBook(record: OpenLibraryRecord(workKey: "/works/OL2W"), title: "Piranesi", authors: ["Susanna Clarke"], language: "eng").work,
+                shelf: .read, rating: 5
+            ),
+            Self.source("Kevade", by: "Oskar Luts", rating: 5),
+        ])
+        #expect(!mostly.map(\.work.title).contains("Marslane"))
+        // What Kevade brings is in Kevade's own language, as before.
+        #expect(mostly.map(\.work.title).contains("Suvi"))
     }
 
     @Test func threeStarsIsNotAFavourite() async throws {

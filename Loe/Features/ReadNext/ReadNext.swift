@@ -79,6 +79,8 @@ nonisolated enum ReadNext {
         var series: [ReadNextSuggestion] = []
         var seriesFound: [Catalogue.SeriesNext] = []
         var byAuthor: [[(work: CatalogueWork, from: ReadNextSuggestion.Book)]] = []
+        /// For each list in `byAuthor`: whether it is in Estonian for a favourite that is not.
+        var authorsInEstonian: [Bool] = []
         var similar: [[(work: CatalogueWork, from: ReadNextSuggestion.Book)]] = []
         var languages: [String] = []
 
@@ -95,6 +97,7 @@ nonisolated enum ReadNext {
                 seriesFound.append(next)
             }
             byAuthor.append(details.sameAuthor.map { ($0, book) })
+            authorsInEstonian.append(details.sameAuthorIsInEstonian)
             similar.append(details.similar.map { ($0.work, book) })
         }
         for source in continuing {
@@ -113,7 +116,12 @@ nonisolated enum ReadNext {
             !seriesFound.contains { $0.contains(work) } && (Catalogue.part(of: work.title)?.number ?? 1) == 1
         }
         // Tastes suggest in the language the reader reads most, Estonian until Loe knows.
-        let language = Dictionary(grouping: languages, by: { $0 }).max { $0.value.count < $1.value.count }?.key ?? "est"
+        let language = Dictionary(grouping: languages, by: { $0 }).max { $0.value.count < $1.value.count }?.key ?? Catalogue.estonian
+        // A favourite from abroad brings its author's books in Estonian. A reader
+        // who reads mostly in another language is not handed them.
+        for index in byAuthor.indices where authorsInEstonian[index] && language != Catalogue.estonian {
+            byAuthor[index] = []
+        }
         var byTaste: [[(work: CatalogueWork, genre: Genre)]] = []
         for genre in tastes {
             try Task.checkCancellation()

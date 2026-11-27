@@ -127,6 +127,70 @@ struct CatalogueDetailsTests {
         #expect(try await translations(of: "Ripley's Bureau of Investigation: The Dragon's Triangle", by: "Kay Wilkins") == ["Draakoni kolmnurk"])
     }
 
+    /// An author from abroad whom the catalogue has in Estonian and in English,
+    /// among others of his surname.
+    private static let nylunds = """
+        (1, 'b1', 'Halo: Reachi langemine', 'Eric Nylund', 2012, 1, 0, 'Halo: the fall of Reach', 'est', 'eng', NULL),
+        (2, 'b2', 'Halo: esimene löök', 'Eric Nylund', 2013, 1, 0, 'Halo: first strike', 'est', 'eng', NULL),
+        (3, 'b3', 'Halo: Onyxi kummitused', 'Eric Nylund', 2014, 1, 0, 'Halo: ghosts of Onyx', 'est', 'eng', NULL),
+        (4, 'b4', 'Halo: the fall of Reach', 'Eric Nylund', 2001, 1, 0, NULL, 'eng', NULL, NULL),
+        (5, 'b5', 'Signal to noise', 'Eric Nylund', 1998, 1, 0, NULL, 'eng', NULL, NULL),
+        (6, 'b6', 'Aiapidaja käsiraamat', 'Anna Nylund', 2010, 0, 0, NULL, 'est', NULL, NULL),
+        (7, 'b7', 'Põhjala lood', 'Eric Bertil Nylund', 1950, 1, 0, NULL, 'est', NULL, NULL),
+        (8, 'b8', 'See', 'Stephen King', 2019, 1, 0, 'It', 'est', 'eng', NULL),
+        (9, 'b9', 'Karu ja mesi', 'Stephen Michael King', 2015, 1, 0, 'Bear and honey', 'est', 'eng', NULL),
+        (10, 'b10', 'Hobuste aasta', 'Hans H. Luik', 1990, 1, 0, NULL, 'est', NULL, NULL),
+        (11, 'b11', 'Laevad merel', 'Hans Hendrik Luik', 1975, 1, 0, NULL, 'est', NULL, NULL),
+        (12, 'b12', 'Kaks kirja', 'Eric Nylund; Anna Nylund', 2016, 1, 0, NULL, 'est', NULL, NULL)
+        """
+
+    private func abroad(_ title: String, by author: String, language: String? = "eng") -> CatalogueWork {
+        OpenLibraryBook(record: .init(workKey: "/works/OL1W"), title: title, authors: [author], language: language).work
+    }
+
+    private func sameAuthor(as work: CatalogueWork) async throws -> (titles: Set<String>, inEstonian: Bool) {
+        let catalogue = try Catalogue(url: CatalogueFixture.make(books: Self.nylunds))
+        let details = try await catalogue.details(for: work)
+        return (Set(details.sameAuthor.map(\.title)), details.sameAuthorIsInEstonian)
+    }
+
+    // The catalogue has next to nothing in English by an author from abroad, so
+    // the page of such a book lists what it has by them in Estonian, and says so.
+    @Test func aBookFromAbroadListsItsAuthorsBooksInEstonian() async throws {
+        let found = try await sameAuthor(as: abroad("Halo: The Fall of Reach", by: "Eric Nylund"))
+        // Its own translation is under Translations, and the English editions are left out.
+        #expect(found.titles == ["Halo: esimene löök", "Halo: Onyxi kummitused", "Kaks kirja"])
+        #expect(found.inEstonian)
+    }
+
+    @Test func anAuthorTheCatalogueDoesNotHaveListsNothing() async throws {
+        let found = try await sameAuthor(as: abroad("Piranesi", by: "Susanna Clarke"))
+        #expect(found.titles.isEmpty)
+        #expect(!found.inEstonian)
+    }
+
+    // A catalogue book's page is as it was: the author's books in its own language.
+    @Test func aCatalogueBooksListStaysInItsOwnLanguage() async throws {
+        let catalogue = try Catalogue(url: CatalogueFixture.make(books: Self.nylunds))
+        let english = try #require(try await catalogue.search("signal to noise").first)
+        let details = try await catalogue.details(for: english)
+        #expect(details.sameAuthor.map(\.title) == ["Halo: the fall of Reach"])
+        #expect(!details.sameAuthorIsInEstonian)
+
+        let estonian = try #require(try await catalogue.search("esimene löök").first)
+        let inEstonian = try await catalogue.details(for: estonian)
+        #expect(Set(inEstonian.sameAuthor.map(\.title)) == ["Halo: Reachi langemine", "Halo: Onyxi kummitused", "Kaks kirja"])
+        #expect(!inEstonian.sameAuthorIsInEstonian)
+    }
+
+    // An Estonian book found on Open Library lists Estonian books, which is its
+    // own language, so there is nothing to say about it.
+    @Test func aBookFromAbroadInEstonianSaysNothingOfTheLanguage() async throws {
+        let found = try await sameAuthor(as: abroad("Tundmatu raamat", by: "Eric Nylund", language: "est"))
+        #expect(found.titles.count == 4)
+        #expect(!found.inEstonian)
+    }
+
     @Test func aBookWithNoAuthorOpenedFromAShelfShowsWhatTheShelfKept() async throws {
         let books = Self.books + ",\n(9, 'b9', 'Eesti muinasjutud', NULL, 1990, 0, 0, NULL, 'est', NULL, NULL)"
         let catalogue = try Catalogue(url: CatalogueFixture.make(books: books))
