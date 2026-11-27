@@ -9,6 +9,8 @@ nonisolated struct CatalogueDownloader: Sendable {
         case badResponse(Int)
         case unsupportedSchema(Int)
         case checksumMismatch
+        /// The unpacked file holds another number of editions than the manifest says.
+        case wrongEditionCount(Int)
     }
 
     static let manifestURL = URL(string: "https://raw.githubusercontent.com/helop-ou/loe-app/main/tools/catalogue/manifest.json")!
@@ -37,7 +39,8 @@ nonisolated struct CatalogueDownloader: Sendable {
     }
 
     /// Replaces the file at `destination` only once the new catalogue has passed its
-    /// checksum and opened, so a failed download never costs the reader the old one.
+    /// checksum, opened and shown the editions the manifest counts, so a failed
+    /// download never costs the reader the old one.
     ///
     /// A quiet download is one nobody asked for: it waits for a network that is
     /// neither mobile data nor in Low Data Mode.
@@ -65,7 +68,10 @@ nonisolated struct CatalogueDownloader: Sendable {
         let unpacked = folder.appending(path: "\(UUID().uuidString).\(Self.partial)")
         defer { try? FileManager.default.removeItem(at: unpacked) }
         try Self.unpack(downloaded, to: unpacked)
-        _ = try Catalogue(url: unpacked)
+        let found = try await Catalogue(url: unpacked).editionCount()
+        if let editions = published.editions, editions != found {
+            throw Failure.wrongEditionCount(found)
+        }
 
         if FileManager.default.fileExists(atPath: destination.path) {
             _ = try FileManager.default.replaceItemAt(destination, withItemAt: unpacked)

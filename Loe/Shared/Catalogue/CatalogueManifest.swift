@@ -7,6 +7,8 @@ nonisolated struct PublishedCatalogue: Decodable, Equatable, Sendable {
     let url: URL
     let sha256: String
     let size: Int?
+    /// How many editions it holds, which the unpacked file is held to.
+    let editions: Int?
 
     enum CodingKeys: String, CodingKey {
         case version
@@ -14,6 +16,7 @@ nonisolated struct PublishedCatalogue: Decodable, Equatable, Sendable {
         case url
         case sha256
         case size
+        case editions
     }
 
     init(from decoder: Decoder) throws {
@@ -23,6 +26,7 @@ nonisolated struct PublishedCatalogue: Decodable, Equatable, Sendable {
         url = try container.decode(URL.self, forKey: .url)
         sha256 = try container.decode(String.self, forKey: .sha256).lowercased()
         size = try? container.decodeIfPresent(Int.self, forKey: .size)
+        editions = try? container.decodeIfPresent(Int.self, forKey: .editions)
     }
 }
 

@@ -8,10 +8,12 @@ struct CatalogueUpdateTests {
     private static let otherBooks = "(1, 'b9', 'Keisri hull', 'Jaan Kross', 1978, 1, 0, NULL, 'est', NULL, NULL)"
 
     /// A phone with last month's catalogue, and this month's published.
-    private func sceneWithANewerEdition(sha256: String? = nil) throws -> (scene: DownloadScene, file: URL) {
+    private func sceneWithANewerEdition(sha256: String? = nil, editions: Int? = nil) throws -> (scene: DownloadScene, file: URL) {
         let scene = DownloadScene()
         try scene.install(CatalogueFixture.make(), version: "2026-10")
-        let file = try scene.publish(CatalogueFixture.make(books: Self.otherBooks), version: "2026-11", sha256: sha256)
+        let file = try scene.publish(
+            CatalogueFixture.make(books: Self.otherBooks), version: "2026-11", sha256: sha256, editions: editions
+        )
         return (scene, file)
     }
 
@@ -113,8 +115,34 @@ struct CatalogueUpdateTests {
         #expect(CatalogueDownloader.couldNotFetch(URLError(.notConnectedToInternet)))
         #expect(CatalogueDownloader.couldNotFetch(CatalogueDownloader.Failure.badResponse(404)))
         #expect(!CatalogueDownloader.couldNotFetch(CatalogueDownloader.Failure.checksumMismatch))
+        #expect(!CatalogueDownloader.couldNotFetch(CatalogueDownloader.Failure.wrongEditionCount(3)))
         #expect(!CatalogueDownloader.couldNotFetch(CatalogueDownloader.Failure.unsupportedSchema(2)))
         #expect(!CatalogueDownloader.couldNotFetch(CocoaError(.fileWriteOutOfSpace)))
+    }
+
+    // The manifest counts a catalogue's editions, and a file that unpacked to
+    // another number is not the catalogue it describes.
+    @Test func aCatalogueWithAnotherNumberOfEditionsThanTheManifestSaysIsNotInstalled() async throws {
+        let (scene, _) = try sceneWithANewerEdition(editions: 2)
+        let published = try #require(try await scene.downloader.manifest().catalogue(forSchema: Catalogue.schemaVersion))
+        #expect(published.editions == 2)
+
+        await #expect(throws: CatalogueDownloader.Failure.wrongEditionCount(1)) {
+            try await scene.downloader.install(published, at: scene.catalogueURL)
+        }
+        let works = try await Catalogue(url: scene.catalogueURL).search("tammsaare")
+        #expect(works.map(\.title) == ["Tõde ja õigus"])
+        #expect(try leftovers(in: scene) == [])
+    }
+
+    @Test func aCatalogueWithTheEditionsTheManifestCountsIsInstalled() async throws {
+        let (scene, _) = try sceneWithANewerEdition(editions: 1)
+        let store = scene.store()
+
+        await store.updateIfDue()
+
+        #expect(store.installedVersion == "2026-11")
+        #expect(try leftovers(in: scene) == [])
     }
 
     // An install killed while it unpacked leaves a file as large as the catalogue

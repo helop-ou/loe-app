@@ -73,7 +73,8 @@ struct DownloadScene {
         _ catalogue: URL,
         version: String,
         schema: Int = Catalogue.schemaVersion,
-        sha256: String? = nil
+        sha256: String? = nil,
+        editions: Int? = nil
     ) throws -> (file: URL, entry: String) {
         let file = host.appending(path: "catalogue-\(version).sqlite.xz")
         let compressed = try CatalogueFixture.xz(of: catalogue)
@@ -85,7 +86,7 @@ struct DownloadScene {
         }()
         let entry = """
             "version": "\(version)", "schema_version": \(schema), "url": "\(file.absoluteString)",
-            "sha256": "\(checksum)", "size": \(compressed.count)
+            "sha256": "\(checksum)", "size": \(compressed.count)\(editions.map { #", "editions": \#($0)"# } ?? "")
             """
         return (file, entry)
     }
@@ -99,10 +100,11 @@ struct DownloadScene {
         version: String,
         schema: Int = Catalogue.schemaVersion,
         sha256: String? = nil,
+        editions: Int? = nil,
         listing others: [String] = [],
         asksESTER: String? = nil
     ) throws -> URL {
-        let (file, entry) = try release(catalogue, version: version, schema: schema, sha256: sha256)
+        let (file, entry) = try release(catalogue, version: version, schema: schema, sha256: sha256, editions: editions)
         let list = others.isEmpty ? "" : #", "catalogues": [\#(others.map { "{\($0)}" }.joined(separator: ", "))]"#
         let ester = asksESTER.map { #", "asks_ester": \#($0)"# } ?? ""
         StubServer.serve(manifestURL, body: Data("{\(entry)\(list)\(ester)}".utf8))
