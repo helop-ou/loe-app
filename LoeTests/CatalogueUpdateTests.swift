@@ -116,4 +116,36 @@ struct CatalogueUpdateTests {
         #expect(!CatalogueDownloader.couldNotFetch(CatalogueDownloader.Failure.unsupportedSchema(2)))
         #expect(!CatalogueDownloader.couldNotFetch(CocoaError(.fileWriteOutOfSpace)))
     }
+
+    // An install killed while it unpacked leaves a file as large as the catalogue
+    // in a folder that is backed up.
+    @Test func aLaunchClearsWhatAnInstallThatWasCutOffLeftBehind() throws {
+        let scene = DownloadScene()
+        try scene.install(CatalogueFixture.make(), version: "2026-11")
+        let folder = scene.catalogueURL.deletingLastPathComponent()
+        let cutOff = folder.appending(path: "\(UUID().uuidString).partial")
+        let another = folder.appending(path: "\(UUID().uuidString).partial")
+        let kept = folder.appending(path: "notes.txt")
+        for file in [cutOff, another, kept] {
+            try Data("left behind".utf8).write(to: file)
+        }
+
+        let store = scene.store()
+
+        #expect(try leftovers(in: scene) == ["notes.txt"])
+        guard case .ready = store.state else { Issue.record("expected ready"); return }
+    }
+
+    @Test func aLaunchWithNoCatalogueFolderIsStillALaunch() {
+        let store = DownloadScene().store()
+        guard case .missing = store.state else { Issue.record("expected missing"); return }
+    }
+
+    /// The files beside the catalogue, which is all an install should leave there.
+    private func leftovers(in scene: DownloadScene) throws -> [String] {
+        let folder = scene.catalogueURL.deletingLastPathComponent()
+        return try FileManager.default.contentsOfDirectory(atPath: folder.path)
+            .filter { $0 != scene.catalogueURL.lastPathComponent }
+            .sorted()
+    }
 }

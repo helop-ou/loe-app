@@ -56,6 +56,7 @@ final class CatalogueStore {
         self.downloader = downloader
         self.defaults = defaults
         asksESTER = ESTERSwitch.isOn(in: defaults)
+        CatalogueDownloader.removeLeftovers(beside: url)
         reload()
     }
 
