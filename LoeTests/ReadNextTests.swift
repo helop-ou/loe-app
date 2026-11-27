@@ -24,13 +24,27 @@ struct ReadNextTests {
         (30, 'b30', 'Mees. 1. osa', 'Keegi Kirjanik', 2001, 1, 0, NULL, 'est', NULL, NULL),
         (31, 'b31', 'Mees. 2. osa', 'Keegi Kirjanik', 2002, 1, 0, NULL, 'est', NULL, NULL),
         (90, 'b90', 'Marslane', 'Andy Weir', 2015, 1, 0, 'The martian', 'est', 'eng', NULL),
-        (91, 'b91', 'Artemis', 'Andy Weir', 2018, 1, 0, 'Artemis', 'est', 'eng', NULL)
+        (91, 'b91', 'Artemis', 'Andy Weir', 2018, 1, 0, 'Artemis', 'est', 'eng', NULL),
+        (92, 'b92', 'Ave Maria', 'Andy Weir', 2021, 1, 0, 'Project Hail Mary', 'est', 'eng', NULL),
+        (93, 'b93', 'Kosmose serval', 'Ulme Kirjanik', 2019, 1, 0, NULL, 'est', NULL, NULL),
+        (94, 'b94', 'Tähtede taga', 'Teine Ulmik', 2020, 1, 0, NULL, 'est', NULL, NULL),
+        (95, 'b95', 'Проект «Аве Мария»', 'Andy Weir', 2021, 1, 0, 'Project Hail Mary', 'rus', 'eng', NULL),
+        (96, 'b96', 'Проект «Аве Мария»', 'Andy Weir', 2022, 1, 0, 'Project Hail Mary', 'rus', 'eng', NULL),
+        (97, 'b97', 'A local novel', 'Local Writer', 2000, 1, 0, NULL, 'eng', NULL, NULL),
+        (98, 'b98', 'Another local novel', 'Other Writer', 2001, 1, 0, NULL, 'eng', NULL, NULL),
+        (99, 'b99', 'Kohalik romaan', 'Local Writer', 2005, 1, 0, 'A local novel', 'est', 'eng', NULL),
+        (100, 'b100', 'Kesköö raamatukogu', 'Matt Haig', 2021, 1, 0, 'The midnight library', 'est', 'eng', NULL)
         """
 
     private static let extra = """
         UPDATE edition SET series_number = id - 9 WHERE id BETWEEN 10 AND 12;
         INSERT INTO heading (id, kind, name) VALUES (1, 2, 'koolijutud');
         INSERT INTO edition_heading VALUES (1, 1), (2, 1), (4, 1), (5, 1), (6, 1);
+        UPDATE edition SET original_title = 'The hunger games', original_language = 'eng' WHERE id = 10;
+        INSERT INTO heading (id, kind, name) VALUES (9, 2, 'ulmeromaanid');
+        INSERT INTO edition_heading VALUES (92, 9), (93, 9), (94, 9), (99, 9), (100, 9);
+        INSERT INTO heading (id, kind, name) VALUES (8, 2, 'külaromaanid');
+        INSERT INTO edition_heading VALUES (97, 8), (98, 8);
         """
 
     private let catalogue: Catalogue
@@ -116,6 +130,86 @@ struct ReadNextTests {
         #expect(!mostly.map(\.work.title).contains("Marslane"))
         // What Kevade brings is in Kevade's own language, as before.
         #expect(mostly.map(\.work.title).contains("Suvi"))
+    }
+
+    private static let hungerGames = OpenLibraryBook(
+        record: OpenLibraryRecord(workKey: "/works/OL5735363W"), title: "The Hunger Games", authors: ["Suzanne Collins"], language: "eng"
+    ).work
+
+    private static let estonianFavourites = [
+        source("Kevade", by: "Oskar Luts", rating: 5),
+        source("Põrgupõhja uus Vanapagan", by: "A. H. Tammsaare", rating: 4),
+    ]
+
+    // The catalogue knows nothing of a book it does not hold. It holds „Ave Maria“
+    // with its headings, so that stands in for Project Hail Mary.
+    @Test func aFavouriteFromAbroadIsFollowedThroughItsTranslation() async throws {
+        let found = reasons(try await suggestions([ReadNext.Source(work: Self.hailMary, shelf: .read, rating: 5)] + Self.estonianFavourites))
+        // The reason names the book the reader shelved, not its translation.
+        let hailMary = ReadNextSuggestion.Book(title: "Project Hail Mary", language: "eng")
+        #expect(found["Kosmose serval"] == .similar(to: [hailMary]))
+        #expect(found["Tähtede taga"] == .similar(to: [hailMary]))
+    }
+
+    @Test func aFavouriteFromAbroadWithNoTranslationBringsNothing() async throws {
+        let piranesi = OpenLibraryBook(record: OpenLibraryRecord(workKey: "/works/OL2W"), title: "Piranesi", authors: ["Susanna Clarke"], language: "eng").work
+        let found = try await suggestions([ReadNext.Source(work: piranesi, shelf: .read, rating: 5)] + Self.estonianFavourites)
+        let piranesis = ReadNextSuggestion.Book(title: "Piranesi", language: "eng")
+        #expect(!found.isEmpty)
+        #expect(!found.contains { $0.reason == .similar(to: [piranesis]) || $0.reason == .sameAuthor(as: piranesis) || $0.reason == .nextInSeries(after: piranesis) })
+    }
+
+    // The reader has read the book, so its translation is not suggested to them,
+    // whatever else is like it.
+    @Test func theTranslationOfABookTheReaderHasReadIsNotSuggested() async throws {
+        let found = reasons(try await suggestions([
+            ReadNext.Source(work: Self.hailMary, shelf: .read, rating: 5),
+            Self.source("Kosmose serval", by: "Ulme Kirjanik", rating: 5),
+            Self.source("Kevade", by: "Oskar Luts", rating: 5),
+        ]))
+        #expect(found["Ave Maria"] == nil)
+        #expect(found["Tähtede taga"] != nil)
+
+        // Without the book from abroad on a shelf, „Ave Maria“ is like any other.
+        let without = reasons(try await suggestions([Self.source("Kosmose serval", by: "Ulme Kirjanik", rating: 5)]))
+        #expect(without["Ave Maria"] != nil)
+    }
+
+    // The Hunger Games from Open Library carries no series. „Näljamängud“ does.
+    @Test(arguments: [(Shelf.reading, nil as Int?), (.read, 5)])
+    func aSeriesFromAbroadContinuesFromItsTranslation(shelf: Shelf, rating: Int?) async throws {
+        let found = reasons(try await suggestions([ReadNext.Source(work: Self.hungerGames, shelf: shelf, rating: rating)] + Self.estonianFavourites))
+        #expect(found["Lahvatab leek"] == .nextInSeries(after: ReadNextSuggestion.Book(title: "The Hunger Games", language: "eng")))
+        #expect(found["Pilapasknäär"] == nil)
+        #expect(found["Näljamängud"] == nil)
+    }
+
+    // A book the catalogue holds has headings of its own, whatever translations
+    // of it there are.
+    @Test func aCatalogueBookIsFollowedByItsOwnHeadings() async throws {
+        let found = reasons(try await suggestions([Self.source("A local novel", by: "Local Writer", rating: 5)]))
+        #expect(found["Another local novel"] == .similar(to: [ReadNextSuggestion.Book(title: "A local novel", language: "eng")]))
+        #expect(found["Kosmose serval"] == nil)
+    }
+
+    // The stand-in is Estonian, and Read next keeps to the language the reader
+    // reads most.
+    @Test func whatATranslationLeadsToIsNotHandedToAReaderOfEnglish() async throws {
+        #expect(try await suggestions([ReadNext.Source(work: Self.hailMary, shelf: .read, rating: 5)]).isEmpty)
+        #expect(try await suggestions([ReadNext.Source(work: Self.hungerGames, shelf: .reading, rating: nil)]).isEmpty)
+        // An author with nothing else in Estonian: only the translation's own leads are held back.
+        let midnightLibrary = OpenLibraryBook(
+            record: OpenLibraryRecord(workKey: "/works/OL20893680W"), title: "The Midnight Library", authors: ["Matt Haig"], language: "eng"
+        ).work
+        #expect(try await suggestions([ReadNext.Source(work: midnightLibrary, shelf: .read, rating: 5)]).isEmpty)
+        #expect(try await suggestions([ReadNext.Source(work: midnightLibrary, shelf: .read, rating: 5)] + Self.estonianFavourites).contains {
+            $0.reason == .similar(to: [ReadNextSuggestion.Book(title: "The Midnight Library", language: "eng")])
+        })
+        #expect(try await suggestions([
+            ReadNext.Source(work: Self.hungerGames, shelf: .read, rating: 5),
+            ReadNext.Source(work: Self.hailMary, shelf: .read, rating: 5),
+            Self.source("Kevade", by: "Oskar Luts", rating: 5),
+        ]).map(\.work.title) == ["Suvi", "Agu Sihvka annab aru", "Kooliraamat"])
     }
 
     @Test func threeStarsIsNotAFavourite() async throws {
