@@ -216,6 +216,10 @@ record numbers of the book's editions are sent, so ESTER sees which books'
 covers were asked for, from the phone's address. A record's own summary comes
 back with its cover. Both are kept in the caches folder on the phone.
 
+Exporting the shelves ([Library](library.md#export)) makes its file on the
+phone and hands it to the system's share sheet. Where it goes from there is
+the reader's choice, and Loe sends it nowhere.
+
 The Privacy page, under About in Settings (`PrivacyView`), tells the reader
 all of this in plain words. Change it with this section, so the two never
 disagree.

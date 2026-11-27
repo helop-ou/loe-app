@@ -375,6 +375,45 @@ when that record is deleted. `ShelvedBookMergingTests` covers these rules, and
 two records of one book in an empty in-memory library, to see them open as
 one.
 
+## Export
+
+"Export my shelves" in Settings hands the system's share sheet one CSV file
+with a row for every book on the shelves, named for the day, such as
+`Loe 2026-11-27.csv`. [`ShelvesExport`](../Loe/Shared/Library/ShelvesExport.swift)
+makes it on the phone, when the reader shares it, and nothing is sent
+anywhere. It is the reader's copy of what is theirs: a backup to keep, and the
+way out.
+
+- **Columns.** `Title`, `Author`, `Additional Authors`, `ISBN13`, `My Rating`,
+  `Number of Pages`, `Year Published`, `Date Read`, `Date Added` and
+  `Exclusive Shelf` are Goodreads' own names, written its way, so anything
+  that reads a Goodreads export reads Loe's. Loe's own follow: `Subtitle`,
+  `Language`, `Date Started`, `Current Page`, `Source`, `ESTER Record` and
+  `Open Library Key`. Never rename or reorder a column: a file exported today
+  has to read back.
+- **Values.** A shelf is `currently-reading`, `to-read` or `read`, as
+  Goodreads has them, and `set-aside` or `did-not-finish`. A day is
+  `2026/11/27`, where the reader is. The first author is the `Author` and the
+  rest are `Additional Authors`. `Source` is `catalogue`, `openLibrary` or
+  `hand`. A book with no rating, date or ISBN leaves the field empty.
+- **For a spreadsheet.** The file starts with a byte order mark, so õ and ä
+  read as they are, and ends each line with a carriage return and a line
+  feed. A field with a comma, a quote or a line break is quoted. An ISBN is
+  written `="9780345451323"`, as Goodreads writes it, or a spreadsheet shows
+  it as 9.78E+12.
+- **Formulas.** A spreadsheet runs a cell that starts with `=`, `+`, `-` or
+  `@`, and a title comes from a catalogue or from Open Library. Text that
+  starts so gets an apostrophe in front, which a spreadsheet takes to mean
+  plain text. The ISBN is the one formula in the file, and only digits and an
+  X are ever written into it.
+- **Left out.** Cover photos, which a CSV cannot hold. The ISBN of a
+  catalogue book, which the shelf does not keep: its `ESTER Record` names the
+  edition exactly.
+- **Order.** Books are in the order they were added.
+
+`ShelvesExportTests` pins the columns, the quoting and each of these rules,
+and `ExportJourneyTests` sees the share sheet handed the file.
+
 ## Testing
 
 `ShelvedBookTests`, `ShelvedEnteredBookTests`, `ShelvedOpenLibraryBookTests`
