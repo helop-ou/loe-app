@@ -42,4 +42,14 @@ struct WhereToGetItTests {
         #expect(!WhereToGetIt.asksESTER(places: [library], editions: [byHand]))
         #expect(!WhereToGetIt.asksESTER(places: [Place.apollo], editions: [catalogued]))
     }
+
+    @Test func withESTERTurnedOffALibraryIsAPlainLinkToTheBooksRecord() {
+        #expect(!WhereToGetIt.asksESTER(places: [library], editions: [catalogued], esterIsOn: false))
+
+        let work = CatalogueWork(id: "w", editions: [catalogued])
+        let found = WhereToGetIt.rows(places: [library, Place.apollo], work: work, edition: catalogued) { _ in nil }
+        #expect(found.map(\.id) == [library.id, Place.apollo.id])
+        #expect(found[0].url.absoluteString == "https://www.ester.ee/record=b1054421")
+        #expect(found[0].status == nil)
+    }
 }

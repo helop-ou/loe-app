@@ -33,6 +33,7 @@ struct LoeApp: App {
                     }
                 }
             }
+            .environment(\.asksESTER, catalogue.asksESTER)
             .preferredColorScheme(appearance.colorScheme)
             .environment(\.locale, language.locale())
         }

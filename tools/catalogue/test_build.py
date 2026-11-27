@@ -477,6 +477,13 @@ class ManifestTests(unittest.TestCase):
             schemas = [catalogue["schema_version"] for catalogue in build.catalogues(json.load(f))]
         self.assertEqual(sorted(set(schemas)), sorted(schemas))
 
+    def test_the_manifest_turns_ester_off_with_a_plain_false_or_not_at_all(self):
+        with open(build.MANIFEST, encoding="utf-8") as f:
+            manifest = json.load(f)
+        self.assertIsInstance(manifest.get("asks_ester", True), bool)
+        for catalogue in manifest.get("catalogues", []):
+            self.assertNotIn("asks_ester", catalogue)
+
     def test_the_newest_catalogue_is_the_one_of_the_latest_schema(self):
         first = {"schema_version": 1, "editions": 20}
         second = {"schema_version": 2, "editions": 40}

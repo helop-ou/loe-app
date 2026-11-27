@@ -22,9 +22,15 @@ struct BookCover: View {
     /// follows. One that is ready shows with the first frame, with nothing to fade from.
     static let arrival = Animation.easeOut(duration: 0.25)
 
+    @Environment(\.asksESTER) private var asksESTER
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.displayScale) private var displayScale
     @State private var found: Found?
+
+    /// The cover to look for and show: none of ESTER's while ESTER is turned off.
+    private var wanted: CoverArt? {
+        art?.allowed(asksESTER: asksESTER)
+    }
 
     /// The cover that was found, with the cover it was found for: a view can be
     /// given another book before that book's own cover arrives.
@@ -40,7 +46,7 @@ struct BookCover: View {
     }
 
     private var foundPicture: UIImage? {
-        guard let art, photo == nil else { return nil }
+        guard let art = wanted, photo == nil else { return nil }
         if let found, found.art == art { return found.picture }
         return pictures.ready(art, width: width)
     }
@@ -60,9 +66,9 @@ struct BookCover: View {
                     .transition(.opacity)
             }
         }
-        .task(id: Request(art: art, asks: asks, hasPhoto: photo != nil)) {
+        .task(id: Request(art: wanted, asks: asks, hasPhoto: photo != nil)) {
             // A photo hides the cover, so it is not asked for until the photo goes.
-            guard let art, photo == nil else { return }
+            guard let art = wanted, photo == nil else { return }
             let cover = asks ? await covers.cover(art) : await covers.kept(art)
             guard !Task.isCancelled else { return }
             var picture: UIImage?

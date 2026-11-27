@@ -31,6 +31,12 @@ nonisolated enum CoverArt: Hashable, Sendable {
         self = .ester(Array(codes.prefix(most)), title: title)
     }
 
+    /// Nil for ESTER's cover while ESTER is turned off, so it is neither asked for
+    /// nor shown. See `ESTERSwitch`.
+    func allowed(asksESTER: Bool) -> CoverArt? {
+        isESTERs && !asksESTER ? nil : self
+    }
+
     /// Whether a list asks for it. Only a cover id is asked for there: Open
     /// Library does not limit those, and gave the id with the search answer. Any
     /// other cover shows in a list once a book's page or a shelf has found it.

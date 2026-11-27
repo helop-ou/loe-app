@@ -46,9 +46,14 @@ nonisolated struct CatalogueManifest: Decodable, Equatable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case catalogues
+        case asksESTER = "asks_ester"
     }
 
     private let listed: [Listed]
+    /// False when the manifest turns off everything Loe asks ESTER. Anything but
+    /// a plain `true` there is a no, so a slip in the file can only make Loe ask
+    /// less. See docs/library.md, "Turning ESTER off".
+    let asksESTER: Bool
 
     /// The file's top level is a catalogue itself, the only one the first builds
     /// read. The catalogues of later schemas are listed under it.
@@ -56,6 +61,7 @@ nonisolated struct CatalogueManifest: Decodable, Equatable, Sendable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let first = try Listed(from: decoder)
         listed = try [first] + (container.decodeIfPresent([Listed].self, forKey: .catalogues) ?? [])
+        asksESTER = !container.contains(.asksESTER) || (try? container.decode(Bool.self, forKey: .asksESTER)) == true
     }
 
     /// The catalogue a build that reads `schema` installs.

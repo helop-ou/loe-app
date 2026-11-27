@@ -12,6 +12,7 @@ struct WhereToGetIt: View {
     let edition: CatalogueEdition
     var checker = AvailabilityChecker.live
 
+    @Environment(\.asksESTER) private var esterIsOn
     @Query private var chosen: [ChosenPlace]
     @State private var copies: Copies = .checking
 
@@ -28,8 +29,8 @@ struct WhereToGetIt: View {
 
     var body: some View {
         let places = ChosenPlace.places(chosen)
-        let asksESTER = Self.asksESTER(places: places, editions: work.editions)
-        let rows = Self.rows(places: places, work: work, edition: edition, status: status(at:))
+        let asksESTER = Self.asksESTER(places: places, editions: work.editions, esterIsOn: esterIsOn)
+        let rows = Self.rows(places: places, work: work, edition: edition) { asksESTER ? status(at: $0) : nil }
         if !rows.isEmpty {
             WhereToGetItCard(rows: rows, namesESTER: asksESTER)
                 .task(id: Request(editions: work.editions.map(\.erbID), asks: asksESTER)) {
@@ -43,14 +44,15 @@ struct WhereToGetIt: View {
     }
 
     /// ESTER is asked only for a picked library and a book it has a record of. A
-    /// book entered by hand has none.
-    static func asksESTER(places: [Place], editions: [CatalogueEdition]) -> Bool {
-        places.contains { $0.kind == .library } && editions.contains { BookLinks.ester($0.erbID) != nil }
+    /// book entered by hand has none. While ESTER is turned off it is not asked
+    /// at all, and a library's row is a plain link to the book's record.
+    static func asksESTER(places: [Place], editions: [CatalogueEdition], esterIsOn: Bool = true) -> Bool {
+        esterIsOn && places.contains { $0.kind == .library } && editions.contains { BookLinks.ester($0.erbID) != nil }
     }
 
     static func rows(
         places: [Place], work: CatalogueWork, edition: CatalogueEdition,
-        status: (Place) -> WhereToGetItCard.Status
+        status: (Place) -> WhereToGetItCard.Status?
     ) -> [WhereToGetItCard.Row] {
         let query = BookLinks.query(for: work)
         let ester = BookLinks.ester(edition.erbID)

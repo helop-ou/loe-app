@@ -30,6 +30,8 @@ final class CatalogueStore {
     private(set) var state: State = .missing
     private(set) var download: Download?
     private(set) var check: Check?
+    /// False once a manifest has turned off everything Loe asks ESTER.
+    private(set) var asksESTER: Bool
     private var updatingQuietly = false
     let url: URL
     private let downloader: CatalogueDownloader
@@ -53,6 +55,7 @@ final class CatalogueStore {
         self.url = url
         self.downloader = downloader
         self.defaults = defaults
+        asksESTER = ESTERSwitch.isOn(in: defaults)
         reload()
     }
 
@@ -89,12 +92,20 @@ final class CatalogueStore {
         }
     }
 
+    /// Every manifest that is read says whether ESTER may be asked, and the last
+    /// word is kept for the launches until the next one.
+    private func heard(_ manifest: CatalogueManifest) {
+        defaults.set(manifest.asksESTER, forKey: ESTERSwitch.key)
+        asksESTER = ESTERSwitch.isOn(in: defaults)
+    }
+
     /// The first download, which the reader starts, so it may use mobile data.
     func downloadCatalogue() async {
         guard !isBusy else { return }
         download = .inProgress(0)
         do {
             let manifest = try await downloader.manifest()
+            heard(manifest)
             guard let published = manifest.catalogue(forSchema: Catalogue.schemaVersion) else {
                 download = manifest.hasCatalogue(newerThanSchema: Catalogue.schemaVersion) ? .needsNewerLoe : .failed
                 return
@@ -112,19 +123,21 @@ final class CatalogueStore {
         }
     }
 
-    /// Looks for a newer catalogue of the schema this build reads at most once a
-    /// week, and fetches it quietly over Wi-Fi. The catalogue in use stays until the
-    /// new one is checked and in place.
+    /// Reads the manifest at most once a week, with or without a catalogue on the
+    /// phone, since it also says whether ESTER may be asked. When there is a newer
+    /// catalogue of the schema this build reads, it is fetched quietly over Wi-Fi,
+    /// and the catalogue in use stays until the new one is checked and in place.
     func updateIfDue(now: Date = .now) async {
-        guard case .ready = state, !isBusy, Self.isUpdateCheckDue(lastChecked: lastChecked, now: now) else { return }
+        guard !isBusy, Self.isUpdateCheckDue(lastChecked: lastChecked, now: now) else { return }
         updatingQuietly = true
         defer { updatingQuietly = false }
         // Offline, the check counts for nothing and the next launch asks again.
         guard let manifest = try? await downloader.manifest() else { return }
         defaults.set(now, forKey: Self.checkedKey)
-        guard let published = manifest.catalogue(forSchema: Catalogue.schemaVersion), published.version != installedVersion else {
-            return
-        }
+        heard(manifest)
+        guard case .ready = state,
+              let published = manifest.catalogue(forSchema: Catalogue.schemaVersion), published.version != installedVersion
+        else { return }
         do {
             try await downloader.install(published, at: url, allowsCellular: false)
             defaults.set(published.version, forKey: Self.versionKey)
@@ -143,6 +156,7 @@ final class CatalogueStore {
         do {
             let manifest = try await downloader.manifest()
             defaults.set(now, forKey: Self.checkedKey)
+            heard(manifest)
             let needsNewerLoe = manifest.hasCatalogue(newerThanSchema: Catalogue.schemaVersion)
             guard let published = manifest.catalogue(forSchema: Catalogue.schemaVersion), published.version != installedVersion else {
                 check = needsNewerLoe ? .needsNewerLoe : .upToDate
