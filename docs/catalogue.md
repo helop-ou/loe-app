@@ -235,9 +235,25 @@ is listed under `catalogues`, a key the first builds ignore:
   the first download says Loe needs an update, in Search and in Settings.
   That takes an entry going missing, which the first rule forbids.
 
-- The first download is the reader's choice, from Search, and may use mobile
-  data. `CatalogueDownloader` checks the SHA-256, unpacks the xz file, opens
-  the result, counts its editions against the manifest's `editions`, and only
+- Loe fetches the catalogue without being asked. A launch, or coming back to
+  the front, with no catalogue the phone can read starts the download, on a
+  network that is neither mobile data nor in Low Data Mode, and each one tries
+  again until the catalogue is there. It runs while Loe is open, and starts
+  over at the next launch if it was cut off. A file that can't be read, from a
+  newer Loe or damaged, is replaced the same way.
+- Search is never the download screen. Until the catalogue is there it finds
+  books from abroad on Open Library and offers adding a book by hand, a
+  book's page shows where to get it, and Read next says it needs the
+  catalogue. [`CatalogueNotice`](../Loe/Shared/UI/CatalogueNotice.swift), at
+  the top of Search and Read next and under a search's results, says what Loe
+  is doing: downloading, with how far it is, waiting for Wi-Fi, that the
+  download didn't finish, or that Loe needs an update. Waiting for Wi-Fi comes
+  with a button that fetches the catalogue now, on whatever network there is,
+  since then the reader asked. A download that didn't finish has one to try
+  again. The notice scrolls with what is under it, so it never crowds a small
+  screen or a large text size.
+- `CatalogueDownloader` checks the SHA-256, unpacks the xz file, opens the
+  result, counts its editions against the manifest's `editions`, and only
   then puts it in place, so a failed download never costs the reader the
   catalogue they had. The file is excluded from iCloud backup, since it can be
   downloaded again.
@@ -258,10 +274,10 @@ is listed under `catalogues`, a key the first builds ignore:
 - Settings shows the edition (its version, `2026-11`, as a month), its size
   on the phone, the number of editions and when Loe last heard which edition
   is the newest. "Check for a new edition" asks straight away, may use mobile
-  data, since the reader asked, and says what came of it. Removing the
-  catalogue deletes the file and forgets its version, and Search offers the
-  download again. Neither runs while a download or update is replacing the
-  file.
+  data, since the reader asked, and says what came of it. With no catalogue on
+  the phone the section says how the download is going and offers it. The
+  catalogue cannot be removed, since Loe would only fetch it again. Nothing
+  starts while a download or update is replacing the file.
 
 ### Publishing a new catalogue
 
@@ -335,19 +351,23 @@ cp /tmp/erb/catalogue.sqlite "$container/Library/Application Support/Catalogue/"
 ```
 
 To try the download, serve the xz file and a manifest naming it from the Mac,
-remove the catalogue from the container, and pass the manifest to the
-download journey. Debug builds read a `-catalogueManifestURL` launch argument
-instead of the GitHub address, and plain HTTP to `127.0.0.1` works:
+and pass the manifest to the download journey. Debug builds read a
+`-catalogueManifestURL` launch argument instead of the GitHub address, and
+plain HTTP to `127.0.0.1` works. The journey has Loe keep what it fetches in a
+folder of its own, so the catalogue installed on the simulator is left alone:
 
 ```sh
 mkdir -p /tmp/serve && cp /tmp/erb/catalogue.sqlite.xz /tmp/serve/
 # write /tmp/serve/manifest.json with "url": "http://127.0.0.1:8765/catalogue.sqlite.xz"
 python3 -I -m http.server 8765 --bind 127.0.0.1 --directory /tmp/serve &
-rm "$container/Library/Application Support/Catalogue/catalogue.sqlite"
 TEST_RUNNER_LOE_CATALOGUE_MANIFEST=http://127.0.0.1:8765/manifest.json xcodebuild test \
   -scheme Loe -destination 'platform=iOS Simulator,id=<udid>' \
-  -only-testing:LoeUITests/SearchJourneyTests/testDownloadsTheCatalogue -collect-test-diagnostics never
+  -only-testing:LoeUITests/SearchJourneyTests/testFetchesTheCatalogueWithoutBeingAsked -collect-test-diagnostics never
 ```
+
+`NoCatalogueJourneyTests` is the same phone off the network: it has Loe look
+for its catalogue where there is none, so Search shows the notice of a
+download that didn't finish and still shelves a book from abroad.
 
 ## Books from abroad
 

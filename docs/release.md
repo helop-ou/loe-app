@@ -173,7 +173,8 @@ names two required-reason APIs: `UserDefaults`, for the appearance setting and
 the catalogue's update check, and file timestamps, by which `Covers` remembers
 for 30 days that a book has no cover. `PrivacyManifestTests` fails when the
 code calls one the manifest doesn't declare, or the manifest declares one the
-code doesn't call. The catalogue download sends nothing about the reader.
+code doesn't call. Loe fetches the catalogue from GitHub by itself, from the
+first launch, and that sends nothing about the reader.
 
 The camera is asked for once, with one text for both of its uses: reading a
 barcode in Search and photographing a cover on a book's page.

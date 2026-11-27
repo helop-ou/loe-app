@@ -40,10 +40,10 @@ request: nothing else checks the journeys.
 Run builds one after the other, never two at once. [AGENTS.md](AGENTS.md)
 says why, and holds the rest of the session checklist.
 
-Search needs the book catalogue. In the simulator, open Search and download
-it, or copy a built one in as
-[Catalogue](docs/catalogue.md#trying-it-in-the-simulator) describes. Journeys
-that need it skip on a simulator without one.
+Loe fetches its book catalogue from GitHub by itself when it first opens, in
+the simulator too. To use one you built, copy it in as
+[Catalogue](docs/catalogue.md#trying-it-in-the-simulator) describes. The
+journeys search a small catalogue of their own.
 
 ## Where the rules live
 

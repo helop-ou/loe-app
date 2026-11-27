@@ -226,8 +226,10 @@ with a button that puts it on Want to read. The list is worked out again when a
 rating, a shelf or a taste changes, but not when a page is updated or a
 suggestion is kept, which only takes it off the list.
 
-With no catalogue the tab says to download it. With no favourites and no
-tastes it says to rate a book four or five stars or pick tastes in Settings.
+With no catalogue yet the tab says it needs one, under the
+[notice](catalogue.md#download-and-updates) that says how the download is
+going. With no favourites and no tastes it says to rate a book four or five
+stars or pick tastes in Settings.
 With something to go on and nothing close enough, it says so.
 
 ## Tastes
