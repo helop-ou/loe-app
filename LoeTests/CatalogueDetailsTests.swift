@@ -127,8 +127,8 @@ struct CatalogueDetailsTests {
         #expect(try await translations(of: "Ripley's Bureau of Investigation: The Dragon's Triangle", by: "Kay Wilkins") == ["Draakoni kolmnurk"])
     }
 
-    /// An author from abroad whom the catalogue has in Estonian and in English,
-    /// among others of his surname.
+    /// An author the two sources write two ways, others who share his surname, and
+    /// two people one spelling could be.
     private static let nylunds = """
         (1, 'b1', 'Halo: Reachi langemine', 'Eric Nylund', 2012, 1, 0, 'Halo: the fall of Reach', 'est', 'eng', NULL),
         (2, 'b2', 'Halo: esimene löök', 'Eric Nylund', 2013, 1, 0, 'Halo: first strike', 'est', 'eng', NULL),
@@ -163,10 +163,35 @@ struct CatalogueDetailsTests {
         #expect(found.inEstonian)
     }
 
+    // Open Library adds a middle initial the bibliography leaves out.
+    @Test func anAuthorWrittenAnotherWayIsFoundWhenOneSpellingFits() async throws {
+        let found = try await sameAuthor(as: abroad("Halo: The Fall of Reach", by: "Eric S. Nylund"))
+        #expect(found.titles == ["Halo: esimene löök", "Halo: Onyxi kummitused", "Kaks kirja"])
+        #expect(found.inEstonian)
+        // Another Nylund is another author, and so is one whose middle name contradicts.
+        #expect(!found.titles.contains("Aiapidaja käsiraamat"))
+        #expect(!found.titles.contains("Põhjala lood"))
+    }
+
+    @Test func theNameAsItIsWrittenComesFirst() async throws {
+        // Stephen Michael King fits "Stephen King" too, and is somebody else.
+        let king = try await sameAuthor(as: abroad("The Shining", by: "Stephen King"))
+        #expect(king.titles == ["See"])
+        let other = try await sameAuthor(as: abroad("Leaf", by: "Stephen Michael King"))
+        #expect(other.titles == ["Karu ja mesi"])
+    }
+
+    @Test func twoSpellingsThatFitListNobodysBooks() async throws {
+        let found = try await sameAuthor(as: abroad("A year of horses", by: "Hans Luik"))
+        #expect(found.titles.isEmpty)
+        #expect(!found.inEstonian)
+    }
+
     @Test func anAuthorTheCatalogueDoesNotHaveListsNothing() async throws {
         let found = try await sameAuthor(as: abroad("Piranesi", by: "Susanna Clarke"))
         #expect(found.titles.isEmpty)
         #expect(!found.inEstonian)
+        #expect(try await sameAuthor(as: abroad("Anonymous", by: "Nylund")).titles.isEmpty)
     }
 
     // A catalogue book's page is as it was: the author's books in its own language.
@@ -189,6 +214,15 @@ struct CatalogueDetailsTests {
         let found = try await sameAuthor(as: abroad("Tundmatu raamat", by: "Eric Nylund", language: "est"))
         #expect(found.titles.count == 4)
         #expect(!found.inEstonian)
+    }
+
+    // The same book in the catalogue under the other spelling has another key.
+    @Test func theBookItselfIsNotAmongItsAuthorsOtherBooks() async throws {
+        let books = Self.nylunds + ",\n(13, 'b13', 'Halo: The Fall of Reach', 'Eric Nylund', 2011, 1, 0, NULL, 'est', NULL, NULL)"
+        let catalogue = try Catalogue(url: CatalogueFixture.make(books: books))
+        let details = try await catalogue.details(for: abroad("Halo: The Fall of Reach", by: "Eric S. Nylund"))
+        #expect(!details.sameAuthor.map(\.title).contains("Halo: The Fall of Reach"))
+        #expect(details.sameAuthor.count == 3)
     }
 
     @Test func aBookWithNoAuthorOpenedFromAShelfShowsWhatTheShelfKept() async throws {

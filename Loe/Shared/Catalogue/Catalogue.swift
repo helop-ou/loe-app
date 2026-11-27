@@ -114,9 +114,12 @@ actor Catalogue {
         let listed = abroad ? Self.estonian : language
         let related = Set([work.id] + (original.map { [$0.id] } ?? []))
         let translationKeys = Set(translated.map(CatalogueWork.key(for:)))
+        // Under another spelling of the author the book itself has another key.
+        let own = SameBook.keys(title: work.title, subtitle: work.editions[0].subtitle, leadAuthor: author)
         let others = sameLead.filter {
             let key = CatalogueWork.key(for: $0)
             return !related.contains(key) && !translationKeys.contains(key) && $0.language == listed
+                && own.isDisjoint(with: SameBook.keys(title: $0.title, subtitle: $0.subtitle, leadAuthor: $0.leadAuthor))
         }
         let allEditions = (editions.isEmpty ? work.editions : editions).sorted { ($0.year ?? 0) > ($1.year ?? 0) }
         return Details(
@@ -327,10 +330,18 @@ actor Catalogue {
 
     static let estonian = "est"
 
-    /// Every edition whose first author is this one.
+    /// Every edition whose first author is this one. The name as it is written
+    /// comes first. Only when the catalogue has nobody under it is another spelling
+    /// tried, and only one that is the single spelling to fit. See `AuthorName`.
     private func byLeadAuthor(_ author: String?) throws -> [CatalogueEdition] {
         guard let author else { return [] }
-        return try matching(CatalogueQuery.phrase(author, in: "authors"), limit: 3000).filter { Self.sameAuthor($0.leadAuthor, author) }
+        let exact = try matching(CatalogueQuery.phrase(author, in: "authors"), limit: 3000).filter { Self.sameAuthor($0.leadAuthor, author) }
+        guard exact.isEmpty, let name = AuthorName.parts(author),
+              let first = CatalogueQuery.phrase(name.first, in: "authors"), let surname = CatalogueQuery.phrase(name.surname, in: "authors")
+        else { return exact }
+        let candidates = try matching("\(first) AND \(surname)", limit: 3000)
+        guard let spelling = AuthorName.onlySpelling(of: author, among: candidates.compactMap(\.leadAuthor)) else { return [] }
+        return candidates.filter { Self.sameAuthor($0.leadAuthor, spelling) }
     }
 
     /// Books like this one by other authors, from what the bibliography says about
