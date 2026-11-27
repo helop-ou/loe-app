@@ -46,6 +46,10 @@ struct PrivacyContent: View {
                 "Covers of Estonian books come from ESTER, and covers of books from abroad from Open Library and the Internet Archive. Each sees which books' covers were asked for. Loe keeps the covers on your phone."
             )
             Sent(
+                "Turning ESTER off",
+                "The file on GitHub that tells Loe about new catalogue editions can also tell it to stop asking ESTER. It can only make Loe ask less, never more."
+            )
+            Sent(
                 "Links",
                 "Links on a book's page open in your browser, like any other link."
             )

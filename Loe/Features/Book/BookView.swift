@@ -7,6 +7,7 @@ struct BookView: View {
     let work: CatalogueWork
 
     @Environment(CatalogueStore.self) private var catalogue
+    @Environment(\.asksESTER) private var asksESTER
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
     @Environment(\.locale) private var locale
@@ -55,9 +56,11 @@ struct BookView: View {
     }
 
     /// A catalogue book waits for all its editions, newest first, so that ESTER is
-    /// asked about it once.
+    /// asked about it once, and has none while ESTER is turned off, which leaves
+    /// its page without ESTER's summary too.
     private var art: CoverArt? {
-        base.editions[0].openLibrary != nil || details != nil ? Self.coverArt(for: shown) : nil
+        guard base.editions[0].openLibrary != nil || details != nil else { return nil }
+        return Self.coverArt(for: shown)?.allowed(asksESTER: asksESTER)
     }
 
     /// Whose cover is showing, to say so under it. The reader's own photo needs none.

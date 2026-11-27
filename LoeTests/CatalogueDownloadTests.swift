@@ -75,18 +75,21 @@ struct DownloadScene {
     }
 
     /// Publishes a catalogue as the manifest's top level, with the catalogues of
-    /// other schemas listed under it.
+    /// other schemas listed under it, and what the manifest says about asking ESTER
+    /// when it says anything.
     @discardableResult
     func publish(
         _ catalogue: URL,
         version: String,
         schema: Int = Catalogue.schemaVersion,
         sha256: String? = nil,
-        listing others: [String] = []
+        listing others: [String] = [],
+        asksESTER: String? = nil
     ) throws -> URL {
         let (file, entry) = try release(catalogue, version: version, schema: schema, sha256: sha256)
         let list = others.isEmpty ? "" : #", "catalogues": [\#(others.map { "{\($0)}" }.joined(separator: ", "))]"#
-        StubServer.serve(manifestURL, body: Data("{\(entry)\(list)}".utf8))
+        let ester = asksESTER.map { #", "asks_ester": \#($0)"# } ?? ""
+        StubServer.serve(manifestURL, body: Data("{\(entry)\(list)\(ester)}".utf8))
         return file
     }
 

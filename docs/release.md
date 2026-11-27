@@ -216,6 +216,11 @@ record numbers of the book's editions are sent, so ESTER sees which books'
 covers were asked for, from the phone's address. A record's own summary comes
 back with its cover. Both are kept in the caches folder on the phone.
 
+The catalogue manifest, which Loe reads from GitHub once a week, can turn off
+what Loe asks ESTER: availability, covers and summaries (see
+[Library](library.md#turning-ester-off)). It is the one thing outside the
+phone that changes what Loe does, and it can only make Loe ask less.
+
 The Privacy page, under About in Settings (`PrivacyView`), tells the reader
 all of this in plain words. Change it with this section, so the two never
 disagree.
@@ -235,3 +240,6 @@ there without a credit, or a credit names a file that isn't shipped.
   has no published terms and its `robots.txt` disallows everything, so a
   public release waits for ELNET's answer. Without it, take ESTER's covers and
   summaries out before releasing.
+- The first public build has to be one that reads the manifest's
+  [switch for ESTER](library.md#turning-ester-off), since an older build
+  cannot be told to stop.

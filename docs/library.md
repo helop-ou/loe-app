@@ -143,7 +143,8 @@ there is a photo. [`Covers`](../Loe/Shared/Covers/Covers.swift) loads them:
 - **Permission.** ESTER's statutes put copying its data under ELNET's
   permission, which has been asked for. Until it is given, ESTER's covers and
   summaries are for internal builds only (see
-  [Release](release.md#before-the-app-store)).
+  [Release](release.md#before-the-app-store)). The manifest can
+  [turn them off](#turning-ester-off) in builds already on phones.
 
 ## Books entered by hand
 
@@ -288,8 +289,8 @@ four at a time, for the twelve newest editions. Its session keeps no cookies,
 cache or credentials, so ESTER learns which records were asked about, that Loe
 is asking (the `User-Agent`) and the phone's address, and nothing else.
 Answers are reused for ten minutes, in memory only. With no library picked,
-nothing is asked. ESTER is named under the list, as its statutes ask of
-anything that shows its data.
+nothing is asked, nor while ESTER is [turned off](#turning-ester-off). ESTER
+is named under the list, as its statutes ask of anything that shows its data.
 
 [`ESTERHoldings`](../Loe/Shared/Places/Availability.swift) reads each row of a
 holdings page by the comment that starts each cell (`field 1` is the location,
@@ -314,6 +315,44 @@ still opens ESTER. `AvailabilityTests` reads two holdings pages saved in
 `LoeTests/Fixtures`. Debug builds launched with `-networkStub YES` ask nobody:
 every record has one copy, on the shelf at Kännukuke, so the journey that
 picks that library sees it answer.
+
+## Turning ESTER off
+
+The [catalogue manifest](catalogue.md#download-and-updates) can turn off
+everything Loe asks ESTER: availability, and the covers and summaries of its
+cover service. ESTER can ask Loe to stop, or change its pages so that Loe
+reads them wrongly, and a build that is already on a phone has to be able to
+stop without an update.
+
+- **The key.** `"asks_ester": false` at the manifest's top level. Without the
+  key ESTER is asked. Anything there but `true` turns it off, so a slip in the
+  file can only make Loe ask less. One key covers all three, and it can turn
+  nothing on: Open Library has no switch.
+- **When a phone hears it.** With every manifest it reads: the weekly look at
+  launch and when Loe comes back to the front, "Check for a new edition", and
+  the first download. The weekly look happens with or without a catalogue on
+  the phone, because shelves that came from iCloud ask for covers either way.
+  So a phone that is used stops within a week. A manifest that no longer has
+  the key turns ESTER back on the same way.
+- **What is kept.** The last word, in the phone's user defaults under
+  `asksESTER` ([`ESTERSwitch`](../Loe/Shared/Network/ESTERSwitch.swift)), so
+  it holds from the next launch before any manifest is read.
+  [`CatalogueStore`](../Loe/Shared/Catalogue/CatalogueStore.swift) writes it
+  and `LoeApp` puts it in the environment as `asksESTER`.
+- **What it does.** A library's row is a plain link to the book's ESTER
+  record, with nothing about its copies, as rows are for a reader who picked
+  no libraries. A catalogue book shows its card, or the reader's photo, and
+  no summary. A cover from ESTER that the phone already holds is not shown
+  while ESTER is off. It stays in the caches folder, so turning ESTER back on
+  shows it without asking again.
+- **Where.** `BookCover` drops a cover of ESTER's before it is looked for or
+  shown, `BookView` does the same for the summary, and `WhereToGetIt` leaves
+  the availability out. `ESTERSwitchTests` covers the key, what is kept and
+  each way a manifest is read, and `ESTERSwitchJourneyTests` launches with
+  `-asksESTER NO`, which stands in for what a manifest said, to see a book's
+  page ask nothing.
+- **Only in builds that have it.** A build from before the switch ignores the
+  key, so the first public build has to have it.
 
 ## Rules
 
