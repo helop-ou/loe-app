@@ -211,6 +211,15 @@ catalogue, worked out on the phone. Nothing is sent anywhere.
   part after the first, so nothing skips ahead.
 - **Similar books.** For each favourite, the similar books its page shows. A
   book like several favourites names how many and comes first.
+- **A book from abroad.** The catalogue knows nothing of a book it does not
+  hold, so one found on Open Library is followed through its Estonian
+  translation when the catalogue has one, the match its page makes for
+  "Translations". The translation's headings find the similar books and its
+  series the next book, and the reason still names the book the reader
+  shelved. The translation itself is not suggested: the reader has read the
+  book. What a translation leads to is in Estonian, so it is kept only for a
+  reader whose favourites and series are mostly Estonian. A book from abroad
+  with no translation brings only its author's books.
 - **Tastes.** For each genre the reader likes, four of the most often
   published books under its headings, in the language the reader's favourites
   and series are mostly in, Estonian until there are any. See
