@@ -169,6 +169,51 @@ struct CatalogueUpdateTests {
         guard case .missing = store.state else { Issue.record("expected missing"); return }
     }
 
+    // While the quiet update replaces the file, nothing else may touch it.
+    @Test func nothingElseTouchesTheCatalogueWhileAQuietUpdateRuns() async throws {
+        let (scene, file) = try sceneWithANewerEdition()
+        let store = scene.store()
+
+        async let update: Void = store.updateIfDue()
+        while !store.isBusy, store.installedVersion == "2026-10" { await Task.yield() }
+        try #require(store.isBusy)
+
+        try store.remove()
+        #expect(FileManager.default.fileExists(atPath: scene.catalogueURL.path))
+        #expect(store.installedVersion == "2026-10")
+        await store.checkNow()
+        #expect(store.check == nil)
+        await store.downloadCatalogue()
+        #expect(store.download == nil)
+        await store.updateIfDue()
+
+        await update
+        #expect(store.installedVersion == "2026-11")
+        #expect(!store.isBusy)
+        #expect(StubServer.requests(for: scene.manifestURL).count == 1)
+        #expect(StubServer.requests(for: file).count == 1)
+    }
+
+    @Test func nothingElseTouchesTheCatalogueWhileTheReadersDownloadRuns() async throws {
+        let scene = DownloadScene()
+        let file = try scene.publish(CatalogueFixture.make(), version: "2026-11")
+        let store = scene.store()
+
+        async let download: Void = store.downloadCatalogue()
+        while !store.isBusy, store.installedVersion == nil { await Task.yield() }
+        try #require(store.isBusy)
+
+        try store.remove()
+        #expect(store.download != nil)
+        await store.updateIfDue()
+        await store.downloadCatalogue()
+
+        await download
+        #expect(store.installedVersion == "2026-11")
+        #expect(StubServer.requests(for: scene.manifestURL).count == 1)
+        #expect(StubServer.requests(for: file).count == 1)
+    }
+
     /// The files beside the catalogue, which is all an install should leave there.
     private func leftovers(in scene: DownloadScene) throws -> [String] {
         let folder = scene.catalogueURL.deletingLastPathComponent()
