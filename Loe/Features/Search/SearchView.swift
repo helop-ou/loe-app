@@ -30,6 +30,11 @@ struct SearchView: View {
         return CatalogueQuery.isbn13(text) == nil ? .text : .isbn
     }
 
+    private struct Asked: Equatable {
+        let query: String
+        let hasCatalogue: Bool
+    }
+
     var openLibrary = OpenLibrary.live
 
     @Environment(CatalogueStore.self) private var catalogue
@@ -48,10 +53,13 @@ struct SearchView: View {
             content
                 .loeNavigationTitle("Search")
                 .navigationDestination(for: CatalogueWork.self) { BookView(work: $0) }
-                .searchable(text: $query, prompt: "Title, author or ISBN")
-                .task(id: query) { await search() }
+                // Always showing: under the notice the screen scrolls, and a field
+                // in the bar's drawer hides above scrolling content until it is pulled down.
+                .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Title, author or ISBN")
+                // Asked again when the catalogue arrives, for what is already typed.
+                .task(id: Asked(query: query, hasCatalogue: readyCatalogue != nil)) { await search() }
                 .toolbar {
-                    if BarcodeScanner.isSupported, case .ready = catalogue.state {
+                    if BarcodeScanner.isSupported {
                         Button("Scan a barcode", systemImage: "barcode.viewfinder") { scanning = true }
                     }
                 }
@@ -71,23 +79,16 @@ struct SearchView: View {
     @ViewBuilder
     private var content: some View {
         let trimmed = query.trimmingCharacters(in: .whitespaces)
-        switch catalogue.state {
-        case .missing:
-            CatalogueDownloadView()
-        case .unreadable:
-            EmptyState(
-                title: "The catalogue can't be read",
-                systemImage: "exclamationmark.triangle",
-                description: "It may be from a newer version of Loe."
-            )
-        case .ready:
-            if trimmed.isEmpty {
+        if trimmed.isEmpty {
+            underNotice {
                 EmptyState(
                     title: "Find a book",
                     systemImage: "magnifyingglass",
                     description: "Search by title, author or ISBN."
                 )
-            } else if resultsQuery == trimmed, let nothing = Self.nothingFound(for: trimmed, inCatalogue: results, online: online) {
+            }
+        } else if resultsQuery == trimmed, let nothing = Self.nothingFound(for: trimmed, inCatalogue: results, online: online) {
+            underNotice {
                 switch nothing {
                 case .isbn:
                     EmptyState(
@@ -106,10 +107,27 @@ struct SearchView: View {
                         addButton(trimmed)
                     }
                 }
-            } else {
-                resultsList(trimmed)
             }
+        } else {
+            resultsList(trimmed)
         }
+    }
+
+    /// Search is never the download screen. Until the catalogue is here it finds
+    /// books from abroad, under the notice that says what Loe is doing.
+    @ViewBuilder
+    private func underNotice(@ViewBuilder _ empty: () -> some View) -> some View {
+        if readyCatalogue == nil {
+            UnderCatalogueNotice(catalogue: catalogue, content: empty)
+        } else {
+            empty()
+        }
+    }
+
+    /// Nil until the catalogue is on the phone, and while one that can't be read
+    /// is being replaced.
+    private var readyCatalogue: Catalogue? {
+        if case .ready(let catalogue) = catalogue.state { catalogue } else { nil }
     }
 
     private func resultsList(_ trimmed: String) -> some View {
@@ -123,6 +141,12 @@ struct SearchView: View {
             }
             if resultsQuery == trimmed {
                 onlineSection
+                // After the results, where it says why there are no more of them.
+                if readyCatalogue == nil {
+                    CatalogueNotice(catalogue)
+                        .listRowBackground(Color.loeBackground)
+                        .listRowSeparator(.hidden)
+                }
                 Button {
                     add(trimmed)
                 } label: {
@@ -201,7 +225,7 @@ struct SearchView: View {
 
     private func search() async {
         let trimmed = query.trimmingCharacters(in: .whitespaces)
-        guard case .ready(let catalogue) = catalogue.state, !trimmed.isEmpty else {
+        guard !trimmed.isEmpty else {
             results = []
             resultsQuery = trimmed
             online = .notAsked
@@ -210,7 +234,9 @@ struct SearchView: View {
         // Wait for a pause in typing. A new keystroke cancels this task.
         try? await Task.sleep(for: .milliseconds(150))
         guard !Task.isCancelled else { return }
-        let found = (try? await catalogue.search(trimmed)) ?? []
+        // With no catalogue yet, Open Library is asked as it is for a book the
+        // catalogue doesn't have.
+        let found = (try? await readyCatalogue?.search(trimmed)) ?? []
         guard !Task.isCancelled else { return }
         let question = OpenLibrary.question(for: trimmed, catalogueFound: !found.isEmpty)
         // Back from a book's page, the answer is already known.

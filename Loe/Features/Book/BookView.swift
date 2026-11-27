@@ -43,6 +43,17 @@ struct BookView: View {
 
     private var newest: CatalogueEdition { shown.editions[0] }
 
+    /// Whether there is a catalogue to ask for the rest of the page. Without one,
+    /// the page shows what it can from the book itself.
+    private var hasCatalogue: Bool {
+        if case .ready = catalogue.state { true } else { false }
+    }
+
+    private struct DetailsRequest: Equatable {
+        let base: CatalogueWork
+        let hasCatalogue: Bool
+    }
+
     /// Whether the catalogue has the book. One entered by hand or found on Open
     /// Library has no editions, ESTER record or library copies to show.
     private var fromCatalogue: Bool { shown.editions.contains { !$0.erbID.isEmpty } }
@@ -59,7 +70,7 @@ struct BookView: View {
     /// asked about it once, and has none while ESTER is turned off, which leaves
     /// its page without ESTER's summary too.
     private var art: CoverArt? {
-        guard base.editions[0].openLibrary != nil || details != nil else { return nil }
+        guard base.editions[0].openLibrary != nil || details != nil || !hasCatalogue else { return nil }
         return Self.coverArt(for: shown)?.allowed(asksESTER: asksESTER)
     }
 
@@ -106,7 +117,13 @@ struct BookView: View {
                     if fromCatalogue {
                         EditionsSection(editions: details.editions)
                     }
+                }
+                // Where to get a book needs nothing from the catalogue, so a phone
+                // without one shows it too.
+                if details != nil || !hasCatalogue {
                     WhereToGetIt(work: shown, edition: newest)
+                }
+                if let details {
                     if !details.sameAuthor.isEmpty {
                         WorkRail(title: "By the same author", works: details.sameAuthor, shelves: shelves) { work in
                             work.firstYear.map(String.init)
@@ -158,7 +175,8 @@ struct BookView: View {
             // A book entered by hand exists only on the shelves, so its page goes with it.
             if removed && enteredByHand { dismiss() }
         }
-        .task(id: base) {
+        // Asked again when the catalogue arrives while the page is open.
+        .task(id: DetailsRequest(base: base, hasCatalogue: hasCatalogue)) {
             guard case .ready(let catalogue) = catalogue.state else { return }
             details = try? await catalogue.details(for: base)
         }

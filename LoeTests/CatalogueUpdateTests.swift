@@ -178,14 +178,12 @@ struct CatalogueUpdateTests {
         while !store.isBusy, store.installedVersion == "2026-10" { await Task.yield() }
         try #require(store.isBusy)
 
-        try store.remove()
-        #expect(FileManager.default.fileExists(atPath: scene.catalogueURL.path))
-        #expect(store.installedVersion == "2026-10")
         await store.checkNow()
         #expect(store.check == nil)
         await store.downloadCatalogue()
         #expect(store.download == nil)
         await store.updateIfDue()
+        await store.keepUp()
 
         await update
         #expect(store.installedVersion == "2026-11")
@@ -203,10 +201,9 @@ struct CatalogueUpdateTests {
         while !store.isBusy, store.installedVersion == nil { await Task.yield() }
         try #require(store.isBusy)
 
-        try store.remove()
-        #expect(store.download != nil)
         await store.updateIfDue()
         await store.downloadCatalogue()
+        await store.keepUp()
 
         await download
         #expect(store.installedVersion == "2026-11")

@@ -35,11 +35,13 @@ struct ReadNextView: View {
                 if case .ready = catalogue.state {
                     content(input)
                 } else {
-                    EmptyState(
-                        title: "Suggestions need the catalogue",
-                        systemImage: "sparkles",
-                        description: "Download it in Search, then give the books you've read a rating."
-                    )
+                    UnderCatalogueNotice(catalogue: catalogue) {
+                        EmptyState(
+                            title: "Suggestions need the catalogue",
+                            systemImage: "sparkles",
+                            description: "Once it's on your phone, give the books you've read a rating."
+                        )
+                    }
                 }
             }
             .loeNavigationTitle("Read next")

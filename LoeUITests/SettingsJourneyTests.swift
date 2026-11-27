@@ -32,17 +32,11 @@ final class SettingsJourneyTests: JourneyTestCase {
         let statuses = NSPredicate(format: "label BEGINSWITH 'Your shelves sync' OR label BEGINSWITH 'iCloud is' OR label BEGINSWITH 'iCloud isn'")
         XCTAssertTrue(app.staticTexts.matching(statuses).firstMatch.waitForExistence(timeout: 10))
 
-        // Removing is only asked about, never done: the other journeys search the same file.
+        // Loe fetches the catalogue by itself, so there is no removing it.
         scroll(app, to: app.buttons["About Loe"])
         XCTAssertTrue(app.staticTexts["Edition"].exists)
         XCTAssertTrue(app.buttons["Check for a new edition"].exists)
-        app.buttons["Remove from this phone"].tap()
-        XCTAssertTrue(app.staticTexts["Remove the catalogue?"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["Remove the catalogue"].exists)
-        // The dialog is a popover anchored to the button, closed by a tap outside it.
-        app.otherElements["PopoverDismissRegion"].tap()
-        XCTAssertTrue(app.staticTexts["Remove the catalogue?"].waitForNonExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["Edition"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["Remove from this phone"].exists)
         attach("settings-catalogue", app)
 
         app.buttons["About Loe"].tap()

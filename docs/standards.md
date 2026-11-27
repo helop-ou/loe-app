@@ -39,7 +39,7 @@ Loe/
   Features/
     Shelves/
     ReadNext/
-    Search/                    Search, and the catalogue download
+    Search/                    Search
     Book/                      A book's own page
     Settings/                  Settings, About and credits, and the language and tastes asked on first launch
   Shared/
