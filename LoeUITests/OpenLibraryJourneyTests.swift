@@ -123,6 +123,14 @@ final class OpenLibraryJourneyTests: JourneyTestCase {
         XCTAssertTrue(translation.waitForExistence(timeout: 5))
         XCTAssertTrue(waitForESTERsCover(on: translation))
         attach("openlibrary-book-translation-cover", app)
+
+        // The author's other books are the catalogue's, in Estonian, and the page says so.
+        let heading = app.staticTexts["By the same author, in Estonian"]
+        for _ in 0..<4 where !heading.isHittable { app.swipeUp() }
+        XCTAssertTrue(heading.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label CONTAINS 'Marslane'")).firstMatch.exists)
+        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label CONTAINS 'Artemis'")).firstMatch.exists)
+        attach("openlibrary-book-same-author", app)
     }
 
     @MainActor

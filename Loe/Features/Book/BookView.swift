@@ -105,7 +105,9 @@ struct BookView: View {
                     }
                     WhereToGetIt(work: shown, edition: newest)
                     if !details.sameAuthor.isEmpty {
-                        WorkRail(title: "By the same author", works: details.sameAuthor, shelves: shelves) { work in
+                        // A book from abroad lists the author's books in Estonian, and says so.
+                        let heading: LocalizedStringKey = details.sameAuthorIsInEstonian ? "By the same author, in Estonian" : "By the same author"
+                        WorkRail(title: heading, works: details.sameAuthor, shelves: shelves) { work in
                             work.firstYear.map(String.init)
                         }
                     }

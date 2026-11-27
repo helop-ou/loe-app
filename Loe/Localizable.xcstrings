@@ -461,6 +461,16 @@
         }
       }
     },
+    "By the same author, in Estonian": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Samalt autorilt eesti keeles"
+          }
+        }
+      }
+    },
     "Can't find it? Add it yourself": {
       "localizations": {
         "et": {

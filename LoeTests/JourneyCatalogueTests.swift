@@ -71,6 +71,9 @@ struct JourneyCatalogueTests {
         let translation = try #require(details.translations.first)
         #expect(translation.title == "Ave Maria")
         #expect(translation.editions.contains { ESTERHoldings.url(erbID: $0.erbID) != nil })
+        // And the author's other books in Estonian, without the translation itself.
+        #expect(Set(details.sameAuthor.map(\.title)) == ["Marslane", "Artemis"])
+        #expect(details.sameAuthorIsInEstonian)
     }
 
     @Test func itHoldsTheISBNTheSearchJourneyTypes() async throws {

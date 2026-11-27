@@ -204,8 +204,11 @@ catalogue, worked out on the phone. Nothing is sent anywhere.
   [Catalogue](catalogue.md#in-the-app).
 - **More by the author.** For each favourite, three of the lead author's other
   books in the same language, the most often published first, as the book's
-  page lists them. Later books of a series the reader is in are left out, and
-  so is any part after the first, so nothing skips ahead.
+  page lists them. A favourite from abroad brings its author's books in
+  Estonian, as its page lists them, and only to a reader whose favourites and
+  series are mostly Estonian: one who reads English is not handed Estonian
+  books. Later books of a series the reader is in are left out, and so is any
+  part after the first, so nothing skips ahead.
 - **Similar books.** For each favourite, the similar books its page shows. A
   book like several favourites names how many and comes first.
 - **Tastes.** For each genre the reader likes, four of the most often
