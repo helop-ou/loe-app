@@ -2771,6 +2771,16 @@
         }
       }
     },
+    "The file on GitHub that tells Loe about new catalogue editions can also tell it to stop asking ESTER. It can only make Loe ask less, never more.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GitHubis olev fail, mis annab Loele teada kataloogi uutest väljaannetest, võib ka öelda, et Loe ESTERilt enam ei küsiks. See saab ainult vähendada seda, mida Loe küsib, mitte kunagi lisada."
+          }
+        }
+      }
+    },
     "The last sync didn't finish": {
       "localizations": {
         "et": {
@@ -2957,6 +2967,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Proovi uuesti"
+          }
+        }
+      }
+    },
+    "Turning ESTER off": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ESTERi väljalülitamine"
           }
         }
       }
