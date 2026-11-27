@@ -121,7 +121,20 @@ A book's page asks `Catalogue.details(for:)` for the rest of what it shows:
   Never both, because the books of a series share what comes before it.
 - **By the same author**: other works by the lead author in the same language,
   so an Estonian page lists Estonian books and a translation lists others in
-  its language.
+  its language. A book from abroad lists the author's books in Estonian
+  instead, under a heading that says so: the catalogue has next to nothing in
+  English by an author from abroad, and often has them in Estonian.
+- **An author written another way.** The author is found under the name as it
+  is written. Only when the catalogue has nobody under that name is another
+  spelling tried, by [`AuthorName`](../Loe/Shared/Catalogue/AuthorName.swift):
+  the same first name, spelled out, and the same surname, with no middle name
+  or initial between them that contradicts. So "Eric S. Nylund" from Open
+  Library finds the bibliography's Eric Nylund, and Mary Higgins Clark never
+  finds Mary Jane Clark. The other spelling is taken only when it is the one
+  spelling that fits, because the bibliography tells two people apart by a
+  middle name, and two that fit may be two people. An initial in place of a
+  first name fits nobody. The book itself, which has another key under the
+  other spelling, is left out of the list.
 - **Similar books**: books by other authors that share what the bibliography
   says about this one. A subject heading or genre counts only when more than
   half of the work's editions carry it, so one oddly catalogued edition cannot
