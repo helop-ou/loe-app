@@ -225,6 +225,9 @@ is listed under `catalogues`, a key the first builds ignore:
   again after removing it.
 - Of an entry that is not its own a build reads only the `schema_version`, so a
   later schema may describe its file in another way.
+- The top level can also carry `"asks_ester": false`, which turns off what Loe
+  asks ESTER and has nothing to do with the catalogue itself. See
+  [Library](library.md#turning-ester-off).
 - When the manifest has a catalogue of a later schema, "Check for a new
   edition" says the newest edition needs a newer Loe, after fetching the
   newest of its own schema if it did not have it.
