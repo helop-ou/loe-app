@@ -76,13 +76,11 @@ nonisolated enum ReadNext {
         in catalogue: Catalogue,
         limits: Limits = .standard
     ) async throws -> [ReadNextSuggestion] {
-        var series: [ReadNextSuggestion] = []
-        var seriesFound: [Catalogue.SeriesNext] = []
-        var byAuthor: [[(work: CatalogueWork, from: ReadNextSuggestion.Book)]] = []
-        /// For each list in `byAuthor`: whether it is in Estonian for a favourite that is not.
-        var authorsInEstonian: [Bool] = []
-        var similar: [[(work: CatalogueWork, from: ReadNextSuggestion.Book)]] = []
+        var found: [Leads] = []
         var languages: [String] = []
+        /// The translations that stood in for books from abroad. The reader has
+        /// read the book, so its translation is not suggested to them.
+        var standIns: [Shelved] = []
 
         let favourites = sources.filter(\.isFavourite).prefix(limits.favourites)
         let continuing = sources.filter { $0.continuesSeries && !$0.isFavourite }.prefix(limits.series)
@@ -90,37 +88,54 @@ nonisolated enum ReadNext {
             try Task.checkCancellation()
             guard let details = try? await catalogue.details(for: source.work, similarity: limits.similarity) else { continue }
             let work = CatalogueWork(id: source.work.id, editions: details.editions.isEmpty ? source.work.editions : details.editions)
-            let book = ReadNextSuggestion.Book(title: work.title, language: work.language)
+            var leads = Leads(from: ReadNextSuggestion.Book(title: work.title, language: work.language))
             languages += work.language.map { [$0] } ?? []
-            if source.continuesSeries, let next = try? await catalogue.nextInSeries(after: work) {
-                series.append(ReadNextSuggestion(work: next.work, reason: .nextInSeries(after: book)))
-                seriesFound.append(next)
+            leads.byAuthor = details.sameAuthor
+            leads.similar = details.similar.map(\.work)
+            if details.sameAuthorIsInEstonian { leads.language = Catalogue.estonian }
+            // A book from abroad has no headings or series in the catalogue. Its
+            // translation has, and stands in for it.
+            var followed = work
+            if let standIn = standIn(for: source.work, among: details.translations) {
+                standIns.append(Shelved(workKey: standIn.id, title: standIn.title, leadAuthor: standIn.editions[0].leadAuthor))
+                leads.language = standIn.language
+                leads.similar = (try? await catalogue.similar(to: standIn, limits: limits.similarity))?.map(\.work) ?? []
+                followed = standIn
             }
-            byAuthor.append(details.sameAuthor.map { ($0, book) })
-            authorsInEstonian.append(details.sameAuthorIsInEstonian)
-            similar.append(details.similar.map { ($0.work, book) })
+            if source.continuesSeries { leads.series = try? await catalogue.nextInSeries(after: followed) }
+            found.append(leads)
         }
         for source in continuing {
             try Task.checkCancellation()
             guard let editions = try? await catalogue.editions(of: source.work) else { continue }
             let work = CatalogueWork(id: source.work.id, editions: editions)
             languages += work.language.map { [$0] } ?? []
-            if let next = try? await catalogue.nextInSeries(after: work) {
-                let book = ReadNextSuggestion.Book(title: work.title, language: work.language)
-                series.append(ReadNextSuggestion(work: next.work, reason: .nextInSeries(after: book)))
-                seriesFound.append(next)
+            var leads = Leads(from: ReadNextSuggestion.Book(title: work.title, language: work.language))
+            var followed = work
+            if source.work.editions[0].openLibrary != nil,
+               let translations = try? await catalogue.details(for: source.work, similarity: limits.similarity).translations,
+               let standIn = standIn(for: source.work, among: translations) {
+                standIns.append(Shelved(workKey: standIn.id, title: standIn.title, leadAuthor: standIn.editions[0].leadAuthor))
+                leads.language = standIn.language
+                followed = standIn
             }
-        }
-        // A series is suggested from its next book, never from further on.
-        let fromTheStart = { (work: CatalogueWork) in
-            !seriesFound.contains { $0.contains(work) } && (Catalogue.part(of: work.title)?.number ?? 1) == 1
+            leads.series = try? await catalogue.nextInSeries(after: followed)
+            found.append(leads)
         }
         // Tastes suggest in the language the reader reads most, Estonian until Loe knows.
         let language = Dictionary(grouping: languages, by: { $0 }).max { $0.value.count < $1.value.count }?.key ?? Catalogue.estonian
-        // A favourite from abroad brings its author's books in Estonian. A reader
-        // who reads mostly in another language is not handed them.
-        for index in byAuthor.indices where authorsInEstonian[index] && language != Catalogue.estonian {
-            byAuthor[index] = []
+        // What a book from abroad brings is in Estonian: its author's books and
+        // whatever its translation leads to. A reader who reads mostly in another
+        // language is not handed them.
+        let kept = found.filter { $0.language == nil || $0.language == language }
+        let seriesFound = kept.compactMap(\.series)
+        let series = kept.compactMap { leads in leads.series.map { ReadNextSuggestion(work: $0.work, reason: .nextInSeries(after: leads.from)) } }
+        let byAuthor = kept.map { leads in leads.byAuthor.map { (work: $0, from: leads.from) } }
+        let similar = kept.map { leads in leads.similar.map { (work: $0, from: leads.from) } }
+        let shelved = shelved + standIns
+        // A series is suggested from its next book, never from further on.
+        let fromTheStart = { (work: CatalogueWork) in
+            !seriesFound.contains { $0.contains(work) } && (Catalogue.part(of: work.title)?.number ?? 1) == 1
         }
         var byTaste: [[(work: CatalogueWork, genre: Genre)]] = []
         for genre in tastes {
@@ -137,6 +152,29 @@ nonisolated enum ReadNext {
             excluding: shelved,
             limit: limits.total
         )
+    }
+
+    /// What one of the reader's books leads to, before the kinds are put together.
+    private struct Leads {
+        /// The book the reader shelved, which a suggestion's reason names.
+        let from: ReadNextSuggestion.Book
+        var series: Catalogue.SeriesNext?
+        var byAuthor: [CatalogueWork] = []
+        var similar: [CatalogueWork] = []
+        /// The language these are in, when it is not the book's own.
+        var language: String?
+
+        init(from book: ReadNextSuggestion.Book) {
+            from = book
+        }
+    }
+
+    /// The catalogue's Estonian translation of a book from abroad, which stands in
+    /// for it: the catalogue knows the translation's headings and series, and
+    /// nothing of a book it does not hold. Nil for a catalogue book.
+    private static func standIn(for work: CatalogueWork, among translations: [CatalogueWork]) -> CatalogueWork? {
+        guard work.editions[0].openLibrary != nil else { return nil }
+        return translations.first { $0.language == Catalogue.estonian }
     }
 
     /// One list from the four kinds: the next books in series first, then books by
