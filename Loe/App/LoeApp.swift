@@ -5,6 +5,7 @@ import SwiftUI
 struct LoeApp: App {
     @AppStorage(LoeAppearance.storageKey) private var appearance = LoeAppearance.system
     @AppStorage(LoeLanguage.storageKey) private var language = LoeLanguage.system
+    @Environment(\.scenePhase) private var scenePhase
     @State private var catalogue = CatalogueStore()
     @State private var cloudSync = CloudSync()
     @State private var library = Result { try LibraryStore.makeContainer() }
@@ -25,6 +26,12 @@ struct LoeApp: App {
                         .environment(catalogue)
                         .environment(cloudSync)
                         .task { await catalogue.updateIfDue() }
+                        // Loe can stay open for weeks, so coming back to the front
+                        // counts as a launch for the weekly look at the manifest.
+                        .onChange(of: scenePhase) {
+                            guard scenePhase == .active else { return }
+                            Task { await catalogue.updateIfDue() }
+                        }
                         .task { await cloudSync.start() }
                         .modelContainer(container)
                 case .failure:
