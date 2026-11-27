@@ -2,7 +2,8 @@ import Foundation
 import Testing
 @testable import Loe
 
-/// The quiet update: what happens when it fails. See docs/catalogue.md, "Download and updates".
+/// The quiet update: which networks it may use, what happens when it fails, and
+/// what an install leaves behind. See docs/catalogue.md, "Download and updates".
 struct CatalogueUpdateTests {
     private static let otherBooks = "(1, 'b9', 'Keisri hull', 'Jaan Kross', 1978, 1, 0, NULL, 'est', NULL, NULL)"
 
@@ -12,6 +13,33 @@ struct CatalogueUpdateTests {
         try scene.install(CatalogueFixture.make(), version: "2026-10")
         let file = try scene.publish(CatalogueFixture.make(books: Self.otherBooks), version: "2026-11", sha256: sha256)
         return (scene, file)
+    }
+
+    // Nobody asked for the weekly update, so it leaves mobile data and Low Data
+    // Mode alone.
+    @Test func aQuietUpdateWaitsForANetworkThatIsNeitherMobileDataNorInLowDataMode() async throws {
+        let (scene, file) = try sceneWithANewerEdition()
+
+        await scene.store().updateIfDue()
+
+        let request = try #require(StubServer.requests(for: file).first)
+        #expect(!request.allowsExpensiveNetworkAccess)
+        #expect(!request.allowsConstrainedNetworkAccess)
+    }
+
+    @Test func aDownloadTheReaderAskedForMayUseAnyNetwork() async throws {
+        let (scene, file) = try sceneWithANewerEdition()
+        await scene.store().checkNow()
+        let update = try #require(StubServer.requests(for: file).first)
+        #expect(update.allowsExpensiveNetworkAccess)
+        #expect(update.allowsConstrainedNetworkAccess)
+
+        let empty = DownloadScene()
+        let first = try empty.publish(CatalogueFixture.make(), version: "2026-11")
+        await empty.store().downloadCatalogue()
+        let download = try #require(StubServer.requests(for: first).first)
+        #expect(download.allowsExpensiveNetworkAccess)
+        #expect(download.allowsConstrainedNetworkAccess)
     }
 
     // On mobile data the manifest answers and the download fails at once. Counting

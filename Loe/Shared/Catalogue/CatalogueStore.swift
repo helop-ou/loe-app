@@ -125,7 +125,7 @@ final class CatalogueStore {
 
     /// Reads the manifest at most once a week, with or without a catalogue on the
     /// phone, since it also says whether ESTER may be asked. When there is a newer
-    /// catalogue of the schema this build reads, it is fetched quietly over Wi-Fi, and the
+    /// catalogue of the schema this build reads, it is fetched quietly, and the
     /// catalogue in use stays until the new one is checked and in place. A check
     /// counts once there is nothing left to fetch, so a catalogue that could not be
     /// fetched is tried again at the next launch and not a week later.
@@ -139,7 +139,7 @@ final class CatalogueStore {
         if case .ready = state,
            let published = manifest.catalogue(forSchema: Catalogue.schemaVersion), published.version != installedVersion {
             do {
-                try await downloader.install(published, at: url, allowsCellular: false)
+                try await downloader.install(published, at: url, quietly: true)
                 defaults.set(published.version, forKey: Self.versionKey)
                 reload()
             } catch where CatalogueDownloader.couldNotFetch(error) {

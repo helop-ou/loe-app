@@ -38,17 +38,21 @@ nonisolated struct CatalogueDownloader: Sendable {
 
     /// Replaces the file at `destination` only once the new catalogue has passed its
     /// checksum and opened, so a failed download never costs the reader the old one.
+    ///
+    /// A quiet download is one nobody asked for: it waits for a network that is
+    /// neither mobile data nor in Low Data Mode.
     func install(
         _ published: PublishedCatalogue,
         at destination: URL,
-        allowsCellular: Bool = true,
+        quietly: Bool = false,
         progress: @escaping @Sendable (Double) -> Void = { _ in }
     ) async throws {
         guard published.schemaVersion == Catalogue.schemaVersion else {
             throw Failure.unsupportedSchema(published.schemaVersion)
         }
         var request = URLRequest(url: published.url)
-        request.allowsExpensiveNetworkAccess = allowsCellular
+        request.allowsExpensiveNetworkAccess = !quietly
+        request.allowsConstrainedNetworkAccess = !quietly
         let (downloaded, response) = try await session.download(for: request, delegate: ProgressRelay(progress))
         defer { try? FileManager.default.removeItem(at: downloaded) }
         try Self.check(response)
