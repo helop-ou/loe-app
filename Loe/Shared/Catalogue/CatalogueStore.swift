@@ -203,20 +203,6 @@ final class CatalogueStore {
         }
     }
 
-    /// Frees the space. Search asks to download it again, and the shelves keep
-    /// everything they need.
-    func remove() throws {
-        guard !isBusy else { return }
-        state = .missing
-        check = nil
-        download = nil
-        if FileManager.default.fileExists(atPath: url.path) {
-            try FileManager.default.removeItem(at: url)
-        }
-        defaults.removeObject(forKey: Self.versionKey)
-        defaults.removeObject(forKey: Self.checkedKey)
-    }
-
     nonisolated static func isUpdateCheckDue(lastChecked: Date?, now: Date) -> Bool {
         guard let lastChecked else { return true }
         return now.timeIntervalSince(lastChecked) >= updateInterval

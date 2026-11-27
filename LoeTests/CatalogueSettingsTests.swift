@@ -3,7 +3,7 @@ import Testing
 @testable import Loe
 
 /// What Settings does with the catalogue: look for a new edition when the reader
-/// asks, say what came of it, and remove it.
+/// asks, and say what came of it.
 struct CatalogueSettingsTests {
     private static let otherBooks = "(1, 'b9', 'Keisri hull', 'Jaan Kross', 1978, 1, 0, NULL, 'est', NULL, NULL)"
 
@@ -87,27 +87,6 @@ struct CatalogueSettingsTests {
         // The quiet weekly check is not counted either, so the next launch asks again.
         await store.updateIfDue()
         #expect(store.lastChecked == nil)
-    }
-
-    @Test func removingFreesTheSpaceAndForgetsTheEdition() async throws {
-        let scene = DownloadScene()
-        try scene.install(CatalogueFixture.make(), version: "2026-11")
-        scene.defaults.set(Date.now, forKey: "catalogueCheckedForUpdate")
-        let store = scene.store()
-        #expect(store.sizeOnDisk ?? 0 > 0)
-
-        try store.remove()
-
-        guard case .missing = store.state else { Issue.record("expected missing"); return }
-        #expect(!FileManager.default.fileExists(atPath: scene.catalogueURL.path))
-        #expect(store.installedVersion == nil)
-        #expect(store.lastChecked == nil)
-        #expect(store.sizeOnDisk == nil)
-
-        // Gone for good: the weekly check does not bring it back.
-        try scene.publish(CatalogueFixture.make(), version: "2026-12")
-        await store.updateIfDue()
-        guard case .missing = store.state else { Issue.record("expected missing"); return }
     }
 
     @Test func anEditionIsNamedByItsMonth() throws {

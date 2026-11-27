@@ -2151,42 +2151,12 @@
         }
       }
     },
-    "Remove from this phone": {
-      "localizations": {
-        "et": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Eemalda telefonist"
-          }
-        }
-      }
-    },
     "Remove photo": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Eemalda pilt"
-          }
-        }
-      }
-    },
-    "Remove the catalogue": {
-      "localizations": {
-        "et": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Eemalda kataloog"
-          }
-        }
-      }
-    },
-    "Remove the catalogue?": {
-      "localizations": {
-        "et": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kas eemaldada kataloog?"
           }
         }
       }
@@ -2357,16 +2327,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Otsi"
-          }
-        }
-      }
-    },
-    "Search and suggestions need it until you download it again. Your shelves stay as they are.": {
-      "localizations": {
-        "et": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Otsing ja soovitused vajavad seda, kuni selle uuesti alla laadid. Sinu riiulid jäävad, nagu on."
           }
         }
       }

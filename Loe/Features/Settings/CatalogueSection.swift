@@ -1,11 +1,11 @@
 import SwiftUI
 
-/// The catalogue on this phone: which edition, how big, when Loe last looked for
-/// a newer one, and a way to free the space.
+/// The catalogue on this phone: which edition, how big, and when Loe last looked
+/// for a newer one. Loe fetches the catalogue by itself, so there is no removing
+/// it: it would only come back.
 struct CatalogueSection: View {
     @Environment(CatalogueStore.self) private var catalogue
     @State private var editions: Int?
-    @State private var confirmsRemoval = false
 
     var body: some View {
         Section {
@@ -14,20 +14,12 @@ struct CatalogueSection: View {
                 details
                     .task(id: catalogue.installedVersion) { editions = try? await open.editionCount() }
                 checkButton
-                removeButton
             case .unreadable:
                 Text("The catalogue can't be read")
                     .foregroundStyle(.loeInk)
-                downloadButton("Download it again")
-                removeButton
+                fetching("Download it again")
             case .missing:
-                if case .inProgress(let fraction) = catalogue.download {
-                    progress(fraction)
-                } else {
-                    Text(missing)
-                        .foregroundStyle(.loeSecondary)
-                    downloadButton("Download the catalogue")
-                }
+                fetching("Download the catalogue")
             }
         } header: {
             SettingsHeading("Catalogue")
@@ -35,11 +27,17 @@ struct CatalogueSection: View {
             Text("Every book published in Estonia, from the National Library of Estonia, so search works offline.")
         }
         .listRowBackground(Color.loeCard)
-        .confirmationDialog("Remove the catalogue?", isPresented: $confirmsRemoval, titleVisibility: .visible) {
-            Button("Remove the catalogue", role: .destructive) { try? catalogue.remove() }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("Search and suggestions need it until you download it again. Your shelves stay as they are.")
+    }
+
+    /// How fetching the catalogue is going, with a way to ask for it now.
+    @ViewBuilder
+    private func fetching(_ ask: LocalizedStringKey) -> some View {
+        if case .inProgress(let fraction) = catalogue.download {
+            progress(fraction)
+        } else {
+            Text(missing)
+                .foregroundStyle(.loeSecondary)
+            downloadButton(ask)
         }
     }
 
@@ -109,11 +107,6 @@ struct CatalogueSection: View {
         case .needsNewerLoe: "The newest edition needs a newer version of Loe."
         case .failed: "Couldn't check. Check your connection and try again."
         }
-    }
-
-    private var removeButton: some View {
-        Button("Remove from this phone", role: .destructive) { confirmsRemoval = true }
-            .disabled(catalogue.isBusy)
     }
 
     private func downloadButton(_ title: LocalizedStringKey) -> some View {
