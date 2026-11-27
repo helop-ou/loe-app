@@ -9,6 +9,8 @@ nonisolated struct CatalogueDownloader: Sendable {
         case badResponse(Int)
         case unsupportedSchema(Int)
         case checksumMismatch
+        /// The unpacked file holds another number of editions than the manifest says.
+        case wrongEditionCount(Int)
     }
 
     static let manifestURL = URL(string: "https://raw.githubusercontent.com/helop-ou/loe-app/main/tools/catalogue/manifest.json")!
@@ -37,18 +39,23 @@ nonisolated struct CatalogueDownloader: Sendable {
     }
 
     /// Replaces the file at `destination` only once the new catalogue has passed its
-    /// checksum and opened, so a failed download never costs the reader the old one.
+    /// checksum, opened and shown the editions the manifest counts, so a failed
+    /// download never costs the reader the old one.
+    ///
+    /// A quiet download is one nobody asked for: it waits for a network that is
+    /// neither mobile data nor in Low Data Mode.
     func install(
         _ published: PublishedCatalogue,
         at destination: URL,
-        allowsCellular: Bool = true,
+        quietly: Bool = false,
         progress: @escaping @Sendable (Double) -> Void = { _ in }
     ) async throws {
         guard published.schemaVersion == Catalogue.schemaVersion else {
             throw Failure.unsupportedSchema(published.schemaVersion)
         }
         var request = URLRequest(url: published.url)
-        request.allowsExpensiveNetworkAccess = allowsCellular
+        request.allowsExpensiveNetworkAccess = !quietly
+        request.allowsConstrainedNetworkAccess = !quietly
         let (downloaded, response) = try await session.download(for: request, delegate: ProgressRelay(progress))
         defer { try? FileManager.default.removeItem(at: downloaded) }
         try Self.check(response)
@@ -58,10 +65,13 @@ nonisolated struct CatalogueDownloader: Sendable {
 
         let folder = destination.deletingLastPathComponent()
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        let unpacked = folder.appending(path: "\(UUID().uuidString).partial")
+        let unpacked = folder.appending(path: "\(UUID().uuidString).\(Self.partial)")
         defer { try? FileManager.default.removeItem(at: unpacked) }
         try Self.unpack(downloaded, to: unpacked)
-        _ = try Catalogue(url: unpacked)
+        let found = try await Catalogue(url: unpacked).editionCount()
+        if let editions = published.editions, editions != found {
+            throw Failure.wrongEditionCount(found)
+        }
 
         if FileManager.default.fileExists(atPath: destination.path) {
             _ = try FileManager.default.replaceItemAt(destination, withItemAt: unpacked)
@@ -73,6 +83,27 @@ nonisolated struct CatalogueDownloader: Sendable {
         values.isExcludedFromBackup = true
         var installed = destination
         try installed.setResourceValues(values)
+    }
+
+    /// Whether an install failed before the file arrived: no network it may use,
+    /// one that dropped, or a server that did not serve it. Such a download is
+    /// worth trying again soon. A file that arrived and is wrong is not.
+    static func couldNotFetch(_ error: any Error) -> Bool {
+        if case Failure.badResponse = error { return true }
+        return error is URLError
+    }
+
+    private static let partial = "partial"
+
+    /// Removes what an install that was cut off left beside the catalogue: a file
+    /// as large as the catalogue, in a folder that is backed up. Only for a launch,
+    /// before anything is installing.
+    static func removeLeftovers(beside catalogue: URL) {
+        let folder = catalogue.deletingLastPathComponent()
+        let files = (try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? []
+        for file in files where file.pathExtension == partial {
+            try? FileManager.default.removeItem(at: file)
+        }
     }
 
     private static func check(_ response: URLResponse) throws {
