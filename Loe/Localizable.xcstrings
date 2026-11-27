@@ -851,16 +851,6 @@
         }
       }
     },
-    "Downloading it, and looking once a week for a new edition, fetches files from GitHub. Nothing about you is sent.": {
-      "localizations": {
-        "et": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Selle allalaadimiseks ja kord nädalas uue väljaande otsimiseks tuuakse failid GitHubist. Sinu kohta ei saadeta midagi."
-          }
-        }
-      }
-    },
     "Downloading the catalogue": {
       "localizations": {
         "et": {
@@ -1447,6 +1437,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Raamatu lehel olevad lingid avanevad sinu brauseris nagu iga teine link."
+          }
+        }
+      }
+    },
+    "Loe fetches it from GitHub when you first open it, and looks there once a week for a new edition. Nothing about you is sent.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loe toob selle GitHubist, kui sa Loe esimest korda avad, ja otsib sealt kord nädalas uut väljaannet. Sinu kohta ei saadeta midagi."
           }
         }
       }

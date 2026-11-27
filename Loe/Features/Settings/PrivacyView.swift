@@ -27,7 +27,7 @@ struct PrivacyContent: View {
                 .padding(.top, 12)
             Sent(
                 "The catalogue",
-                "Downloading it, and looking once a week for a new edition, fetches files from GitHub. Nothing about you is sent."
+                "Loe fetches it from GitHub when you first open it, and looks there once a week for a new edition. Nothing about you is sent."
             )
             Sent(
                 "Libraries",
