@@ -93,6 +93,7 @@ struct CatalogueSection: View {
 
     private var missing: LocalizedStringKey {
         switch catalogue.download {
+        case .waitingForWiFi: "Waiting for Wi-Fi"
         case .failed: "The download didn't finish"
         case .needsNewerLoe: "The catalogue needs a newer version of Loe."
         case .inProgress, nil: "Not on this phone"

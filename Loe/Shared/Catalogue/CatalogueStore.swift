@@ -2,7 +2,7 @@ import Foundation
 import Observation
 
 /// Whether the catalogue is on this phone, the open catalogue when it is, and
-/// downloading, updating or removing it.
+/// fetching it and keeping it up to date.
 @Observable
 final class CatalogueStore {
     enum State {
@@ -13,6 +13,9 @@ final class CatalogueStore {
 
     enum Download: Equatable {
         case inProgress(Double)
+        /// The download nobody asked for found only mobile data or Low Data Mode,
+        /// which it leaves alone until the reader says otherwise.
+        case waitingForWiFi
         case failed
         /// Every catalogue there is needs a newer Loe than this one.
         case needsNewerLoe
@@ -75,7 +78,7 @@ final class CatalogueStore {
         (try? FileManager.default.attributesOfItem(atPath: url.path))?[.size] as? Int
     }
 
-    /// Something is downloading or replacing the file, so it must not be removed.
+    /// Something is downloading or replacing the file, so nothing else may start.
     var isBusy: Bool {
         if case .inProgress = download { return true }
         return check == .checking || updatingQuietly
@@ -100,8 +103,23 @@ final class CatalogueStore {
         asksESTER = ESTERSwitch.isOn(in: defaults)
     }
 
-    /// The first download, which the reader starts, so it may use mobile data.
+    /// What a launch does, and coming back to the front. A phone with no catalogue
+    /// it can read fetches one without being asked, quietly, and tries again each
+    /// time until it has it. A phone that has one looks for a newer edition.
+    func keepUp(now: Date = .now) async {
+        if case .ready = state {
+            await updateIfDue(now: now)
+        } else {
+            await download(quietly: true)
+        }
+    }
+
+    /// The reader asked for the catalogue, so it may use mobile data and Low Data Mode.
     func downloadCatalogue() async {
+        await download(quietly: false)
+    }
+
+    private func download(quietly: Bool) async {
         guard !isBusy else { return }
         download = .inProgress(0)
         do {
@@ -111,7 +129,7 @@ final class CatalogueStore {
                 download = manifest.hasCatalogue(newerThanSchema: Catalogue.schemaVersion) ? .needsNewerLoe : .failed
                 return
             }
-            try await downloader.install(published, at: url) { fraction in
+            try await downloader.install(published, at: url, quietly: quietly) { fraction in
                 Task { @MainActor in
                     if case .inProgress = self.download { self.download = .inProgress(fraction) }
                 }
@@ -120,7 +138,7 @@ final class CatalogueStore {
             download = nil
             reload()
         } catch {
-            download = .failed
+            download = quietly && CatalogueDownloader.waitsForWiFi(error) ? .waitingForWiFi : .failed
         }
     }
 

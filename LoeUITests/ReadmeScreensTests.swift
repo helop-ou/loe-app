@@ -26,8 +26,9 @@ final class ReadmeScreensTests: JourneyTestCase {
         }
         let app = launch(real: .catalogue)
         app.tabBars.buttons["Search"].tap()
-        if app.staticTexts["The catalogue isn't here yet"].waitForExistence(timeout: 2) {
-            throw XCTSkip("No catalogue on this simulator")
+        // Without one Loe starts fetching it, and says so at the top of Search.
+        if app.staticTexts["Downloading the catalogue"].waitForExistence(timeout: 2) {
+            throw XCTSkip("No catalogue on this simulator yet")
         }
 
         for book in books {

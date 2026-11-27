@@ -12,17 +12,26 @@ class JourneyTestCase: XCTestCase {
     enum Real {
         /// The catalogue installed on the simulator, for the README screens.
         case catalogue
-        /// The network and no catalogue yet, for the download.
+        /// The network, for the download.
         case download
     }
 
-    /// Loe with what every journey passes it, not yet launched.
+    /// Where a journey with no catalogue tells Loe to keep one: a file that is not
+    /// there, in a folder of its own, whatever the simulator has installed.
+    static func nowhere() -> URL {
+        URL.temporaryDirectory.appending(path: "journey-no-catalogue-\(UUID().uuidString)/catalogue.sqlite")
+    }
+
+    /// Loe with what every journey passes it, not yet launched. `catalogue` is
+    /// where Loe keeps its catalogue, in place of the journeys' own.
     @MainActor
-    static func application(_ extra: [String] = quizSeen, real: Real? = nil) -> XCUIApplication {
+    static func application(_ extra: [String] = quizSeen, real: Real? = nil, catalogue: URL? = nil) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_EE", "-inMemoryLibrary", "YES"]
         if real != .download { app.launchArguments += ["-networkStub", "YES"] }
-        if real == nil {
+        if let catalogue {
+            app.launchArguments += ["-catalogueFile", catalogue.path]
+        } else if real == nil {
             switch JourneyCatalogue.file {
             case .success(let file): app.launchArguments += ["-catalogueFile", file.path]
             case .failure(let error): XCTFail("\(error)")
@@ -33,10 +42,10 @@ class JourneyTestCase: XCTestCase {
     }
 
     @MainActor
-    func launch(_ extra: [String] = JourneyTestCase.quizSeen, real: Real? = nil) -> XCUIApplication {
+    func launch(_ extra: [String] = JourneyTestCase.quizSeen, real: Real? = nil, catalogue: URL? = nil) -> XCUIApplication {
         continueAfterFailure = false
         XCUIDevice.shared.appearance = .light
-        let app = Self.application(extra, real: real)
+        let app = Self.application(extra, real: real, catalogue: catalogue)
         app.launch()
         return app
     }

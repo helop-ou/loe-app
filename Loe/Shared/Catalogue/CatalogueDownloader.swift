@@ -93,6 +93,15 @@ nonisolated struct CatalogueDownloader: Sendable {
         return error is URLError
     }
 
+    /// Whether a quiet download failed because the only network was one it leaves
+    /// alone: mobile data, a personal hotspot or Low Data Mode.
+    static func waitsForWiFi(_ error: any Error) -> Bool {
+        switch (error as? URLError)?.networkUnavailableReason {
+        case .cellular, .expensive, .constrained: true
+        default: false
+        }
+    }
+
     private static let partial = "partial"
 
     /// Removes what an install that was cut off left beside the catalogue: a file

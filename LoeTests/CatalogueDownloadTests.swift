@@ -6,7 +6,7 @@ import Testing
 /// Serves canned responses to a URLSession, and records what was asked for.
 nonisolated final class StubServer: URLProtocol {
     private static let responses = Mutex<[URL: (status: Int, body: Data)]>([:])
-    private static let failures = Mutex<[URL: URLError.Code]>([:])
+    private static let failures = Mutex<[URL: URLError]>([:])
     private static let requested = Mutex<[URLRequest]>([])
 
     static func serve(_ url: URL, status: Int = 200, body: Data) {
@@ -16,7 +16,11 @@ nonisolated final class StubServer: URLProtocol {
 
     /// Fails every request for `url` as a network that can't be used does.
     static func fail(_ url: URL, with code: URLError.Code) {
-        failures.withLock { $0[url] = code }
+        fail(url, with: URLError(code))
+    }
+
+    static func fail(_ url: URL, with error: URLError) {
+        failures.withLock { $0[url] = error }
     }
 
     static func wasRequested(_ url: URL) -> Bool {
@@ -40,8 +44,8 @@ nonisolated final class StubServer: URLProtocol {
     override func startLoading() {
         let url = request.url!
         Self.requested.withLock { $0.append(request) }
-        if let code = Self.failures.withLock({ $0[url] }) {
-            client?.urlProtocol(self, didFailWithError: URLError(code))
+        if let failure = Self.failures.withLock({ $0[url] }) {
+            client?.urlProtocol(self, didFailWithError: failure)
             return
         }
         let (status, body) = Self.responses.withLock { $0[url] } ?? (404, Data())

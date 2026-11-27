@@ -36,14 +36,16 @@ struct SearchSnapshotTests {
         )
     }
 
-    // Search with no catalogue on the phone, when every one there is needs a newer
-    // Loe. A window, for the button.
+    // What Search and Read next say while the phone has no catalogue. A window,
+    // for the progress bar and the buttons.
     @Test(arguments: Snapshot.Look.all)
-    func aLoeTooOldForTheCatalogue(look: Snapshot.Look) async throws {
-        let scene = DownloadScene()
-        try scene.publish(CatalogueFixture.make(), version: "2027-01", schema: Catalogue.schemaVersion + 1)
-        let store = scene.store()
-        await store.downloadCatalogue()
-        try Snapshot.verify(CatalogueDownloadView().environment(store), named: "catalogue-too-old", look: look, on: .window)
+    func theCatalogueNoticeInEachState(look: Snapshot.Look) throws {
+        let notices = VStack(spacing: 16) {
+            CatalogueNotice(download: .inProgress(0.4)) {}
+            CatalogueNotice(download: .waitingForWiFi) {}
+            CatalogueNotice(download: .failed) {}
+            CatalogueNotice(download: .needsNewerLoe) {}
+        }
+        try Snapshot.verify(notices.padding(20), named: "catalogue-notice", look: look, on: .window)
     }
 }

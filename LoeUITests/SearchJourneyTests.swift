@@ -92,28 +92,29 @@ final class SearchJourneyTests: JourneyTestCase {
         attach("book-similar", app)
     }
 
-    /// Needs a catalogue served from the Mac and none on the simulator yet. See
-    /// docs/catalogue.md, "Trying it in the simulator".
+    /// Needs a catalogue served from the Mac. Loe keeps what it fetches in a
+    /// folder of the journey's own, so the simulator's catalogue is left alone.
+    /// See docs/catalogue.md, "Trying it in the simulator".
     @MainActor
-    func testDownloadsTheCatalogue() throws {
+    func testFetchesTheCatalogueWithoutBeingAsked() throws {
         guard let manifest = ProcessInfo.processInfo.environment["LOE_CATALOGUE_MANIFEST"] else {
             throw XCTSkip("Set TEST_RUNNER_LOE_CATALOGUE_MANIFEST to a served manifest")
         }
-        let app = launch(Self.quizSeen + ["-catalogueManifestURL", manifest], real: .download)
+        let catalogue = Self.nowhere()
+        addTeardownBlock { try? FileManager.default.removeItem(at: catalogue.deletingLastPathComponent()) }
+        let app = launch(Self.quizSeen + ["-catalogueManifestURL", manifest], real: .download, catalogue: catalogue)
         app.tabBars.buttons["Search"].tap()
-        let download = app.buttons["Download the catalogue"]
-        guard download.waitForExistence(timeout: 3) else {
-            throw XCTSkip("The catalogue is already on this simulator")
-        }
-        attach("download-offer", app)
-        download.tap()
-        // From a server on the same Mac the download can finish before progress shows.
-        if app.staticTexts["Downloading the catalogue"].waitForExistence(timeout: 1) {
+        // From a server on the same Mac the download can finish before the notice shows.
+        let notice = app.staticTexts["Downloading the catalogue"]
+        if notice.waitForExistence(timeout: 1) {
             attach("download-progress", app)
         }
-        XCTAssertTrue(app.staticTexts["Find a book"].waitForExistence(timeout: 180))
+        XCTAssertTrue(notice.waitForNonExistence(timeout: 180))
+        XCTAssertFalse(app.staticTexts["The download didn't finish"].exists)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: catalogue.path))
         search("keisri hull", in: app)
         XCTAssertTrue(app.staticTexts["Keisri hull"].firstMatch.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["Downloading the catalogue"].exists)
         attach("download-done", app)
     }
 

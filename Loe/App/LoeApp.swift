@@ -25,12 +25,11 @@ struct LoeApp: App {
                     RootView()
                         .environment(catalogue)
                         .environment(cloudSync)
-                        .task { await catalogue.updateIfDue() }
-                        // Loe can stay open for weeks, so coming back to the front
-                        // counts as a launch for the weekly look at the manifest.
-                        .onChange(of: scenePhase) {
+                        // At launch, and each time Loe comes back to the front: it can
+                        // stay open for weeks, so that counts as a launch for the catalogue.
+                        .onChange(of: scenePhase, initial: true) {
                             guard scenePhase == .active else { return }
-                            Task { await catalogue.updateIfDue() }
+                            Task { await catalogue.keepUp() }
                         }
                         .task { await cloudSync.start() }
                         .modelContainer(container)

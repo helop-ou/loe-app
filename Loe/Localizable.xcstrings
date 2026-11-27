@@ -531,16 +531,6 @@
         }
       }
     },
-    "Check your connection and try again.": {
-      "localizations": {
-        "et": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kontrolli ühendust ja proovi uuesti."
-          }
-        }
-      }
-    },
     "Checked for a new edition": {
       "localizations": {
         "et": {
@@ -841,12 +831,12 @@
         }
       }
     },
-    "Download it in Search, then give the books you've read a rating.": {
+    "Download now": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Laadi see otsingus alla ja hinda siis loetud raamatuid."
+            "value": "Laadi kohe alla"
           }
         }
       }
@@ -957,6 +947,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Esseed"
+          }
+        }
+      }
+    },
+    "Every book published in Estonia, about 30 MB. Until it's here, Search finds only books from abroad.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kõik Eestis ilmunud raamatud, umbes 30 MB. Kuni see kohale jõuab, leiab otsing ainult välismaal ilmunud raamatuid."
           }
         }
       }
@@ -1311,12 +1311,12 @@
         }
       }
     },
-    "It may be from a newer version of Loe.": {
+    "It's about 30 MB, so Loe fetches it over mobile data or in Low Data Mode only when you ask. Until it's here, Search finds only books from abroad.": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "See võib olla Loe uuemast versioonist."
+            "value": "See on umbes 30 MB, seepärast laadib Loe selle mobiilse andmesidega või andmemahtu säästes alla ainult siis, kui sa seda palud. Kuni see kohale jõuab, leiab otsing ainult välismaal ilmunud raamatuid."
           }
         }
       }
@@ -1481,22 +1481,22 @@
         }
       }
     },
-    "Loe keeps every Estonian book on your phone, so search works offline. It's one download of about 30 MB.": {
-      "localizations": {
-        "et": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Loe hoiab kõiki eesti raamatuid sinu telefonis, nii et otsing töötab ka võrguühenduseta. Selleks tuleb üks kord alla laadida umbes 30 MB."
-          }
-        }
-      }
-    },
     "Loe needs an update": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
             "value": "Loe vajab uuendamist"
+          }
+        }
+      }
+    },
+    "Loe tries again the next time you open it. Until then, Search finds only books from abroad.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loe proovib uuesti, kui selle järgmine kord avad. Seni leiab otsing ainult välismaal ilmunud raamatuid."
           }
         }
       }
@@ -1787,6 +1787,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Selles telefonis"
+          }
+        }
+      }
+    },
+    "Once it's on your phone, give the books you've read a rating.": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kui see on sinu telefonis, hinda loetud raamatuid."
           }
         }
       }
@@ -2741,12 +2751,12 @@
         }
       }
     },
-    "The catalogue isn't here yet": {
+    "The catalogue is waiting for Wi-Fi": {
       "localizations": {
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kataloogi pole veel siin"
+            "value": "Kataloog ootab WiFi-ühendust"
           }
         }
       }
@@ -3051,6 +3061,16 @@
         }
       }
     },
+    "Waiting for Wi-Fi": {
+      "localizations": {
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ootab WiFi-ühendust"
+          }
+        }
+      }
+    },
     "Waiting for a connection": {
       "localizations": {
         "et": {
@@ -3197,16 +3217,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aasta"
-          }
-        }
-      }
-    },
-    "You can keep using Loe while it downloads.": {
-      "localizations": {
-        "et": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Võid Loe kasutamist samal ajal jätkata."
           }
         }
       }
